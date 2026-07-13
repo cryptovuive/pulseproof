@@ -8,7 +8,9 @@ import {
   CirclePause,
   CirclePlay,
   Clock3,
+  CloudOff,
   Compass,
+  Download,
   Eye,
   EyeOff,
   Goal,
@@ -56,6 +58,13 @@ import {
 } from "@/lib/matchday-alerts";
 import { buildMatchBrief, freshnessLabel, sportingMoments } from "@/lib/match-experience";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
+import {
+  buildSavedRecapPack,
+  normalizeSavedRecaps,
+  savedRecapOverview,
+  upsertSavedRecap,
+  type SavedRecapPack,
+} from "@/lib/saved-recaps";
 import type { MatchOverview, MatchPulse, MomentAttestation, PulseMoment } from "@/types/pulse";
 
 type StreamStatus = "connecting" | "live" | "complete" | "paused" | "error";
@@ -63,6 +72,7 @@ const JUDGE_DEMO_WALLET = "8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV";
 const FAN_PREFERENCES_KEY = "pulseproof.fan-preferences.v1";
 const MATCH_ALERT_PREFERENCES_KEY = "pulseproof.match-alert-preferences.v1";
 const MATCH_ALERT_INBOX_KEY = "pulseproof.match-alert-inbox.v1";
+const SAVED_RECAPS_KEY = "pulseproof.saved-recaps.v1";
 const TOUR_STEPS = [
   { target: "match-center", eyebrow: "01 · Choose", title: "Start with the fixture", body: "Every card states competition provenance, match stage, source coverage and whether the score is known." },
   { target: "command-center", eyebrow: "02 · Personalize", title: "Build your matchday", body: "Follow teams, see their next fixture, trace the road to the final and arm verified-event alerts without creating an account." },
@@ -117,6 +127,9 @@ export function PulseDashboard() {
   const [alertsReady, setAlertsReady] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | "unsupported">("default");
   const [tourStep, setTourStep] = useState<number | null>(null);
+  const [savedRecaps, setSavedRecaps] = useState<SavedRecapPack[]>([]);
+  const [savedRecapsReady, setSavedRecapsReady] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(false);
   const [revealedScores, setRevealedScores] = useState<Set<number>>(() => new Set());
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [wallet, setWallet] = useState<BrowserWallet | null>(null);
@@ -201,15 +214,19 @@ export function PulseDashboard() {
     const frame = window.requestAnimationFrame(() => {
       let storedPreferences = DEFAULT_MATCH_ALERT_PREFERENCES;
       let storedInbox: MatchAlert[] = [];
+      let storedRecaps: SavedRecapPack[] = [];
       try {
         storedPreferences = normalizeMatchAlertPreferences(JSON.parse(localStorage.getItem(MATCH_ALERT_PREFERENCES_KEY) ?? "null"));
         storedInbox = normalizeMatchAlertInbox(JSON.parse(localStorage.getItem(MATCH_ALERT_INBOX_KEY) ?? "[]"));
+        storedRecaps = normalizeSavedRecaps(JSON.parse(localStorage.getItem(SAVED_RECAPS_KEY) ?? "[]"));
       } catch { /* malformed local state falls back safely */ }
       setAlertPreferences(storedPreferences);
       setAlertInbox(storedInbox);
       deliveredAlertIdsRef.current = new Set(storedInbox.map((alert) => alert.id));
+      setSavedRecaps(storedRecaps);
       setNotificationPermission("Notification" in window ? Notification.permission : "unsupported");
       setAlertsReady(true);
+      setSavedRecapsReady(true);
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
@@ -224,6 +241,7 @@ export function PulseDashboard() {
         setSelectedFixtureId(selected);
         setPreferences({ ...savedPreferences, lastFixtureId: selected });
         setPreferencesReady(true);
+        setOfflineMode(false);
         if (!streamFixtureIds.length) {
           setStatus("complete");
           return;
@@ -270,6 +288,32 @@ export function PulseDashboard() {
         source.onerror = () => setStatus((current) => (current === "complete" ? current : "error"));
       })
       .catch((error: unknown) => {
+        let storedRecaps: SavedRecapPack[] = [];
+        let storedPreferences = DEFAULT_FAN_PREFERENCES;
+        try {
+          storedRecaps = normalizeSavedRecaps(JSON.parse(localStorage.getItem(SAVED_RECAPS_KEY) ?? "[]"));
+          storedPreferences = normalizeFanPreferences(JSON.parse(localStorage.getItem(FAN_PREFERENCES_KEY) ?? "null"));
+        } catch { /* malformed local fallback stays empty */ }
+        if (active && storedRecaps.length) {
+          const offlineMatches = storedRecaps.map(savedRecapOverview);
+          const requestedFixtureId = Number(new URLSearchParams(window.location.search).get("fixture"));
+          const selected = selectPreferredFixture(
+            offlineMatches,
+            Number.isSafeInteger(requestedFixtureId) && requestedFixtureId > 0 ? requestedFixtureId : undefined,
+            storedPreferences.lastFixtureId,
+          );
+          setSavedRecaps(storedRecaps);
+          setMatches(offlineMatches);
+          setPulses(Object.fromEntries(storedRecaps.map((pack) => [pack.pulse.fixture.fixtureId, pack.pulse])));
+          setSelectedFixtureId(selected);
+          setPreferences({ ...storedPreferences, lastFixtureId: selected });
+          setPreferencesReady(true);
+          setOfflineMode(true);
+          setPlaying(false);
+          setStatus("paused");
+          setNotice(`Network feed unavailable. Opened ${storedRecaps.length} saved recap${storedRecaps.length === 1 ? "" : "s"} from this device.`);
+          return;
+        }
         setStatus("error");
         setNotice(error instanceof Error ? error.message : "Unable to start PulseProof");
       });
@@ -293,6 +337,11 @@ export function PulseDashboard() {
     if (!alertsReady) return;
     localStorage.setItem(MATCH_ALERT_INBOX_KEY, JSON.stringify(alertInbox));
   }, [alertInbox, alertsReady]);
+
+  useEffect(() => {
+    if (!savedRecapsReady) return;
+    localStorage.setItem(SAVED_RECAPS_KEY, JSON.stringify(savedRecaps));
+  }, [savedRecaps, savedRecapsReady]);
 
   useEffect(() => () => {
     for (const timer of alertTimersRef.current) window.clearTimeout(timer);
@@ -396,13 +445,33 @@ export function PulseDashboard() {
     window.setTimeout(() => document.getElementById(TOUR_STEPS[nextStep].target)?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
   };
 
+  const toggleSavedRecap = () => {
+    if (!livePulse) return;
+    const fixtureId = livePulse.fixture.fixtureId;
+    if (savedRecaps.some((pack) => pack.pulse.fixture.fixtureId === fixtureId)) {
+      setSavedRecaps((current) => current.filter((pack) => pack.pulse.fixture.fixtureId !== fixtureId));
+      setNotice("Offline recap removed from this device.");
+      return;
+    }
+    try {
+      const pack = buildSavedRecapPack(livePulse);
+      setSavedRecaps((current) => upsertSavedRecap(current, pack));
+      setNotice(`Offline recap saved: ${pack.pulse.moments.length} on-pitch moments, no technical metadata or raw feed archive.`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "This recap cannot be saved yet");
+    }
+  };
+
   const startCatchUp = async () => {
     if (!livePulse) return;
     try {
-      const query = livePulse.source === "demo-replay" ? "?mode=replay" : livePulse.phase === "FT" ? "?historical=true" : "";
-      const response = await fetch(`/api/matches/${livePulse.fixture.fixtureId}${query}`, { cache: "no-store" });
-      if (!response.ok) throw new Error("Historical match log is not available yet");
-      const full = (await response.json()) as MatchPulse;
+      let full = livePulse;
+      if (!offlineMode) {
+        const query = livePulse.source === "demo-replay" ? "?mode=replay" : livePulse.phase === "FT" ? "?historical=true" : "";
+        const response = await fetch(`/api/matches/${livePulse.fixture.fixtureId}${query}`, { cache: "no-store" });
+        if (!response.ok) throw new Error("Historical match log is not available yet");
+        full = (await response.json()) as MatchPulse;
+      }
       const signals = sportingMoments(full.moments);
       if (!signals.length) throw new Error("No on-pitch moments are available for catch-up yet");
       const replay = { ...full, moments: signals };
@@ -439,6 +508,10 @@ export function PulseDashboard() {
   };
 
   const claimMoment = async (moment: PulseMoment) => {
+    if (offlineMode) {
+      setNotice("Reconnect to re-check this saved moment before requesting an attestation.");
+      return;
+    }
     if (!pulse || !walletKey) {
       await connectWallet();
       return;
@@ -482,6 +555,10 @@ export function PulseDashboard() {
   };
 
   const verifyForJudge = async () => {
+    if (offlineMode) {
+      setNotice("Judge verification requires a live connection to issue a fresh short-lived attestation.");
+      return;
+    }
     const moment = pulse?.moments.at(-1);
     if (!pulse || !moment) return;
     setJudgeChecking(true);
@@ -538,19 +615,23 @@ export function PulseDashboard() {
   const displayMinute = latest?.minuteLabel ?? pulse.minute;
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
-  const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
+  const txLineDevnet = !offlineMode && pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
   const competitionEvidenceUrl = pulse.provenance?.sourceUrl ?? pulse.fixture.competitionSourceUrl;
   const hasSignalMoments = signalMoments.length > 0;
   const scoreKnown = pulse.source === "demo-replay" || pulse.moments.some((moment) => Boolean(moment.score));
   const spoilerProtected = preferences.spoilerFree && livePulse?.phase === "FT" && !catchUp && !revealedScores.has(pulse.fixture.fixtureId);
   const scoreVisible = scoreKnown && !spoilerProtected;
-  const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
+  const statusLabel = offlineMode ? "Offline library" : catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
   const catchUpSummary = catchUp ? summarizeCatchUp(pulse.moments) : null;
   const matchBrief = buildMatchBrief(pulse);
   const hiddenMetadataCount = pulse.moments.length - signalMoments.length;
-  const freshness = freshnessLabel(pulse, nowMs);
+  const currentSavedRecap = savedRecaps.find((pack) => pack.pulse.fixture.fixtureId === pulse.fixture.fixtureId);
+  const freshness = offlineMode && currentSavedRecap
+    ? `Saved offline · ${new Date(currentSavedRecap.savedAt).toLocaleString()}`
+    : freshnessLabel(pulse, nowMs);
   const homeFollowed = preferences.followedTeams.includes(pulse.fixture.homeTeam);
   const awayFollowed = preferences.followedTeams.includes(pulse.fixture.awayTeam);
+  const recapSaved = Boolean(currentSavedRecap);
 
   return (
     <main className="app-shell">
@@ -561,7 +642,7 @@ export function PulseDashboard() {
         </a>
         <div className="top-actions">
           <div className={`network-pill ${status}`}>
-            {status === "live" || status === "complete" ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {offlineMode ? <CloudOff size={14} /> : status === "live" || status === "complete" ? <Wifi size={14} /> : <WifiOff size={14} />}
             {statusLabel}
           </div>
           <button className="tour-button" aria-label="Open quick product tour" onClick={() => moveTour(0)}><Compass size={15} /> Quick tour</button>
@@ -573,9 +654,11 @@ export function PulseDashboard() {
       </header>
 
       <section className="demo-banner" role="note">
-        <div><Radio size={14} /> {pulse.source === "demo-replay" ? "Labelled demo mode" : txLineDevnet ? "TxLINE devnet coverage" : "Live TxLINE mode"}</div>
+        <div>{offlineMode ? <CloudOff size={14} /> : <Radio size={14} />} {offlineMode ? "Offline recap pack" : pulse.source === "demo-replay" ? "Labelled demo mode" : txLineDevnet ? "TxLINE devnet coverage" : "Live TxLINE mode"}</div>
         <p>
-          {pulse.source === "demo-replay"
+          {offlineMode
+            ? "This device is showing a locally saved, consumer-safe recap. Live APIs, attestations and claims remain disabled until reconnection."
+            : pulse.source === "demo-replay"
             ? "Results and key moments are cross-checked from published reports; demo sequence IDs are not represented as TxLINE-verified data."
             : txLineDevnet
               ? pulse.fixture.competitionSource === "verified-schedule"
@@ -584,7 +667,7 @@ export function PulseDashboard() {
             : "Scores and match events are being read from TxLINE's live SSE feed using an activated Solana subscription."}
         </p>
         {competitionEvidenceUrl && <a className="banner-source" href={competitionEvidenceUrl} target="_blank" rel="noreferrer">Source · {pulse.provenance?.sourceUrl ? pulse.provenance.provider : competitionSourceLabel(pulse.fixture.competitionSource)}</a>}
-        <button onClick={toggleStream}>{playing ? <CirclePause size={15} /> : <CirclePlay size={15} />} {playing ? "Pause" : "Restart"}</button>
+        <button disabled={offlineMode} onClick={toggleStream}>{offlineMode ? <CloudOff size={15} /> : playing ? <CirclePause size={15} /> : <CirclePlay size={15} />} {offlineMode ? "Offline" : playing ? "Pause" : "Restart"}</button>
       </section>
 
       <section className="my-pulse-bar" aria-label="My Pulse preferences">
@@ -636,6 +719,8 @@ export function PulseDashboard() {
         spoilerFree={preferences.spoilerFree}
         alertPreferences={alertPreferences}
         alerts={alertInbox}
+        savedRecapCount={savedRecaps.length}
+        offlineMode={offlineMode}
         notificationPermission={notificationPermission}
         onAlertPreferencesChange={setAlertPreferences}
         onEnableBrowserNotifications={() => void enableBrowserNotifications()}
@@ -650,7 +735,10 @@ export function PulseDashboard() {
             <div className="catchup-intro">
               <span className="catchup-icon"><RotateCcw size={19} /></span>
               <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay only the signal events—goals, pressure swings, cards and VAR—without watching the full broadcast.</p></div>
-              {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); }}><Radio size={14} /> Return live</button>}
+              <div className="catchup-actions">
+                {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); }}><Radio size={14} /> {offlineMode ? "Return to saved recap" : "Return live"}</button>}
+                {livePulse?.phase === "FT" && hasSignalMoments && <button className={`offline-save ${recapSaved ? "saved" : ""}`} aria-pressed={recapSaved} onClick={toggleSavedRecap}><Download size={14} /> {recapSaved ? "Saved offline" : "Save offline"}</button>}
+              </div>
             </div>
             {catchUp && catchUpSummary && (
               <div className="catchup-controls">
@@ -748,15 +836,15 @@ export function PulseDashboard() {
                         {moment.varOutcome && <b>VAR: {moment.varOutcome}</b>}
                       </span>
                     )}
-                    <small><ShieldCheck size={12} /> {moment.verified ? "TxLINE feed event" : "Published-report replay"} · seq {moment.seq}</small>
+                    <small><ShieldCheck size={12} /> {offlineMode ? "Saved consumer recap" : moment.verified ? "TxLINE feed event" : "Published-report replay"} · seq {moment.seq}</small>
                   </div>
                   <button
                     className={`claim-button ${claimed[moment.id]?.proof ? "claimed" : ""}`}
-                    disabled={moment.points <= 0 || moment.badge <= 0 || claiming === moment.id || claimed[moment.id]?.proof}
+                    disabled={offlineMode || moment.points <= 0 || moment.badge <= 0 || claiming === moment.id || claimed[moment.id]?.proof}
                     onClick={() => void claimMoment(moment)}
                   >
                     {claimed[moment.id]?.signature ? <BadgeCheck size={15} /> : claimed[moment.id]?.proof ? <ShieldCheck size={15} /> : <Sparkles size={14} />}
-                    {claiming === moment.id ? "Checking…" : claimed[moment.id]?.signature ? "On-chain" : claimed[moment.id]?.proof ? "Verified" : moment.points > 0 && moment.badge > 0 ? `+${moment.points}` : "Metadata"}
+                    {offlineMode ? "Reconnect" : claiming === moment.id ? "Checking…" : claimed[moment.id]?.signature ? "On-chain" : claimed[moment.id]?.proof ? "Verified" : moment.points > 0 && moment.badge > 0 ? `+${moment.points}` : "Metadata"}
                   </button>
                 </div>
               ))}
@@ -800,7 +888,7 @@ export function PulseDashboard() {
             <div className="judge-lab">
               <div><span>Judge verification lab</span><b>No wallet · No SOL</b></div>
               <p>Issue and verify a real short-lived Ed25519 attestation for the latest visible event.</p>
-              <button disabled={judgeChecking} onClick={() => void verifyForJudge()}>{judgeProof ? <BadgeCheck size={14} /> : <ShieldCheck size={14} />}{judgeChecking ? "Verifying…" : judgeProof ? "Proof verified" : "Verify sample proof"}</button>
+              <button disabled={judgeChecking || offlineMode} onClick={() => void verifyForJudge()}>{judgeProof ? <BadgeCheck size={14} /> : offlineMode ? <CloudOff size={14} /> : <ShieldCheck size={14} />}{offlineMode ? "Reconnect to verify" : judgeChecking ? "Verifying…" : judgeProof ? "Proof verified" : "Verify sample proof"}</button>
               {judgeProof && <small><span>Evidence</span><code>{judgeProof.payload.evidenceHash.slice(0, 10)}…{judgeProof.payload.evidenceHash.slice(-8)}</code><span>Expires</span><code>{new Date(judgeProof.payload.expiresAt * 1_000).toLocaleTimeString()}</code></small>}
             </div>
             <a href="https://txline.txodds.com/documentation/worldcup" target="_blank" rel="noreferrer">Read the data flow <ChevronRight size={14} /></a>

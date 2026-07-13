@@ -34,6 +34,7 @@ Research URLs:
 6. **Understand:** Match Brief uses only published on-pitch records and explicitly reports source-log coverage.
 7. **Remember:** optional Solana Proof of Watch seals an attested moment without creating a transferable financial reward.
 8. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
+9. **Take it offline:** a fan can keep up to eight transformed finished-match recaps on the device; raw feeds, API/SSE responses and claim capability are deliberately excluded.
 
 ## Accuracy gates for future features
 
@@ -56,6 +57,7 @@ No feature may enter the consumer UI unless all applicable gates pass:
 - Shipped: local-first Smart Alerts with separate toggles for kick-off, goal, red card, VAR and full time; only newly received verified TxLINE events qualify.
 - Shipped: 0/30/60/120-second stream-delay control and generic protected alert copy whenever Spoiler Shield is active.
 - Shipped: persistent in-app Matchday Inbox and optional browser notifications while the app is active; replay/metadata never create synthetic alerts.
+- Shipped: installable PWA shell and an Offline Recap Pack for finished matches, with network-first navigation and a hard service-worker exclusion for every API/SSE route.
 - Remaining: standards-based Web Push/service-worker delivery for alerts after the app is fully closed, which requires an explicit push-subscription privacy and revocation flow.
 - Wallet-portable preferences only after a clear consent and privacy model; local-first remains the default.
 

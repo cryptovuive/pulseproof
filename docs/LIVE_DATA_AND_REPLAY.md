@@ -48,6 +48,12 @@ For a match in progress, Catch-up replays the current score snapshot. For an `FT
 
 Live SSE continues updating the per-fixture cache while the user watches Catch-up. `Return live` therefore jumps to the newest state rather than restarting the page.
 
+## Offline Recap Pack
+
+A fan may save a finished match after its on-pitch recap is available. PulseProof stores only the transformed consumer moments needed for Catch-up, sanitises the original action label and reward fields, de-duplicates by fixture, validates restored records and keeps at most eight matches on the device.
+
+The service worker caches the application shell and static assets only. Requests under `/api/`, `/api/scores/stream`, `/scores/stream` and the legacy stream alias always go to the network and are never written to Cache Storage. If the initial match catalog cannot load, the UI may restore a saved recap as an explicitly labelled `Offline library`; streaming, attestations, Judge Verification Lab and on-chain claims remain disabled until reconnection.
+
 ## Production activation checklist
 
 1. Activate a TxLINE token for the intended network and set `TXLINE_NETWORK` to the same environment.

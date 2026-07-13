@@ -17,6 +17,8 @@ interface MatchdayCommandCenterProps {
   spoilerFree: boolean;
   alertPreferences: MatchAlertPreferences;
   alerts: MatchAlert[];
+  savedRecapCount: number;
+  offlineMode: boolean;
   notificationPermission: NotificationPermissionState;
   onAlertPreferencesChange: (preferences: MatchAlertPreferences) => void;
   onEnableBrowserNotifications: () => void;
@@ -64,6 +66,8 @@ export function MatchdayCommandCenter({
   spoilerFree,
   alertPreferences,
   alerts,
+  savedRecapCount,
+  offlineMode,
   notificationPermission,
   onAlertPreferencesChange,
   onEnableBrowserNotifications,
@@ -118,14 +122,14 @@ export function MatchdayCommandCenter({
     <section className="command-center" id="command-center" aria-label="Matchday command center">
       <div className="command-head">
         <div><span className="eyebrow">Your tournament cockpit</span><h2>Matchday command center</h2></div>
-        <div className="command-status"><span><Route size={12} /> Road to final</span><b>{scheduleSource === "txline-fixtures" ? "TxLINE schedule" : "Source-linked schedule"}</b></div>
+        <div className="command-status"><span><Route size={12} /> Road to final</span><b>{offlineMode ? "Offline-safe mode" : scheduleSource === "txline-fixtures" ? "TxLINE schedule" : "Source-linked schedule"}</b><b>{savedRecapCount} saved recap{savedRecapCount === 1 ? "" : "s"}</b></div>
       </div>
 
       <div className="command-quick-grid">
         <article>
           <span>Continue</span>
           <strong>{pulse.fixture.homeTeam} vs {pulse.fixture.awayTeam}</strong>
-          <small>{pulse.phase} · Fixture #{pulse.fixture.fixtureId}</small>
+          <small>{offlineMode ? "Saved on this device" : pulse.phase} · Fixture #{pulse.fixture.fixtureId}</small>
           <a href="#top">Return to match</a>
         </article>
         <article className={journey.nextForFan && followedTeams.some((team) => [journey.nextForFan?.fixture.homeTeam, journey.nextForFan?.fixture.awayTeam].includes(team)) ? "personal" : ""}>

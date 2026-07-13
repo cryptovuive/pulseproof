@@ -69,4 +69,4 @@ Every payload carries `source`. The UI visibly distinguishes `TxLINE live`, `TxL
 4. TxLINE raw payload mapping must be validated with the real activated token before submission.
 5. A custom RPC domain must be added to the CSP `connect-src` list.
 6. Watch-room votes are local MVP state, not globally persistent or Sybil-resistant.
-7. `@solana/web3.js` 1.98.4 retains three moderate npm audit advisories through `jayson/uuid`; no safe supported upgrade is currently offered by npm audit. The affected UUID buffer APIs are not called directly by PulseProof, but the dependency should be re-evaluated before production.
+7. `@solana/web3.js` 1.98.4 still declares Jayson’s older UUID range, so PulseProof pins the nested package to patched `uuid@11.1.1`. Jayson ID generation, a read-only devnet RPC call and the complete application suite pass with this override; `npm audit` reports zero known vulnerabilities.

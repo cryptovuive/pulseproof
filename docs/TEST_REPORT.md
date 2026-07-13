@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **64/64 passed** across fourteen suites.
+Result: **74/74 passed** across sixteen suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -36,6 +36,8 @@ Result: **64/64 passed** across fourteen suites.
 - Consumer timeline metadata suppression, deterministic Match Brief and live freshness labels.
 - Progressive Catch-up counts prevent Spoiler Shield from leaking future goals or cards.
 - Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
+- Offline Recap Pack validation, metadata removal, raw-action sanitisation, de-duplication and an eight-match storage bound.
+- PWA manifest contract plus service-worker guarantees that API and SSE traffic are never cached.
 
 ## Smart-contract compilation
 
@@ -100,6 +102,8 @@ Production server was started on an isolated port and tested through HTTP.
 | Eleventh attestation in one minute | 429 |
 | Request body >4 KiB | 413 |
 | CSP frame protection | `frame-ancestors 'none'` present |
+| `/manifest.webmanifest` | 200, `application/manifest+json` |
+| `/sw.js` | 200, JavaScript; CSP permits only same-origin workers/manifests |
 
 ## UI/browser smoke tests
 
@@ -121,6 +125,9 @@ Production server was started on an isolated port and tested through HTTP.
 - Upcoming audit showed only `France–Spain`, `England–Argentina`, `TBD–TBD` and `TBD–TBD`, each with provenance and no eliminated participant.
 - Watch-room vote changes `aria-pressed` and displays confirmation.
 - A 390×844 responsive viewport retains the Command Center, accessible Quick Tour, TBD bracket and persisted alert state.
+- Saving a finished replay changes the command-center count to `1 saved recap` and survives a full reload.
+- With the production server then stopped, the controlled PWA reloads from its shell cache, enters the labelled `Offline library`, restores the saved match and runs Catch-up locally.
+- Offline mode disables the live stream, Judge Verification Lab and on-chain claim path, and displays explicit reconnect copy instead of simulating verification.
 - Production console verification is performed after each Railway deployment; development-only CSP/eval diagnostics are not production failures.
 
 ## Build and dependency checks
@@ -133,7 +140,8 @@ npm audit --omit=dev
 
 - ESLint: passed.
 - Next.js production compilation and TypeScript: passed.
-- Remaining audit result: three moderate transitive advisories under `@solana/web3.js → jayson → uuid`; zero high/critical.
+- Dependency audit: zero known vulnerabilities. A targeted `jayson → uuid@11.1.1` override removes the vulnerable transitive UUID release without downgrading or replacing `@solana/web3.js`.
+- Compatibility checks generated a Jayson JSON-RPC request ID and completed a read-only Solana devnet `getVersion` call (`solana-core 4.1.0`) before the full test/build run.
 
 ## Public devnet and live-credential verification — 13 July 2026
 
@@ -143,7 +151,7 @@ npm audit --omit=dev
 - Deployed the 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `38/38` unit/integration tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- `74/74` unit/integration/contract tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.

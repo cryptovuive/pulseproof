@@ -2,15 +2,15 @@
 
 Checked: 13 July 2026.
 
-## Score if submitted today: 84/100
+## Score if submitted today: 85/100
 
-Engineering/product readiness is approximately **91/100**, but a hackathon judge scores the submitted evidence, not only the repository. The missing final demo video and missing recording of an actual score-changing TxLINE stream event therefore reduce the submission score materially.
+Engineering/product readiness is approximately **92/100**, but a hackathon judge scores the submitted evidence, not only the repository. The missing final demo video and missing recording of an actual score-changing TxLINE stream event therefore reduce the submission score materially.
 
 | Area | Score | Evidence-backed judge view |
 |---|---:|---|
 | Real consumer problem and differentiation | 18/20 | The product handles a real before/during/after fan journey: fixture planning, multi-match coverage, spoiler-safe Catch-up, source provenance and Proof of Watch. It is more differentiated than a basic score page, although the community layer is still local-only. |
 | TxLINE integration | 17/20 | Participant-owned devnet subscription, fixture/snapshot/historical/stat-validation usage, canonical public SSE bridge and public `ready`/`pulse`/`heartbeat` evidence are real. A captured score-changing event from an active covered match is still missing. |
-| Product and UX | 18/20 | My Pulse, local timezone, reminders, Road to Final, Smart Alerts, Quick Tour, accessibility labels, mobile layout and strict spoiler behavior form a credible consumer product. Background Web Push after the app is closed and real community state are not yet implemented. |
+| Product and UX | 19/20 | My Pulse, local timezone, reminders, Road to Final, Smart Alerts, Quick Tour, installable PWA, consumer-safe offline Catch-up, accessibility labels, mobile layout and strict spoiler behavior form a credible consumer product. Background Web Push after the app is closed and real community state are not yet implemented. |
 | Solana relevance and security | 18/20 | Public devnet program, Config/FanPass/Receipt PDAs, Ed25519 attestation binding and anti-replay behavior are strong and non-financial. The final submission still needs a short, visible Phantom-to-Explorer UI recording that a judge can follow without reading code. |
 | Demo and submission evidence | 13/20 | Railway, health, CI, APIs, replay and Judge Verification Lab are public. The required concise demo video is still a placeholder, and the strongest live TxLINE/Phantom proof is spread across docs rather than shown in one judge-ready recording. |
 
@@ -29,7 +29,8 @@ Engineering/product readiness is approximately **91/100**, but a hackathon judge
 - Smart Alerts: verified-event-only policy, granular event types, followed/all-covered scope and broadcast delay.
 - Spoiler-protected alert copy and a persistent in-app inbox; replay/metadata cannot manufacture alert activity.
 - Four-step Quick Product Tour so a time-constrained judge reaches TxLINE, Catch-up and Solana evidence quickly.
-- Automated coverage increased to 64 tests across 14 suites.
+- Installable PWA and bounded Offline Recap Pack; API/SSE traffic is never cached and all verification/claim actions fail closed offline.
+- Automated coverage increased to 74 tests across 16 suites.
 
 ## Highest-return actions before submission
 
