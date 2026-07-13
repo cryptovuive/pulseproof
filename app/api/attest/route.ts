@@ -34,7 +34,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Demo replay attestations are disabled" }, { status: 403 });
     }
 
-    const pulse = await loadPulse(body.fixtureId, { forceDemo, historical: !forceDemo });
+    // A live claim must be re-checked against the current authenticated snapshot.
+    // Historical loading is reserved for the explicit Catch-up endpoint; forcing
+    // it here makes covered devnet metadata fail when no historical log exists.
+    const pulse = await loadPulse(body.fixtureId, { forceDemo, historical: false });
     const moment = pulse.moments.find((item) => item.id === body.momentId);
     if (!moment) return NextResponse.json({ error: "Moment was not found in the TxLINE-backed feed" }, { status: 404 });
     const txlineProof = forceDemo ? undefined : await getStatValidationEvidence(moment);

@@ -96,7 +96,8 @@ export async function loadPulse(fixtureId: number, options: { historical?: boole
       if (!fixture) throw new Error(`TxLINE fixture ${fixtureId} is not available to this subscription`);
       return await getFixturePulse(fixture, options.historical);
     } catch (error) {
-      if (!demoReplayEnabled()) throw error;
+      // Never disguise a live-source failure as replay for an unrelated fixture.
+      if (!demoReplayEnabled() || !getDemoFixture(fixtureId)) throw error;
     }
   }
   if (!demoReplayEnabled()) throw new Error("Demo replay is disabled");
