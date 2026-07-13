@@ -19,7 +19,7 @@ The included fallback contains three completed, externally cross-checked result 
 | Fixture catalog | `/api/fixtures/snapshot` | Initial match-center load |
 | Current state | `/api/scores/snapshot/{fixtureId}` | Initial sequence cursor and catch-up-to-now |
 | Completed replay | `/api/scores/historical/{fixtureId}` | Catch-up after `FT` |
-| Real-time update | `/api/scores/stream` | Direct upstream SSE bridge |
+| Real-time update | `/api/scores/stream` | Direct upstream SSE bridge; `/scores/stream` and legacy `/api/stream` remain compatible |
 | Claim evidence | `/api/scores/stat-validation` | Goal/card/corner/final attestation |
 
 Every upstream call is server-only and carries the guest Bearer JWT plus `X-Api-Token`. The browser sees normalized product events, never the API credentials.
@@ -53,7 +53,7 @@ Live SSE continues updating the per-fixture cache while the user watches Catch-u
 1. Activate a TxLINE token for the intended network and set `TXLINE_NETWORK` to the same environment.
 2. Store `TXLINE_API_TOKEN` and `ATTESTOR_SECRET_KEY` only in server-side environment variables.
 3. Call `/api/health`, then `/api/matches`; verify the response source is `txline-live` rather than `demo-replay`.
-4. Open `/api/stream?fixtureIds=<covered-id>` during an active covered fixture and verify `ready`, `pulse`, heartbeat and new `moment` events.
+4. Open `/api/scores/stream?fixtureIds=<covered-id>` during an active covered fixture and verify `ready`, `pulse`, heartbeat and new `moment` events.
 5. Test one in-progress Catch-up (snapshot path) and one completed Catch-up (historical path).
 6. Confirm the normalized participant names resolve to the expected flag and official three-letter team code.
 7. Set `DEMO_REPLAY_ENABLED=false` for a strict production deployment, or keep it true only if the fallback label remains visible.

@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **52/52 passed** across eleven suites.
+Result: **54/54 passed** across twelve suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.

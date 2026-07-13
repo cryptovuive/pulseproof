@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
   F["Fan browser"] -->|"GET /api/matches"| A["PulseProof server"]
-  F -->|"SSE /api/stream"| A
+  F -->|"SSE /api/scores/stream"| A
   A -->|"guest JWT + X-Api-Token"| T["TxLINE API"]
   T -->|"fixtures / snapshot / historical / live SSE"| A
   T -->|"stat-validation proof"| A
@@ -63,7 +63,7 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 ## Multi-match live path
 
 1. `/api/matches` ranks the nearest covered fixtures and exposes at most eight match overviews.
-2. The browser opens one `/api/stream?fixtureIds=...` connection instead of one connection per match.
+2. The browser opens one `/api/scores/stream?fixtureIds=...` connection instead of one connection per match.
 3. The server takes an initial snapshot to establish `lastSeq`, then bridges TxLINE `/scores/stream` directly.
 4. Events are filtered by subscribed fixture ID and ignored when their sequence is not newer than `lastSeq`.
 5. A 15-second heartbeat keeps intermediaries from buffering or closing an idle match stream.

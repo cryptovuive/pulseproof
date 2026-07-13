@@ -148,7 +148,7 @@ export function PulseDashboard() {
           setStatus("complete");
           return;
         }
-        const source = new EventSource(`/api/stream?fixtureIds=${streamFixtureIds.join(",")}`);
+        const source = new EventSource(`/api/scores/stream?fixtureIds=${streamFixtureIds.join(",")}`);
         streamRef.current = source;
         source.addEventListener("ready", () => setStatus("live"));
         source.addEventListener("moment", (event) => {
