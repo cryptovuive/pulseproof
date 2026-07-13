@@ -1,4 +1,10 @@
-# Demo video script — target 4:35
+# Demo video — delivered at 4:13.859
+
+Public video: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
+
+Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
+
+The reproducible source narration is in `submission-assets/video/narration-scenes.json`; `scripts/render-submission-video.ps1` produces the 1080p MP4, twelve WebVTT cues, full transcript and chapter metadata, and rejects any output of five minutes or longer. The outline below is the original human-recording plan retained for reference.
 
 ## 0:00–0:30 — problem
 

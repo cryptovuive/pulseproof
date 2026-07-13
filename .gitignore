@@ -7,5 +7,11 @@ target/
 .anchor/
 test-ledger/
 .local-wallets/
+submission-assets/video/audio/
+submission-assets/video/chrome-profile/
+submission-assets/video/frames/
+submission-assets/video/processed/
+submission-assets/video/review/
+submission-assets/video/segments/
 *.log
 !.env.example

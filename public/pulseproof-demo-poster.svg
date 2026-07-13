@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-label="PulseProof demo video poster">
+  <defs>
+    <radialGradient id="g" cx="15%" cy="10%" r="90%"><stop stop-color="#263319"/><stop offset=".5" stop-color="#0b0f0c"/><stop offset="1" stop-color="#070908"/></radialGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g)"/>
+  <g fill="none" stroke="#d9ff43" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" transform="translate(210 210)"><rect width="118" height="118" rx="28" fill="#d9ff43" stroke="none"/><path d="M24 62h22l11-32 18 64 12-32h15" stroke="#11150f"/></g>
+  <text x="210" y="430" fill="#f4f6f1" font-family="Arial,sans-serif" font-size="88" font-weight="900">PULSE<tspan fill="#d9ff43">PROOF</tspan></text>
+  <text x="210" y="535" fill="#f4f6f1" font-family="Arial,sans-serif" font-size="62" font-weight="800">EVERY MATCH LEAVES A MEMORY.</text>
+  <text x="210" y="620" fill="#9aa59c" font-family="Arial,sans-serif" font-size="34">TxLINE-powered context · Spoiler-safe Catch-up · Proof of Watch on Solana</text>
+  <rect x="210" y="720" width="480" height="94" rx="47" fill="#d9ff43"/><path d="M405 744l48 23-48 23z" fill="#10140f"/><text x="485" y="782" fill="#10140f" font-family="Arial,sans-serif" font-size="30" font-weight="900">WATCH THE DEMO</text>
+  <text x="210" y="940" fill="#657068" font-family="monospace" font-size="24">TXODDS WORLD CUP HACKATHON · CONSUMER &amp; FAN EXPERIENCES</text>
+</svg>

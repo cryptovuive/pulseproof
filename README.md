@@ -8,6 +8,8 @@ PulseProof is a live football second screen that turns TxLINE score events into 
 - Health: [https://pulseproof-production-06fa.up.railway.app/api/health](https://pulseproof-production-06fa.up.railway.app/api/health)
 - Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
 - CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
+- Judge room: [https://pulseproof-production-06fa.up.railway.app/submission](https://pulseproof-production-06fa.up.railway.app/submission)
+- 4:14 demo video: [https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4)
 
 The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields. PulseProof enriches only an exact current team-pair match from the separately source-linked verified schedule and labels that provenance; unmatched fixtures stay explicitly unavailable instead of receiving an invented tournament.
 
@@ -43,7 +45,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Seventy-five automated unit/integration/contract tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- Seventy-nine automated unit/integration/contract/submission tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 

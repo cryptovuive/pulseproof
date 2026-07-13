@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **75/75 passed** across sixteen suites.
+Result: **79/79 passed** across seventeen suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -38,6 +38,8 @@ Result: **75/75 passed** across sixteen suites.
 - Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
 - Offline Recap Pack validation, metadata removal, raw-action sanitisation, de-duplication and an eight-match storage bound.
 - PWA manifest contract plus service-worker guarantees that API and SSE traffic are never cached.
+- Submission MP4 container/size contract, twelve caption cues, sub-five-minute final cue and one narration source per chapter.
+- Judge room contract for the public video, captions, Explorer evidence and deterministic capture slides.
 
 ## Smart-contract compilation
 
@@ -143,6 +145,15 @@ npm audit --omit=dev
 - Dependency audit: zero known vulnerabilities. A targeted `jayson → uuid@11.1.1` override removes the vulnerable transitive UUID release without downgrading or replacing `@solana/web3.js`.
 - Compatibility checks generated a Jayson JSON-RPC request ID and completed a read-only Solana devnet `getVersion` call (`solana-core 4.1.0`) before the full test/build run.
 
+## Submission video verification
+
+- Final duration: **253.859 seconds (4:13.859)**, below the five-minute limit enforced by the renderer.
+- Video: H.264, 1920×1080, 30 fps; audio: AAC narration; MP4 size: 7,852,683 bytes.
+- Twelve chapter markers, twelve English WebVTT caption cues and a full text transcript are included.
+- A separate 1920×1080 PNG thumbnail is ready for the submission form or social preview.
+- FFmpeg volume audit measured −20.8 dB mean and −2.7 dB peak, with no clipping.
+- Visual review sampled ten points across the finished encode, including the labelled Railway product, finalized Explorer transaction and public green CI evidence.
+
 ## Public devnet and live-credential verification — 13 July 2026
 
 - Activated TxLINE devnet level `1` with an Explorer-visible subscription transaction.
@@ -151,7 +162,7 @@ npm audit --omit=dev
 - Deployed the 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `75/75` unit/integration/contract tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- `79/79` unit/integration/contract/submission tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.

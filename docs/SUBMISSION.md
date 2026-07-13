@@ -1,6 +1,6 @@
 # Submission-ready copy
 
-Replace the remaining video placeholder before submission. The app, repository and on-chain links below were verified publicly.
+The 4:14 demo video, judge room, app, repository and on-chain links below are submission-ready and publicly verifiable.
 
 ## Project name
 
@@ -38,7 +38,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
 - Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
-- Lint, production build, 75 unit/integration/contract tests and a real local-validator adversarial suite pass.
+- Lint, production build, 79 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
 
 ## Commercial path
 
@@ -47,7 +47,10 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 ## Links
 
 - Live app: `https://pulseproof-production-06fa.up.railway.app`
-- Demo video (≤5 minutes): `<https://...>`
+- Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
+- Demo video (4:14): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
+- English captions: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.vtt`
+- 1080p thumbnail: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo-thumbnail.png`
 - Public repository: `https://github.com/cryptovuive/pulseproof`
 - Devnet program: `https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet`
 - Example transaction: `https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet`
