@@ -68,11 +68,12 @@ export async function listAvailableFixtures(): Promise<{
             phase: result.value.phase,
             minute: result.value.minute,
             score: result.value.score,
+            scoreKnown: result.value.moments.some((moment) => Boolean(moment.score)),
             updatedAt: result.value.updatedAt,
             momentCount: result.value.moments.length,
           };
         }
-        return { fixture, source: "txline-live", phase: "WAITING", minute: 0, score: [0, 0], updatedAt: fixture.startTime, momentCount: 0 };
+        return { fixture, source: "txline-live", phase: "WAITING", minute: 0, score: [0, 0], scoreKnown: false, updatedAt: fixture.startTime, momentCount: 0 };
       });
       matches.sort((a, b) => {
         const liveDifference = Number(b.phase === "LIVE") - Number(a.phase === "LIVE");

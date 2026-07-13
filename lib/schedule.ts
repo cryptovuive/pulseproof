@@ -2,7 +2,7 @@ import type { Fixture, ScheduleEntry } from "@/types/pulse";
 
 const FIFA_SCHEDULE_URL = "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/match-schedule-fixtures-results-teams-stadiums/";
 const AP_ENGLAND_URL = "https://apnews.com/article/world-cup-norway-england-score-f246f138c3a8563cb5a0e3f4037e930a";
-const VERIFIED_AT = "2026-07-12T15:30:00.000Z";
+const VERIFIED_AT = "2026-07-13T02:45:00.000Z";
 
 export const ELIMINATED_TEAMS_AS_OF_VERIFICATION = new Set([
   "Brazil", "Norway", "Switzerland", "Morocco", "Portugal", "Belgium",

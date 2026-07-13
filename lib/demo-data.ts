@@ -117,6 +117,7 @@ export function getDemoOverviews(): MatchOverview[] {
       phase: DEMO_DEFAULT_PHASE[fixture.fixtureId],
       minute: last.minute,
       score: last.score ?? [0, 0],
+      scoreKnown: true,
       updatedAt: last.occurredAt,
       momentCount: moments.length,
     };

@@ -77,7 +77,7 @@ export function PulseDashboard() {
   const [judgeChecking, setJudgeChecking] = useState(false);
   const [judgeProof, setJudgeProof] = useState<MomentAttestation | null>(null);
   const [roomVote, setRoomVote] = useState<"home" | "away" | "even" | null>(null);
-  const [roomCounts, setRoomCounts] = useState({ home: 141, away: 77, even: 30 });
+  const [roomCounts, setRoomCounts] = useState({ home: 0, away: 0, even: 0 });
   const streamRef = useRef<EventSource | null>(null);
 
   const loadInitial = useCallback(async () => {
@@ -123,6 +123,7 @@ export function PulseDashboard() {
               phase: updated.phase,
               minute: updated.minute,
               score: updated.score,
+              scoreKnown: updated.moments.some((item) => Boolean(item.score)),
               updatedAt: updated.updatedAt,
               momentCount: updated.moments.length,
             } : match));
@@ -309,7 +310,7 @@ export function PulseDashboard() {
   );
   const claimedCount = Object.keys(claimed).length;
   const roomTotal = roomCounts.home + roomCounts.away + roomCounts.even;
-  const roomPercent = (value: number) => Math.round((value / roomTotal) * 100);
+  const roomPercent = (value: number) => roomTotal ? Math.round((value / roomTotal) * 100) : 0;
   const voteInRoom = (choice: "home" | "away" | "even") => {
     if (roomVote) return;
     setRoomVote(choice);
@@ -331,7 +332,9 @@ export function PulseDashboard() {
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
   const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
-  const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE live") : status;
+  const hasSignalMoments = pulse.moments.some((moment) => moment.type !== "moment");
+  const scoreKnown = pulse.source === "demo-replay" || pulse.moments.some((moment) => Boolean(moment.score));
+  const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
   const catchUpSummary = catchUp ? summarizeCatchUp(catchUp.moments) : null;
 
   return (
@@ -386,9 +389,9 @@ export function PulseDashboard() {
                 onClick={() => selectMatch(match.fixture.fixtureId)}
                 aria-pressed={match.fixture.fixtureId === selectedFixtureId}
               >
-                <span className="match-tile-top"><b>{match.phase}</b><small>{match.minute ? `${match.minute}'` : "Scheduled"}</small></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{match.score[0]}</b></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{match.score[1]}</b></span>
+                <span className="match-tile-top"><b>{match.phase}</b><small>{match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
+                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{match.scoreKnown ? match.score[0] : "–"}</b></span>
+                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{match.scoreKnown ? match.score[1] : "–"}</b></span>
                 <span className="match-tile-foot"><Radio size={11} /> {match.momentCount} feed events</span>
               </button>
             );
@@ -405,7 +408,7 @@ export function PulseDashboard() {
             <div className="catchup-intro">
               <span className="catchup-icon"><RotateCcw size={19} /></span>
               <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay only the signal events—goals, pressure swings, cards and VAR—without watching the full broadcast.</p></div>
-              {!catchUp ? <button className="catchup-primary" onClick={() => void startCatchUp()}><CirclePlay size={16} /> Start catch-up</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); }}><Radio size={14} /> Return live</button>}
+              {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); }}><Radio size={14} /> Return live</button>}
             </div>
             {catchUp && catchUpSummary && (
               <div className="catchup-controls">
@@ -439,7 +442,7 @@ export function PulseDashboard() {
                 <span>Home</span>
               </div>
               <div className="score">
-                <strong>{pulse.score[0]}</strong><i>:</i><strong>{pulse.score[1]}</strong>
+                <strong>{scoreKnown ? pulse.score[0] : "–"}</strong><i>:</i><strong>{scoreKnown ? pulse.score[1] : "–"}</strong>
                 <small>Fixture #{pulse.fixture.fixtureId}</small>
               </div>
               <div className="team team-away">
@@ -489,11 +492,11 @@ export function PulseDashboard() {
                   </div>
                   <button
                     className={`claim-button ${claimed[moment.id]?.proof ? "claimed" : ""}`}
-                    disabled={claiming === moment.id || claimed[moment.id]?.proof}
+                    disabled={moment.points <= 0 || moment.badge <= 0 || claiming === moment.id || claimed[moment.id]?.proof}
                     onClick={() => void claimMoment(moment)}
                   >
                     {claimed[moment.id]?.signature ? <BadgeCheck size={15} /> : claimed[moment.id]?.proof ? <ShieldCheck size={15} /> : <Sparkles size={14} />}
-                    {claiming === moment.id ? "Checking…" : claimed[moment.id]?.signature ? "On-chain" : claimed[moment.id]?.proof ? "Verified" : `+${moment.points}`}
+                    {claiming === moment.id ? "Checking…" : claimed[moment.id]?.signature ? "On-chain" : claimed[moment.id]?.proof ? "Verified" : moment.points > 0 && moment.badge > 0 ? `+${moment.points}` : "Metadata"}
                   </button>
                 </div>
               ))}

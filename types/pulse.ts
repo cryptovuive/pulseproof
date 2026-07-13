@@ -60,6 +60,7 @@ export interface MatchOverview {
   phase: string;
   minute: number;
   score: [number, number];
+  scoreKnown: boolean;
   updatedAt: string;
   momentCount: number;
 }
