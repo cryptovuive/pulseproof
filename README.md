@@ -31,12 +31,12 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Snapshot-to-now and historical Catch-up with timeline scrubbing and 1x/2x/4x playback.
 - Upcoming Match Hub prefers complete TxLINE fixture metadata and otherwise uses a source-linked, integrity-checked schedule, with local timezone, countdown, saved reminders and `.ics` calendar export.
 - Judge Verification Lab that proves an evidence-bound Ed25519 attestation without requiring Phantom, SOL or a transaction.
-- Three completed, externally cross-checked match replays whose local sequence IDs remain explicitly non-TxLINE.
+- Three completed World Cup 2026 replays with source-linked scores, scorer/assist details, cards and stoppage-time labels; local sequence IDs remain explicitly non-TxLINE.
 - Phantom wallet connection and raw Solana transaction builder.
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Thirty-eight automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- Forty-two automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 
@@ -79,7 +79,7 @@ Network pairing is strict:
 | Mainnet | `https://txline.txodds.com` | `9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` |
 | Devnet | `https://txline-dev.txodds.com` | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
 
-The configured API token takes precedence over replay. Replay is used only when explicitly requested or as an enabled fallback after a live-source failure.
+The configured API token remains authoritative for every fixture ID it supplies. When replay is enabled, the catalog also exposes non-colliding finished World Cup cards as explicitly labelled, source-linked replays; they are never merged into the TxLINE event stream.
 
 ## Repository guide
 

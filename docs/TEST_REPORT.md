@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **38/38 passed** across eight suites.
+Result: **42/42 passed** across nine suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -27,6 +27,8 @@ Result: **38/38 passed** across eight suites.
 - Official team-code and flag-key mapping across every covered schedule team.
 - Chunk-safe SSE parsing across split network boundaries and nested score envelopes.
 - Three-fixture demo isolation, overview consistency and exact replay reconstruction.
+- Hybrid catalog keeps active TxLINE fixtures and three labelled World Cup 2026 finished replays together without ID collisions.
+- Structured scorer, assist, yellow-card and stoppage-time preservation (including 90+1 and 90+10).
 - Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
 
 ## Smart-contract compilation

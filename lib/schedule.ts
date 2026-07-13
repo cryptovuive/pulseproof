@@ -15,25 +15,25 @@ const VERIFIED_UPCOMING_FIXTURES: Array<{
   sourceUrl: string;
 }> = [
   {
-    fixture: { fixtureId: 101, homeTeam: "France", awayTeam: "Spain", startTime: "2026-07-14T19:00:00.000Z", stage: "Semi-final · Dallas Stadium", gameState: 0 },
+    fixture: { fixtureId: 101, homeTeam: "France", awayTeam: "Spain", startTime: "2026-07-14T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Semi-final · Dallas Stadium", gameState: 0 },
     coverage: "externally-confirmed",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,
   },
   {
-    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", stage: "Semi-final · Atlanta Stadium", gameState: 0 },
+    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Semi-final · Atlanta Stadium", gameState: 0 },
     coverage: "externally-confirmed",
     provider: "FIFA schedule + AP quarter-final confirmation",
     sourceUrl: AP_ENGLAND_URL,
   },
   {
-    fixture: { fixtureId: 103, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-18T21:00:00.000Z", stage: "Third place · Miami Stadium", gameState: 0 },
+    fixture: { fixtureId: 103, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Third place · Miami Stadium", gameState: 0 },
     coverage: "participants-pending",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,
   },
   {
-    fixture: { fixtureId: 104, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-19T19:00:00.000Z", stage: "Final · New York New Jersey Stadium", gameState: 0 },
+    fixture: { fixtureId: 104, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Final · New York New Jersey Stadium", gameState: 0 },
     coverage: "participants-pending",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,

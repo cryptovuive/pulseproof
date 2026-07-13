@@ -16,6 +16,7 @@ export interface Fixture {
   homeTeam: string;
   awayTeam: string;
   startTime: string;
+  competition: string;
   stage: string;
   gameState: number;
 }
@@ -25,10 +26,15 @@ export interface PulseMoment {
   fixtureId: number;
   seq: number;
   minute: number;
+  minuteLabel?: string;
   type: MomentType;
   team: "home" | "away" | "neutral";
   title: string;
   description: string;
+  participant?: string;
+  assist?: string;
+  cardColor?: "yellow" | "red";
+  varOutcome?: string;
   points: number;
   badge: number;
   score?: [number, number];

@@ -47,12 +47,12 @@ function verifyProof(attestation: MomentAttestation) {
   );
 }
 
-const iconFor = (type: PulseMoment["type"]) => {
-  if (type === "goal") return <Goal size={16} />;
-  if (type === "final") return <Trophy size={16} />;
-  if (type === "kickoff") return <CirclePlay size={16} />;
-  if (type === "card") return <span className="card-icon" />;
-  if (type === "var") return <span className="var-icon">VAR</span>;
+const iconFor = (moment: PulseMoment) => {
+  if (moment.type === "goal") return <Goal size={16} />;
+  if (moment.type === "final") return <Trophy size={16} />;
+  if (moment.type === "kickoff") return <CirclePlay size={16} />;
+  if (moment.type === "card") return <span className={`card-icon ${moment.cardColor ?? "yellow"}`} />;
+  if (moment.type === "var") return <span className="var-icon">VAR</span>;
   return <Zap size={15} />;
 };
 
@@ -60,7 +60,6 @@ export function PulseDashboard() {
   const [pulses, setPulses] = useState<Record<number, MatchPulse>>({});
   const [matches, setMatches] = useState<MatchOverview[]>([]);
   const [selectedFixtureId, setSelectedFixtureId] = useState<number>(0);
-  const [demoMode, setDemoMode] = useState(false);
   const [status, setStatus] = useState<StreamStatus>("connecting");
   const [playing, setPlaying] = useState(true);
   const [streamGeneration, setStreamGeneration] = useState(0);
@@ -85,27 +84,32 @@ export function PulseDashboard() {
     if (!fixturesResponse.ok) throw new Error("Match feed is unavailable");
     const fixtureBody = (await fixturesResponse.json()) as { matches: MatchOverview[]; source: string };
     if (!fixtureBody.matches.length) throw new Error("No covered TxLINE fixture is available");
-    const replay = fixtureBody.source === "demo-replay";
-    const initial = await Promise.all(fixtureBody.matches.map(async ({ fixture }) => {
-      const response = await fetch(`/api/matches/${fixture.fixtureId}${replay ? "?mode=replay&cursor=1" : ""}`, { cache: "no-store" });
+    const initial = await Promise.all(fixtureBody.matches.map(async ({ fixture, source }) => {
+      const response = await fetch(`/api/matches/${fixture.fixtureId}${source === "demo-replay" ? "?mode=replay" : ""}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`Could not initialise fixture ${fixture.fixtureId}`);
       return (await response.json()) as MatchPulse;
     }));
     const byId = Object.fromEntries(initial.map((item) => [item.fixture.fixtureId, item]));
     const preferred = fixtureBody.matches.find((match) => match.phase.includes("LIVE")) ?? fixtureBody.matches[0];
-    return { fixtureIds: fixtureBody.matches.map((match) => match.fixture.fixtureId), replay, matches: fixtureBody.matches, pulses: byId, selected: preferred.fixture.fixtureId };
+    const streamFixtureIds = fixtureBody.matches
+      .filter((match) => match.source !== "demo-replay")
+      .map((match) => match.fixture.fixtureId);
+    return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected: preferred.fixture.fixtureId };
   }, []);
 
   useEffect(() => {
     let active = true;
     void loadInitial()
-      .then(({ fixtureIds, replay, matches: loadedMatches, pulses: loadedPulses, selected }) => {
+      .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected }) => {
         if (!active) return;
-        setMatches(loadedMatches.map((match) => replay ? { ...match, phase: "REPLAY", minute: 0, score: [0, 0], momentCount: 0 } : match));
+        setMatches(loadedMatches);
         setPulses(loadedPulses);
         setSelectedFixtureId(selected);
-        setDemoMode(replay);
-        const source = new EventSource(`/api/stream?fixtureIds=${fixtureIds.join(",")}${replay ? "&mode=replay" : ""}`);
+        if (!streamFixtureIds.length) {
+          setStatus("complete");
+          return;
+        }
+        const source = new EventSource(`/api/stream?fixtureIds=${streamFixtureIds.join(",")}`);
         streamRef.current = source;
         source.addEventListener("ready", () => setStatus("live"));
         source.addEventListener("moment", (event) => {
@@ -197,7 +201,7 @@ export function PulseDashboard() {
   const startCatchUp = async () => {
     if (!livePulse) return;
     try {
-      const query = demoMode ? "?mode=replay" : livePulse.phase === "FT" ? "?historical=true" : "";
+      const query = livePulse.source === "demo-replay" ? "?mode=replay" : livePulse.phase === "FT" ? "?historical=true" : "";
       const response = await fetch(`/api/matches/${livePulse.fixture.fixtureId}${query}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Historical match log is not available yet");
       const full = (await response.json()) as MatchPulse;
@@ -329,6 +333,7 @@ export function PulseDashboard() {
   }
 
   const latest = pulse.moments.at(-1);
+  const displayMinute = latest?.minuteLabel ?? pulse.minute;
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
   const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
@@ -389,10 +394,12 @@ export function PulseDashboard() {
                 onClick={() => selectMatch(match.fixture.fixtureId)}
                 aria-pressed={match.fixture.fixtureId === selectedFixtureId}
               >
-                <span className="match-tile-top"><b>{match.phase}</b><small>{match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
+                <span className="match-tile-top"><b>{match.phase}</b><small>{match.phase === "FT" ? "Full time" : match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
+                <span className={`match-competition ${match.fixture.competition === "FIFA World Cup 2026" ? "world-cup" : "unverified"}`}>{match.fixture.competition}</span>
+                <span className="match-stage">{match.fixture.stage}</span>
                 <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{match.scoreKnown ? match.score[0] : "–"}</b></span>
                 <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{match.scoreKnown ? match.score[1] : "–"}</b></span>
-                <span className="match-tile-foot"><Radio size={11} /> {match.momentCount} feed events</span>
+                <span className="match-tile-foot"><Radio size={11} /> {match.momentCount} {match.source === "demo-replay" ? "report events · open recap" : "feed events"}</span>
               </button>
             );
           })}
@@ -429,8 +436,8 @@ export function PulseDashboard() {
           <article className="scoreboard panel">
             <div className="scoreboard-meta">
               <div><span className="live-dot" /> {pulse.phase}</div>
-              <span>{pulse.fixture.stage}</span>
-              <span><Clock3 size={13} /> {pulse.minute}&apos;</span>
+              <span className="competition-meta"><b>{pulse.fixture.competition}</b><small>{pulse.fixture.stage}</small></span>
+              <span><Clock3 size={13} /> {displayMinute}&apos;</span>
             </div>
             <div className="teams">
               <div className="team team-home">
@@ -485,12 +492,20 @@ export function PulseDashboard() {
             <div className="timeline-list">
               {[...pulse.moments].reverse().map((moment) => (
                 <div className={`timeline-item ${moment.type}`} key={moment.id}>
-                  <div className="minute">{moment.minute}&apos;</div>
-                  <div className="event-node">{iconFor(moment.type)}</div>
+                  <div className="minute">{moment.minuteLabel ?? moment.minute}&apos;</div>
+                  <div className="event-node">{iconFor(moment)}</div>
                   <div className="event-copy">
                     <strong>{moment.title}</strong>
                     <span>{moment.description}</span>
-                    <small><ShieldCheck size={12} /> {moment.verified ? "TxLINE feed event" : "Demo-schema event"} · seq {moment.seq}</small>
+                    {(moment.participant || moment.assist || moment.cardColor || moment.varOutcome) && (
+                      <span className="event-details">
+                        {moment.participant && <b>{moment.type === "goal" ? "Scorer" : moment.type === "card" ? "Player" : "Participant"}: {moment.participant}</b>}
+                        {moment.assist && <b>Assist: {moment.assist}</b>}
+                        {moment.cardColor && <b className={moment.cardColor}>{moment.cardColor} card</b>}
+                        {moment.varOutcome && <b>VAR: {moment.varOutcome}</b>}
+                      </span>
+                    )}
+                    <small><ShieldCheck size={12} /> {moment.verified ? "TxLINE feed event" : "Published-report replay"} · seq {moment.seq}</small>
                   </div>
                   <button
                     className={`claim-button ${claimed[moment.id]?.proof ? "claimed" : ""}`}

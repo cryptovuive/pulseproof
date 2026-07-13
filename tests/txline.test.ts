@@ -12,12 +12,23 @@ describe("TxLINE normalisation", () => {
   });
 
   it("maps the documented fixture schema", () => {
-    expect(fixture).toMatchObject({ fixtureId: 18209181, homeTeam: "France", awayTeam: "Morocco", gameState: 1 });
+    expect(fixture).toMatchObject({ fixtureId: 18209181, homeTeam: "France", awayTeam: "Morocco", competition: "Competition unavailable · TxLINE devnet", stage: "Stage unavailable", gameState: 1 });
   });
 
   it("does not invent fixture metadata omitted by the devnet snapshot", () => {
     const sparse = normalizeFixture({ FixtureId: 7, Participant1: "France", Participant2: "Spain" });
-    expect(sparse).toMatchObject({ startTime: "", stage: "TxLINE fixture · competition unavailable", gameState: -1 });
+    expect(sparse).toMatchObject({ startTime: "", competition: "Competition unavailable · TxLINE devnet", stage: "Stage unavailable", gameState: -1 });
+  });
+
+  it("keeps competition and stage separate when TxLINE supplies both", () => {
+    const complete = normalizeFixture({
+      FixtureId: 8,
+      Participant1: "Spain",
+      Participant2: "France",
+      CompetitionName: "FIFA World Cup 2026",
+      Group: "Semi-final",
+    });
+    expect(complete).toMatchObject({ competition: "FIFA World Cup 2026", stage: "Semi-final" });
   });
 
   it("maps a score action without trusting client-authored copy", () => {
@@ -26,6 +37,20 @@ describe("TxLINE normalisation", () => {
       fixture,
     );
     expect(moment).toMatchObject({ type: "goal", team: "away", seq: 41, score: [0, 1], verified: true });
+  });
+
+  it("preserves stoppage time and structured event details", () => {
+    const moment = normalizeScoreRecord(
+      {
+        Seq: 44,
+        Action: "yellow_card",
+        Participant: "France",
+        Minute: "90+6",
+        Data: { PlayerName: "Kylian Mbappé" },
+      },
+      fixture,
+    );
+    expect(moment).toMatchObject({ minute: 96, minuteLabel: "90+6", type: "card", participant: "Kylian Mbappé", cardColor: "yellow" });
   });
 
   it("keeps momentum within accessible UI bounds", () => {

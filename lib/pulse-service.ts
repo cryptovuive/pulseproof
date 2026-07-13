@@ -43,7 +43,7 @@ export function buildDemoPulse(fixtureId = DEMO_FIXTURE.fixtureId, cursor?: numb
 export async function listAvailableFixtures(): Promise<{
   fixtures: Fixture[];
   matches: MatchOverview[];
-  source: "txline-live" | "demo-replay";
+  source: "txline-live" | "demo-replay" | "hybrid";
 }> {
   if (hasTxLineCredentials()) {
     try {
@@ -79,7 +79,16 @@ export async function listAvailableFixtures(): Promise<{
         const liveDifference = Number(b.phase === "LIVE") - Number(a.phase === "LIVE");
         return liveDifference || b.momentCount - a.momentCount || a.fixture.fixtureId - b.fixture.fixtureId;
       });
-      return { fixtures, matches, source: "txline-live" };
+      if (demoReplayEnabled()) {
+        const liveIds = new Set(candidates.map((fixture) => fixture.fixtureId));
+        const finished = getDemoOverviews().filter((match) => !liveIds.has(match.fixture.fixtureId));
+        return {
+          fixtures: [...candidates, ...finished.map((match) => match.fixture)],
+          matches: [...matches, ...finished],
+          source: finished.length ? "hybrid" : "txline-live",
+        };
+      }
+      return { fixtures: candidates, matches, source: "txline-live" };
     } catch (error) {
       if (!demoReplayEnabled()) throw error;
     }

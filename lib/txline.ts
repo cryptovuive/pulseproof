@@ -122,7 +122,8 @@ export function normalizeFixture(raw: AnyRecord): Fixture {
     // The devnet snapshot can intentionally contain only IDs and participants.
     // An empty value is safer than presenting request time as an official kick-off.
     startTime: stringValue(raw, "StartTime", "startTime") ?? "",
-    stage: stringValue(raw, "CompetitionName", "competitionName", "Group", "group") ?? "TxLINE fixture · competition unavailable",
+    competition: stringValue(raw, "CompetitionName", "competitionName") ?? "Competition unavailable · TxLINE devnet",
+    stage: stringValue(raw, "Group", "group", "Stage", "stage") ?? "Stage unavailable",
     gameState: numberValue(raw, "GameState", "gameState") ?? -1,
   };
 }
@@ -164,6 +165,19 @@ function scoreFrom(raw: AnyRecord): [number, number] | undefined {
   return home === undefined || away === undefined ? undefined : [home, away];
 }
 
+function minuteFrom(raw: AnyRecord, data: AnyRecord): { minute: number; minuteLabel?: string } {
+  const candidate = raw.Minute ?? raw.minute ?? raw.MatchTime ?? raw.matchTime
+    ?? data.Minute ?? data.minute ?? data.MatchTime ?? data.matchTime;
+  if (typeof candidate === "number" && Number.isFinite(candidate)) return { minute: candidate };
+  if (typeof candidate !== "string") return { minute: 0 };
+  const value = candidate.trim().replace(/[’']/g, "");
+  const match = /^(\d+)(?:\+(\d+))?$/.exec(value);
+  if (!match) return { minute: 0 };
+  const base = Number(match[1]);
+  const added = Number(match[2] ?? 0);
+  return { minute: base + added, minuteLabel: added ? `${base}+${added}` : undefined };
+}
+
 export function normalizeScoreRecord(raw: AnyRecord, fixture: Fixture): PulseMoment {
   const data = nestedRecord(raw, "Data", "data");
   const action = stringValue(raw, "Action", "action") ?? "score_update";
@@ -175,15 +189,30 @@ export function normalizeScoreRecord(raw: AnyRecord, fixture: Fixture): PulseMom
   const seq = numberValue(raw, "Seq", "seq") ?? 1;
   const timestamp = numberValue(raw, "Ts", "ts", "Timestamp", "timestamp") ?? Date.now();
   const occurredAt = new Date(timestamp < 10_000_000_000 ? timestamp * 1000 : timestamp).toISOString();
+  const matchMinute = minuteFrom(raw, data);
+  const actor = stringValue(data, "PlayerName", "playerName", "Player", "player", "Scorer", "scorer");
+  const assist = stringValue(data, "Assist", "assist", "Assistant", "assistant");
+  const lowerAction = action.toLowerCase();
+  const cardColor = type === "card"
+    ? lowerAction.includes("red") || lowerAction.includes("second_yellow") ? "red" as const : "yellow" as const
+    : undefined;
+  const varOutcome = type === "var"
+    ? stringValue(data, "Outcome", "outcome", "Decision", "decision", "Result", "result")
+    : undefined;
   return {
     id: `txline-${fixture.fixtureId}-${seq}`,
     fixtureId: fixture.fixtureId,
     seq,
-    minute: numberValue(raw, "Minute", "minute", "MatchTime", "matchTime") ?? 0,
+    minute: matchMinute.minute,
+    minuteLabel: matchMinute.minuteLabel,
     type,
     team,
     title,
     description,
+    participant: actor,
+    assist,
+    cardColor,
+    varOutcome,
     points,
     badge,
     score: scoreFrom(raw),

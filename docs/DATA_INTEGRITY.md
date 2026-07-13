@@ -12,7 +12,7 @@ PulseProof treats an incorrect fixture as a product failure, even when the UI is
 
 ## Current verified bracket state
 
-Checked at `2026-07-12T15:30:00Z`:
+Checked at `2026-07-13T10:30:00Z`:
 
 - Brazil were eliminated 1–2 by Norway in the round of 16.
 - Norway were then eliminated 1–2 by England in the quarter-finals.
@@ -37,11 +37,11 @@ The verified fallback is not returned by `/api/schedule` if any integrity issue 
 
 The local replay is no longer a fictional result simulation. It reflects these externally cross-checked results:
 
-- Brazil 1–2 Norway: Haaland 79', 90'; Neymar penalty 90+10'.
-- Portugal 0–1 Spain: Merino 91'.
-- France 2–0 Morocco: Mbappé 60', Dembélé 66'.
+- Brazil 1–2 Norway (World Cup 2026, round of 16, Match 91): Haaland 79', 90'; Neymar penalty 90+10'; Neymar yellow card 90+6'.
+- Portugal 0–1 Spain (World Cup 2026, round of 16, Match 93): Merino 90+1'; yellow cards for Bernardo Silva 89', Renato Veiga 90+3' and Ferran Torres 90+8'.
+- France 2–0 Morocco (World Cup 2026, quarter-final, Match 97): Mbappé 60', Dembélé 66'.
 
-The source URLs are displayed in the application. Locally assigned sequence IDs remain explicitly non-TxLINE and `verified: false`; only events received from the authenticated TxLINE adapter may be labelled TxLINE-verified.
+The source URLs are displayed in the application. Exact scorer, assist, card and stoppage-time fields are taken from the linked FIFA full-time report or published match report. Locally assigned sequence IDs remain explicitly non-TxLINE and `verified: false`; only events received from the authenticated TxLINE adapter may be labelled TxLINE-verified.
 
 ## Required production behaviour
 

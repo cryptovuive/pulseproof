@@ -7,6 +7,7 @@ describe("multi-match demo and catch-up", () => {
   it("provides a distinct replay timeline for every listed fixture", () => {
     expect(DEMO_FIXTURES).toHaveLength(3);
     for (const fixture of DEMO_FIXTURES) {
+      expect(fixture.competition).toBe("FIFA World Cup 2026");
       const pulse = buildDemoPulse(fixture.fixtureId);
       expect(pulse.fixture).toEqual(fixture);
       expect(pulse.moments.length).toBeGreaterThan(3);
@@ -42,5 +43,17 @@ describe("multi-match demo and catch-up", () => {
     expect(summary).toMatchObject({ goals: 2, cards: 0, reviews: 0 });
     expect(summary.swings).toHaveLength(3);
     expect(summary.swings.at(-1)?.type).toBe("final");
+  });
+
+  it("keeps official scorer, assist, card and stoppage-time details", () => {
+    const portugalSpain = buildDemoPulse(18198205);
+    const winner = portugalSpain.moments.find((moment) => moment.id === "por-esp-goal-91");
+    expect(winner).toMatchObject({ minuteLabel: "90+1", participant: "Mikel Merino", assist: "Ferran Torres" });
+    expect(portugalSpain.moments.filter((moment) => moment.cardColor === "yellow")).toHaveLength(3);
+    expect(summarizeCatchUp(portugalSpain.moments)).toMatchObject({ goals: 1, cards: 3, reviews: 0 });
+
+    const brazilNorway = buildDemoPulse(18187298);
+    expect(brazilNorway.moments.find((moment) => moment.id === "bra-nor-goal-100"))
+      .toMatchObject({ minuteLabel: "90+10", participant: "Neymar Jr", score: [1, 2] });
   });
 });
