@@ -378,8 +378,11 @@ export function PulseDashboard() {
   const pulseReady = Boolean(pulse);
 
   useEffect(() => {
-    if (!pulseReady || demoRunRef.current || new URLSearchParams(window.location.search).get("judgeDemo") !== "1") return;
+    const params = new URLSearchParams(window.location.search);
+    if (!pulseReady || demoRunRef.current || params.get("judgeDemo") !== "1") return;
     demoRunRef.current = true;
+    const requestedDelay = Number(params.get("demoDelay") ?? 0);
+    const demoDelay = Number.isFinite(requestedDelay) ? Math.max(0, Math.min(requestedDelay, 10_000)) : 0;
     const timers: number[] = [];
     const schedule = (delay: number, label: string, action: () => void) => {
       timers.push(window.setTimeout(() => {
@@ -390,25 +393,25 @@ export function PulseDashboard() {
     const scroll = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
 
     setDemoStep("01 · Public product loaded from live deployment");
-    schedule(3_000, "02 · Finished score protected before Catch-up", () => {
+    schedule(demoDelay + 3_000, "02 · Finished score protected before Catch-up", () => {
       const shield = document.querySelector<HTMLButtonElement>('.my-pulse-bar button[aria-pressed="false"]');
       shield?.click();
       scroll("match-center");
     });
-    schedule(9_000, "03 · Starting real spoiler-safe Catch-up", () => {
+    schedule(demoDelay + 9_000, "03 · Starting real spoiler-safe Catch-up", () => {
       scroll("catch-up");
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".catchup-primary")?.click(), 900);
     });
-    schedule(20_000, "04 · Timeline advances from the visible event prefix", () => scroll("event-timeline"));
-    schedule(31_000, "05 · Saving the consumer-safe recap on this device", () => {
+    schedule(demoDelay + 20_000, "04 · Timeline advances from the visible event prefix", () => scroll("event-timeline"));
+    schedule(demoDelay + 31_000, "05 · Saving the consumer-safe recap on this device", () => {
       scroll("catch-up");
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".offline-save")?.click(), 700);
     });
-    schedule(41_000, "06 · Browser verifies a fresh Ed25519 receipt", () => {
+    schedule(demoDelay + 41_000, "06 · Browser verifies a fresh Ed25519 receipt", () => {
       scroll("proof-of-watch");
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".judge-lab button")?.click(), 900);
     });
-    schedule(54_000, "07 · End-to-end product test complete", () => scroll("proof-of-watch"));
+    schedule(demoDelay + 54_000, "07 · End-to-end product test complete", () => scroll("proof-of-watch"));
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [pulseReady]);
 

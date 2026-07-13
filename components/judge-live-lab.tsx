@@ -196,9 +196,12 @@ export function JudgeLiveLab() {
   }, [execute, running]);
 
   useEffect(() => {
-    if (autoRunRef.current || new URLSearchParams(window.location.search).get("liveProof") !== "1") return;
+    const params = new URLSearchParams(window.location.search);
+    if (autoRunRef.current || params.get("liveProof") !== "1") return;
     autoRunRef.current = true;
-    const timer = window.setTimeout(() => void runAll(), 800);
+    const requestedDelay = Number(params.get("proofDelay") ?? 800);
+    const delay = Number.isFinite(requestedDelay) ? Math.max(300, Math.min(requestedDelay, 10_000)) : 800;
+    const timer = window.setTimeout(() => void runAll(), delay);
     return () => window.clearTimeout(timer);
   }, [runAll]);
 

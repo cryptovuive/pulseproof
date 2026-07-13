@@ -7,6 +7,7 @@ describe("recordable judge walkthrough", () => {
 
   it("is opt-in and drives the same consumer controls shown to judges", () => {
     expect(dashboard).toContain('get("judgeDemo") !== "1"');
+    expect(dashboard).toContain('params.get("demoDelay")');
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".catchup-primary")?.click()');
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".offline-save")?.click()');
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".judge-lab button")?.click()');
