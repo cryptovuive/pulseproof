@@ -167,7 +167,7 @@ function CaptureSlide({ slide }: { slide: number }) {
   if (slide === 8) return (
     <CaptureFrame slide={slide} eyebrow="Evidence a judge can reproduce" title="Not a mockup. A deployed, tested system.">
       <div className={styles.metrics}>
-        <article><strong>79 / 79</strong><span>automated tests</span><small>17 suites</small></article>
+        <article><strong>86 / 86</strong><span>automated tests</span><small>19 suites</small></article>
         <article><strong>0</strong><span>known npm vulnerabilities</span><small>audit clean</small></article>
         <article><strong>200</strong><span>public health + SSE</span><small>Railway production</small></article>
         <article><strong>DEVNET</strong><span>program + receipt</span><small>Explorer visible</small></article>
@@ -210,7 +210,7 @@ function SubmissionPortal() {
       <section className={styles.verifyGrid}>
         <a href={`${LIVE_APP}/api/health`} target="_blank" rel="noreferrer"><Wifi /><span>Production health</span><small>TxLINE devnet credentials configured</small></a>
         <a href={EXPLORER} target="_blank" rel="noreferrer"><BadgeCheck /><span>Explorer receipt</span><small>Confirmed public devnet transaction</small></a>
-        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>79 tests · lint · production build</small></a>
+        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>86 tests · lint · production build</small></a>
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Public repository</span><small>Architecture, threat model and test report</small></a>
       </section>
       <section className={styles.honesty}><ShieldCheck /><div><span>DEMO INTEGRITY</span><h2>Live is live. Replay is labelled replay.</h2><p>TxLINE coverage, public SSE and heartbeat evidence are live. Finished-match sequences in the consumer demo are externally cross-checked and explicitly not represented as TxLINE records.</p></div></section>

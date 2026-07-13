@@ -409,3 +409,8 @@ footer { display: flex; justify-content: space-between; gap: 20px; color: #555b5
   .side-column { display: flex; }
   footer { flex-direction: column; }
 }
+
+.judge-demo-run { position: fixed; z-index: 50; left: 22px; bottom: 22px; display: grid; gap: 5px; width: min(430px, calc(100vw - 44px)); padding: 14px 16px; border: 1px solid rgba(136,169,255,.42); border-radius: 12px; background: rgba(13,17,15,.94); box-shadow: 0 18px 55px rgba(0,0,0,.52); backdrop-filter: blur(14px); }
+.judge-demo-run span { color: #d9ff43; font: 850 8px/1 ui-monospace,monospace; letter-spacing: .12em; }
+.judge-demo-run b { color: #e7ebe7; font-size: 12px; }
+.judge-demo-run small { color: #77817a; font-size: 9px; line-height: 1.35; }

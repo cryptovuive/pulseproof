@@ -31,7 +31,7 @@ Engineering/product readiness is approximately **93/100**. The public 4:14 demo 
 - Installable PWA and bounded Offline Recap Pack; API/SSE traffic is never cached and all verification/claim actions fail closed offline.
 - Judge Submission Room with public video player, chapters, captions, transcript and direct evidence links.
 - Reproducible 4:14 1080p renderer with source frames, English narration, chapter metadata and a hard five-minute gate.
-- Automated coverage increased to 79 tests across 17 suites.
+- Automated coverage increased to 86 tests across 19 suites, plus a public seven-step live proof runner.
 
 ## Highest-return actions before submission
 

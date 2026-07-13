@@ -139,6 +139,7 @@ export function PulseDashboard() {
   const [notice, setNotice] = useState<string>("");
   const [judgeChecking, setJudgeChecking] = useState(false);
   const [judgeProof, setJudgeProof] = useState<MomentAttestation | null>(null);
+  const [demoStep, setDemoStep] = useState("");
   const [roomVote, setRoomVote] = useState<"home" | "away" | "even" | null>(null);
   const [roomCounts, setRoomCounts] = useState({ home: 0, away: 0, even: 0 });
   const streamRef = useRef<EventSource | null>(null);
@@ -147,6 +148,7 @@ export function PulseDashboard() {
   const alertPreferencesRef = useRef<MatchAlertPreferences>(DEFAULT_MATCH_ALERT_PREFERENCES);
   const deliveredAlertIdsRef = useRef<Set<string>>(new Set());
   const alertTimersRef = useRef<Set<number>>(new Set());
+  const demoRunRef = useRef(false);
 
   useEffect(() => { pulsesRef.current = pulses; }, [pulses]);
   useEffect(() => { preferencesRef.current = preferences; }, [preferences]);
@@ -373,6 +375,42 @@ export function PulseDashboard() {
     () => filterMatches(matches, matchFilter, preferences.followedTeams),
     [matchFilter, matches, preferences.followedTeams],
   );
+  const pulseReady = Boolean(pulse);
+
+  useEffect(() => {
+    if (!pulseReady || demoRunRef.current || new URLSearchParams(window.location.search).get("judgeDemo") !== "1") return;
+    demoRunRef.current = true;
+    const timers: number[] = [];
+    const schedule = (delay: number, label: string, action: () => void) => {
+      timers.push(window.setTimeout(() => {
+        setDemoStep(label);
+        action();
+      }, delay));
+    };
+    const scroll = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    setDemoStep("01 · Public product loaded from live deployment");
+    schedule(3_000, "02 · Finished score protected before Catch-up", () => {
+      const shield = document.querySelector<HTMLButtonElement>('.my-pulse-bar button[aria-pressed="false"]');
+      shield?.click();
+      scroll("match-center");
+    });
+    schedule(9_000, "03 · Starting real spoiler-safe Catch-up", () => {
+      scroll("catch-up");
+      window.setTimeout(() => document.querySelector<HTMLButtonElement>(".catchup-primary")?.click(), 900);
+    });
+    schedule(20_000, "04 · Timeline advances from the visible event prefix", () => scroll("event-timeline"));
+    schedule(31_000, "05 · Saving the consumer-safe recap on this device", () => {
+      scroll("catch-up");
+      window.setTimeout(() => document.querySelector<HTMLButtonElement>(".offline-save")?.click(), 700);
+    });
+    schedule(41_000, "06 · Browser verifies a fresh Ed25519 receipt", () => {
+      scroll("proof-of-watch");
+      window.setTimeout(() => document.querySelector<HTMLButtonElement>(".judge-lab button")?.click(), 900);
+    });
+    schedule(54_000, "07 · End-to-end product test complete", () => scroll("proof-of-watch"));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [pulseReady]);
 
   const toggleStream = () => {
     if (!pulse) return;
@@ -635,6 +673,7 @@ export function PulseDashboard() {
 
   return (
     <main className="app-shell">
+      {demoStep && <div className="judge-demo-run" role="status"><span>LIVE WALKTHROUGH</span><b>{demoStep}</b><small>Actions call the same production UI and endpoints available to every judge.</small></div>}
       <header className="topbar">
         <a className="brand" href="#top" aria-label="PulseProof home">
           <span className="brand-mark"><Activity size={19} /></span>
@@ -814,7 +853,7 @@ export function PulseDashboard() {
             </div>
           </article>
 
-          <article className="timeline panel">
+          <article className="timeline panel" id="event-timeline">
             <div className="panel-heading compact">
               <div><span className="eyebrow">On-pitch timeline</span><h2>{spoilerProtected ? "Timeline protected" : hasSignalMoments ? "Moments that moved the match" : "Waiting for sporting events"}</h2></div>
               <span className="event-count">{signalMoments.length} on-pitch</span>

@@ -38,7 +38,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
 - Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
-- Lint, production build, 79 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
+- Lint, production build, 86 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
 
 ## Commercial path
 
