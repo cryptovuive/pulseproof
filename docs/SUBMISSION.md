@@ -37,7 +37,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana Ed25519 precompile verification with exact preceding-instruction and message checks.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
-- Lint, production build, 38 unit/integration tests and a real local-validator adversarial suite pass.
+- Lint, production build, 64 unit/integration tests and a real local-validator adversarial suite pass.
 
 ## Commercial path
 

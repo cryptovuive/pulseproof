@@ -8,6 +8,7 @@ import {
   CirclePause,
   CirclePlay,
   Clock3,
+  Compass,
   Eye,
   EyeOff,
   Goal,
@@ -32,16 +33,27 @@ import type { BrowserWallet } from "@/lib/solana-client";
 import { submitMomentClaim } from "@/lib/solana-client";
 import { getTeamBranding } from "@/lib/team-branding";
 import { TeamFlag } from "@/components/team-flag";
+import { MatchdayCommandCenter } from "@/components/matchday-command-center";
 import { UpcomingMatchHub } from "@/components/upcoming-match-hub";
 import {
   DEFAULT_FAN_PREFERENCES,
   filterMatches,
+  fixtureHasFollowedTeam,
   normalizeFanPreferences,
   selectPreferredFixture,
   toggleFollowedTeam,
   type FanPreferences,
   type MatchFilter,
 } from "@/lib/fan-preferences";
+import {
+  buildMatchAlert,
+  DEFAULT_MATCH_ALERT_PREFERENCES,
+  normalizeMatchAlertInbox,
+  normalizeMatchAlertPreferences,
+  shouldQueueMatchAlert,
+  type MatchAlert,
+  type MatchAlertPreferences,
+} from "@/lib/matchday-alerts";
 import { buildMatchBrief, freshnessLabel, sportingMoments } from "@/lib/match-experience";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
 import type { MatchOverview, MatchPulse, MomentAttestation, PulseMoment } from "@/types/pulse";
@@ -49,6 +61,14 @@ import type { MatchOverview, MatchPulse, MomentAttestation, PulseMoment } from "
 type StreamStatus = "connecting" | "live" | "complete" | "paused" | "error";
 const JUDGE_DEMO_WALLET = "8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV";
 const FAN_PREFERENCES_KEY = "pulseproof.fan-preferences.v1";
+const MATCH_ALERT_PREFERENCES_KEY = "pulseproof.match-alert-preferences.v1";
+const MATCH_ALERT_INBOX_KEY = "pulseproof.match-alert-inbox.v1";
+const TOUR_STEPS = [
+  { target: "match-center", eyebrow: "01 · Choose", title: "Start with the fixture", body: "Every card states competition provenance, match stage, source coverage and whether the score is known." },
+  { target: "command-center", eyebrow: "02 · Personalize", title: "Build your matchday", body: "Follow teams, see their next fixture, trace the road to the final and arm verified-event alerts without creating an account." },
+  { target: "catch-up", eyebrow: "03 · Catch up", title: "Replay only what matters", body: "Spoiler Shield and progressive Catch-up let a late fan move from kick-off to now without future events leaking into the summary." },
+  { target: "proof-of-watch", eyebrow: "04 · Verify", title: "Turn a moment into a receipt", body: "PulseProof re-checks the source event, verifies an Ed25519 attestation and can seal an anti-replay Fan Pass memory on Solana devnet." },
+] as const;
 
 function shortKey(value: string) {
   return `${value.slice(0, 4)}…${value.slice(-4)}`;
@@ -92,6 +112,11 @@ export function PulseDashboard() {
   const [matchFilter, setMatchFilter] = useState<MatchFilter>("all");
   const [preferences, setPreferences] = useState<FanPreferences>(DEFAULT_FAN_PREFERENCES);
   const [preferencesReady, setPreferencesReady] = useState(false);
+  const [alertPreferences, setAlertPreferences] = useState<MatchAlertPreferences>(DEFAULT_MATCH_ALERT_PREFERENCES);
+  const [alertInbox, setAlertInbox] = useState<MatchAlert[]>([]);
+  const [alertsReady, setAlertsReady] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | "unsupported">("default");
+  const [tourStep, setTourStep] = useState<number | null>(null);
   const [revealedScores, setRevealedScores] = useState<Set<number>>(() => new Set());
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [wallet, setWallet] = useState<BrowserWallet | null>(null);
@@ -104,6 +129,44 @@ export function PulseDashboard() {
   const [roomVote, setRoomVote] = useState<"home" | "away" | "even" | null>(null);
   const [roomCounts, setRoomCounts] = useState({ home: 0, away: 0, even: 0 });
   const streamRef = useRef<EventSource | null>(null);
+  const pulsesRef = useRef<Record<number, MatchPulse>>({});
+  const preferencesRef = useRef<FanPreferences>(DEFAULT_FAN_PREFERENCES);
+  const alertPreferencesRef = useRef<MatchAlertPreferences>(DEFAULT_MATCH_ALERT_PREFERENCES);
+  const deliveredAlertIdsRef = useRef<Set<string>>(new Set());
+  const alertTimersRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => { pulsesRef.current = pulses; }, [pulses]);
+  useEffect(() => { preferencesRef.current = preferences; }, [preferences]);
+  useEffect(() => { alertPreferencesRef.current = alertPreferences; }, [alertPreferences]);
+
+  const queueVerifiedAlert = useCallback((moment: PulseMoment, fixture: MatchPulse["fixture"]) => {
+    const currentAlertPreferences = alertPreferencesRef.current;
+    const fixtureIsFollowed = fixtureHasFollowedTeam(
+      fixture.homeTeam,
+      fixture.awayTeam,
+      preferencesRef.current.followedTeams,
+    );
+    if (!shouldQueueMatchAlert(moment, currentAlertPreferences, fixtureIsFollowed)) return;
+    const alertId = `${moment.fixtureId}:${moment.seq}`;
+    if (deliveredAlertIdsRef.current.has(alertId)) return;
+    deliveredAlertIdsRef.current.add(alertId);
+    const timer = window.setTimeout(() => {
+      alertTimersRef.current.delete(timer);
+      const latestAlertPreferences = alertPreferencesRef.current;
+      const stillFollowed = fixtureHasFollowedTeam(
+        fixture.homeTeam,
+        fixture.awayTeam,
+        preferencesRef.current.followedTeams,
+      );
+      if (!shouldQueueMatchAlert(moment, latestAlertPreferences, stillFollowed)) return;
+      const alert = buildMatchAlert(moment, fixture, preferencesRef.current.spoilerFree);
+      setAlertInbox((current) => [alert, ...current.filter((item) => item.id !== alert.id)].slice(0, 20));
+      if (latestAlertPreferences.systemNotifications && "Notification" in window && Notification.permission === "granted") {
+        try { new Notification(alert.title, { body: alert.body, tag: alert.id }); } catch { /* in-app inbox remains available */ }
+      }
+    }, currentAlertPreferences.delaySeconds * 1_000);
+    alertTimersRef.current.add(timer);
+  }, []);
 
   const loadInitial = useCallback(async () => {
     const fixturesResponse = await fetch("/api/matches", { cache: "no-store" });
@@ -135,6 +198,23 @@ export function PulseDashboard() {
   }, []);
 
   useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      let storedPreferences = DEFAULT_MATCH_ALERT_PREFERENCES;
+      let storedInbox: MatchAlert[] = [];
+      try {
+        storedPreferences = normalizeMatchAlertPreferences(JSON.parse(localStorage.getItem(MATCH_ALERT_PREFERENCES_KEY) ?? "null"));
+        storedInbox = normalizeMatchAlertInbox(JSON.parse(localStorage.getItem(MATCH_ALERT_INBOX_KEY) ?? "[]"));
+      } catch { /* malformed local state falls back safely */ }
+      setAlertPreferences(storedPreferences);
+      setAlertInbox(storedInbox);
+      deliveredAlertIdsRef.current = new Set(storedInbox.map((alert) => alert.id));
+      setNotificationPermission("Notification" in window ? Notification.permission : "unsupported");
+      setAlertsReady(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     let active = true;
     void loadInitial()
       .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected, savedPreferences }) => {
@@ -153,6 +233,10 @@ export function PulseDashboard() {
         source.addEventListener("ready", () => setStatus("live"));
         source.addEventListener("moment", (event) => {
           const moment = JSON.parse((event as MessageEvent).data) as PulseMoment;
+          const currentPulse = pulsesRef.current[moment.fixtureId];
+          if (currentPulse && !currentPulse.moments.some((item) => item.id === moment.id)) {
+            queueVerifiedAlert(moment, currentPulse.fixture);
+          }
           setPulses((current) => {
             const existing = current[moment.fixtureId];
             if (!existing || existing.moments.some((item) => item.id === moment.id)) return current;
@@ -193,12 +277,27 @@ export function PulseDashboard() {
       active = false;
       streamRef.current?.close();
     };
-  }, [loadInitial, streamGeneration]);
+  }, [loadInitial, queueVerifiedAlert, streamGeneration]);
 
   useEffect(() => {
     if (!preferencesReady) return;
     localStorage.setItem(FAN_PREFERENCES_KEY, JSON.stringify(preferences));
   }, [preferences, preferencesReady]);
+
+  useEffect(() => {
+    if (!alertsReady) return;
+    localStorage.setItem(MATCH_ALERT_PREFERENCES_KEY, JSON.stringify(alertPreferences));
+  }, [alertPreferences, alertsReady]);
+
+  useEffect(() => {
+    if (!alertsReady) return;
+    localStorage.setItem(MATCH_ALERT_INBOX_KEY, JSON.stringify(alertInbox));
+  }, [alertInbox, alertsReady]);
+
+  useEffect(() => () => {
+    for (const timer of alertTimersRef.current) window.clearTimeout(timer);
+    alertTimersRef.current.clear();
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNowMs(Date.now()), 15_000);
@@ -272,6 +371,29 @@ export function PulseDashboard() {
     setPreferences((current) => ({ ...current, spoilerFree: next }));
     if (next) setRevealedScores(new Set());
     setNotice(next ? "Spoiler Shield enabled for every finished match." : "Finished scores and recaps are visible again.");
+  };
+
+  const enableBrowserNotifications = async () => {
+    if (!("Notification" in window)) {
+      setNotificationPermission("unsupported");
+      setNotice("This browser supports only the in-app Matchday Inbox.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      setAlertPreferences((current) => ({ ...current, enabled: true, systemNotifications: true }));
+      setNotice("Browser notifications enabled. Alert delay and Spoiler Shield still apply.");
+    } else {
+      setAlertPreferences((current) => ({ ...current, systemNotifications: false }));
+      setNotice(permission === "denied" ? "Browser notifications are blocked. The in-app inbox still works." : "Notification permission was not enabled.");
+    }
+  };
+
+  const moveTour = (nextStep: number | null) => {
+    setTourStep(nextStep);
+    if (nextStep === null) return;
+    window.setTimeout(() => document.getElementById(TOUR_STEPS[nextStep].target)?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
   };
 
   const startCatchUp = async () => {
@@ -442,6 +564,7 @@ export function PulseDashboard() {
             {status === "live" || status === "complete" ? <Wifi size={14} /> : <WifiOff size={14} />}
             {statusLabel}
           </div>
+          <button className="tour-button" aria-label="Open quick product tour" onClick={() => moveTour(0)}><Compass size={15} /> Quick tour</button>
           <button className="wallet-button" onClick={connectWallet}>
             <WalletCards size={16} />
             {walletKey ? shortKey(walletKey) : "Connect wallet"}
@@ -473,7 +596,7 @@ export function PulseDashboard() {
         </button>
       </section>
 
-      <section className="match-center" aria-label="Match center">
+      <section className="match-center" id="match-center" aria-label="Match center">
         <div className="match-center-head">
           <div><span className="eyebrow">Multi-match center</span><h2>Follow every covered fixture</h2></div>
           <div className="match-filters" aria-label="Filter matches">
@@ -507,11 +630,23 @@ export function PulseDashboard() {
         </div>
       </section>
 
+      <MatchdayCommandCenter
+        pulse={pulse}
+        followedTeams={preferences.followedTeams}
+        spoilerFree={preferences.spoilerFree}
+        alertPreferences={alertPreferences}
+        alerts={alertInbox}
+        notificationPermission={notificationPermission}
+        onAlertPreferencesChange={setAlertPreferences}
+        onEnableBrowserNotifications={() => void enableBrowserNotifications()}
+        onClearAlerts={() => setAlertInbox([])}
+      />
+
       <UpcomingMatchHub followedTeams={preferences.followedTeams} />
 
       <div className="dashboard-grid" id="top">
         <section className="main-column">
-          <article className={`catchup-card panel ${catchUp ? "active" : ""}`}>
+          <article className={`catchup-card panel ${catchUp ? "active" : ""}`} id="catch-up">
             <div className="catchup-intro">
               <span className="catchup-icon"><RotateCcw size={19} /></span>
               <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay only the signal events—goals, pressure swings, cards and VAR—without watching the full broadcast.</p></div>
@@ -656,7 +791,7 @@ export function PulseDashboard() {
             </div>
           </article>
 
-          <article className="trust-card panel">
+          <article className="trust-card panel" id="proof-of-watch">
             <span className="eyebrow">Why trust this?</span>
             <h3>Sports data with receipts.</h3>
             <div className="trust-step"><span>01</span><p><strong>TxLINE event</strong>Live score/action enters the server.</p></div>
@@ -672,6 +807,22 @@ export function PulseDashboard() {
           </article>
         </aside>
       </div>
+
+      {tourStep !== null && (
+        <div className="tour-overlay" role="dialog" aria-modal="true" aria-label="PulseProof product tour">
+          <div className="tour-card">
+            <div><span>{TOUR_STEPS[tourStep].eyebrow}</span><b>{tourStep + 1} / {TOUR_STEPS.length}</b></div>
+            <h2>{TOUR_STEPS[tourStep].title}</h2>
+            <p>{TOUR_STEPS[tourStep].body}</p>
+            <div className="tour-progress">{TOUR_STEPS.map((step, index) => <span key={step.target} className={index <= tourStep ? "active" : ""} />)}</div>
+            <div className="tour-actions">
+              <button onClick={() => moveTour(null)}>Close</button>
+              {tourStep > 0 && <button onClick={() => moveTour(tourStep - 1)}>Back</button>}
+              <button className="primary" onClick={() => tourStep === TOUR_STEPS.length - 1 ? moveTour(null) : moveTour(tourStep + 1)}>{tourStep === TOUR_STEPS.length - 1 ? "Explore PulseProof" : "Next"}<ChevronRight size={14} /></button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {notice && <button className="toast" aria-live="polite" onClick={() => setNotice("")}><span>{notice}</span><span aria-hidden="true">×</span></button>}
       <footer><span>PulseProof · Built for TxODDS World Cup Hackathon</span><span>No betting · No financial rewards · Data shown under hackathon access terms</span></footer>

@@ -12,6 +12,7 @@ PulseProof should earn repeat use through relevance, continuity and trust—not 
 | A home screen shaped by favorites | SofaScore describes a home screen that adapts to fan favorites. | Match Center can reduce the catalog to followed participants without hiding the complete source catalog. |
 | Before/during/after matchday loop | FotMob describes repeated use for line-ups/stats before kick-off, live moments during play and post-match follow-up. | Upcoming reminders → SSE match center → deterministic 90-second Catch-up → Proof of Watch. |
 | Condensed replay and highlights | FIFA+ exposes full replays, extended highlights, highlights, goals and clips. | PulseProof provides a rights-safe event Catch-up and links published sources; it does not restream protected video. |
+| Tournament path and granular alerts | LiveScore's World Cup 2026 hub exposes fixtures, a route to the final, commentary and selectable kick-off/goal/result alerts. | Matchday Command Center shows the source-linked knockout path while Smart Alerts expose only verified TxLINE event types with delay/spoiler controls. |
 | Visual analysis and ratings | SofaScore exposes goal action animation, lineups, ratings and historical comparison. | Defer ratings, xG, lineups, shot maps and player comparison until a licensed provider supplies the underlying fields. |
 
 Research URLs:
@@ -21,6 +22,7 @@ Research URLs:
 - https://www.sofascore.com/news/sofascores-new-home-screen-a-smarter-faster-way-to-follow-sports
 - https://www.sofascore.com/news/whats-new-in-sofascore-features-that-will-make-your-sport-experience-complete
 - https://www.plus.fifa.com/en/catalogue/archive
+- https://www.livescore.com/en/media/livescore-features-wc-2026/
 
 ## Implemented retention loop
 
@@ -31,6 +33,7 @@ Research URLs:
 5. **Catch up:** a progressive event replay reveals only the prefix already watched; summary counts cannot leak future goals/cards.
 6. **Understand:** Match Brief uses only published on-pitch records and explicitly reports source-log coverage.
 7. **Remember:** optional Solana Proof of Watch seals an attested moment without creating a transferable financial reward.
+8. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
 
 ## Accuracy gates for future features
 
@@ -48,10 +51,12 @@ No feature may enter the consumer UI unless all applicable gates pass:
 
 ## Next ecosystem increments
 
-### Phase 2 — opt-in return triggers
+### Phase 2 — opt-in return triggers (partially shipped)
 
-- Service-worker notifications with separate toggles for kick-off, goal, red card, VAR and full time.
-- Stream-delay control so notifications do not spoil a fan watching a delayed broadcast.
+- Shipped: local-first Smart Alerts with separate toggles for kick-off, goal, red card, VAR and full time; only newly received verified TxLINE events qualify.
+- Shipped: 0/30/60/120-second stream-delay control and generic protected alert copy whenever Spoiler Shield is active.
+- Shipped: persistent in-app Matchday Inbox and optional browser notifications while the app is active; replay/metadata never create synthetic alerts.
+- Remaining: standards-based Web Push/service-worker delivery for alerts after the app is fully closed, which requires an explicit push-subscription privacy and revocation flow.
 - Wallet-portable preferences only after a clear consent and privacy model; local-first remains the default.
 
 ### Phase 3 — richer licensed match intelligence

@@ -104,7 +104,7 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
   };
 
   return (
-    <section className="upcoming-hub" aria-label="Upcoming matches">
+    <section className="upcoming-hub" id="upcoming" aria-label="Upcoming matches">
       <div className="upcoming-head">
         <div>
           <span className="eyebrow">Plan your matchday</span>

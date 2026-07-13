@@ -28,6 +28,9 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - TxLINE fixture snapshot, score snapshot, historical score and stat-validation integrations.
 - Multi-match center for up to eight covered fixtures with live/finished filters and standard team flags/codes.
 - Local-first `My Pulse` personalization with followed teams, `My Matches`, personalized upcoming fixtures, last-match resume and shareable fixture deep links.
+- Matchday Command Center with a followed-team next action, source-linked Road to the Final, explicit TBD finalists and a compact return-to-match path.
+- Opt-in Smart Alerts for kick-off, goal, red card, VAR and full time, with followed-team scope, 0–120 second broadcast delay, persistent in-app inbox and spoiler-protected copy.
+- Four-step Quick Product Tour that takes a first-time fan or judge through fixture provenance, personalization, Catch-up and Solana Proof of Watch.
 - Spoiler Shield that protects finished scores, match brief, timeline and final momentum while keeping Catch-up progressive.
 - Direct TxLINE `/scores/stream` SSE bridge exposed publicly at `/api/scores/stream` (plus `/scores/stream` compatibility alias), with fixture filtering, sequence de-duplication, heartbeat and reconnect.
 - Snapshot-to-now and historical Catch-up with timeline scrubbing and 1x/2x/4x playback.
@@ -39,7 +42,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Fifty-four automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- Sixty-four automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 

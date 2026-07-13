@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **54/54 passed** across twelve suites.
+Result: **64/64 passed** across fourteen suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -23,6 +23,8 @@ Result: **54/54 passed** across twelve suites.
 - TxLINE proof digest changes the signed evidence hash.
 - Fan Pass point and badge model.
 - Duplicate-receipt model rejection.
+- Smart Alert preference validation, supported-event classification, followed-team scope, verified-only delivery and Spoiler Shield copy protection.
+- Road-to-the-Final construction preserves chronological semi-finals and intentionally leaves final/third-place participants TBD.
 - Attestation rate-limit window and reset behaviour.
 - Official team-code and flag-key mapping across every covered schedule team.
 - Chunk-safe SSE parsing across split network boundaries and nested score envelopes.
@@ -102,20 +104,24 @@ Production server was started on an isolated port and tested through HTTP.
 ## UI/browser smoke tests
 
 - Match Center renders three independent fixtures with BRA/NOR, POR/ESP and FRA/MAR flags/codes.
-- Multiplex SSE replay updates score, minute, momentum and timeline per fixture.
-- Selecting Portugalâ€“Spain updates the scoreboard to fixture `18198205`, `POR 1â€“2 ESP` without navigation.
-- Catch-up loads eight events, supports `1x/2x/4x`, jump-to-latest, and returns to the newest live cache.
+- Selecting Portugal–Spain updates the scoreboard to fixture `18198205`, `POR 0–1 ESP` without navigation.
+- Catch-up loads seven on-pitch events, supports `1x/2x/4x`, jump-to-latest, and never includes technical metadata.
+- Progressive Catch-up Event 1 reports zero future goals/cards/VAR and does not expose the final score.
 - Live filter excludes historical replay; it never implies a completed match is currently live.
 - Upcoming hub converted UTC to `Asia/Bangkok`, rendered France–Spain and England–Argentina, and kept third-place/final participants as `TBD`.
 - Integrity regression rejects Brazil or another eliminated team in a confirmed future fixture.
 - Saved filter returned exactly one selected fixture; calendar payload is covered by unit tests without triggering an unsolicited download.
+- Matchday Command Center renders both semi-finals, a `TBD vs TBD` final and a `TBD vs TBD` third-place fixture without inferring winners.
+- Quick Product Tour advances through all four fixture/personalization/Catch-up/Proof-of-Watch steps.
+- Arming Smart Alerts without followed teams selects the explicit all-covered scope; event-type and 60-second delay choices persist after reload.
+- Spoiler Shield hides finished scores and replaces future alert content with a generic protected update.
+- Labelled replay Catch-up leaves Matchday Inbox empty; simulated or metadata records cannot create alert activity.
 - Judge Verification Lab returned and locally verified a short-lived evidence-bound Ed25519 proof without Phantom or SOL.
 - Browser result audit reached `FRA 2–0 MAR`, `POR 0–1 ESP` and `BRA 1–2 NOR`; the Live filter returned zero fixtures because all fallback matches are historical.
 - Upcoming audit showed only `France–Spain`, `England–Argentina`, `TBD–TBD` and `TBD–TBD`, each with provenance and no eliminated participant.
 - Watch-room vote changes `aria-pressed` and displays confirmation.
-- 375px responsive viewport has `scrollWidth == clientWidth`; no horizontal overflow.
-- Scoreboard, timeline, topbar and wallet control remain present at mobile width.
-- No localhost console warnings/errors observed.
+- A 390×844 responsive viewport retains the Command Center, accessible Quick Tour, TBD bracket and persisted alert state.
+- Production console verification is performed after each Railway deployment; development-only CSP/eval diagnostics are not production failures.
 
 ## Build and dependency checks
 
