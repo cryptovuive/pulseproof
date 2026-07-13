@@ -1,0 +1,138 @@
+# Verification report
+
+Date: 12 July 2026
+Environment: Windows + WSL2 Ubuntu 24.04, Node.js 20.19, Rust 1.97, Solana CLI 2.3.0, Anchor 0.32.1.
+
+## Automated unit tests
+
+Command:
+
+```bash
+npm test
+```
+
+Result: **36/36 passed** across eight suites.
+
+- TxLINE fixture and score-action schema normalisation.
+- Momentum bounds.
+- Canonical Ed25519 message verification.
+- Post-signature points tampering rejection.
+- Unique deterministic moment hashes.
+- TxLINE proof digest changes the signed evidence hash.
+- Fan Pass point and badge model.
+- Duplicate-receipt model rejection.
+- Attestation rate-limit window and reset behaviour.
+- Official team-code and flag-key mapping across every covered schedule team.
+- Chunk-safe SSE parsing across split network boundaries and nested score envelopes.
+- Three-fixture demo isolation, overview consistency and exact replay reconstruction.
+- Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
+
+## Smart-contract compilation
+
+Commands:
+
+```bash
+cargo check -p pulseproof
+anchor build
+```
+
+Results:
+
+- Rust/Anchor host compilation passed.
+- Solana SBF release build passed.
+- IDL and TypeScript types generated.
+- Program ID synced to `74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`.
+
+## Real local-validator E2E
+
+Command:
+
+```powershell
+npm run contract:e2e:windows
+```
+
+The harness creates an isolated ledger and payer, deploys the SBF binary, initialises config and executes real Solana transactions.
+
+Repeatability regression: the wallet-backed suite was run twice consecutively. Each run selected an independent RPC/faucet/dynamic port range, captured the exact validator PID and shut it down cleanly. Both complete deployments and adversarial suites passed without shared PDA state.
+
+Verified assertions:
+
+1. Config pins the expected 32-byte attestor.
+2. Valid Ed25519 claim succeeds.
+3. Points, badge bitmap and claim counter update correctly.
+4. Receipt PDA is created.
+5. Duplicate receipt is rejected.
+6. Altered points are rejected.
+7. Altered evidence digest is rejected.
+8. Wrong attestor is rejected.
+9. Expired attestation is rejected.
+10. Badge ≥64 and points >100 are rejected.
+11. Far-future expiry is rejected.
+12. Every rejected transaction leaves points/counter unchanged.
+
+## Phantom-compatible disposable wallet
+
+- Generated localnet/devnet-only public key: `8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV`.
+- Secret JSON and Phantom-import private key are stored only under gitignored `.local-wallets/` and never printed.
+- Verified 64-byte key integrity, public-key consistency, detached `signMessage` semantics and transaction signatures.
+- Used that same wallet as payer/owner for the full validator deployment, Fan Pass creation, valid claim and adversarial rejection suite.
+
+## HTTP/API smoke tests
+
+Production server was started on an isolated port and tested through HTTP.
+
+| Check | Result |
+|---|---|
+| `/api/health` | 200 |
+| `/api/matches` demo catalog | 200, three fixtures and correct source label |
+| Multiplex replay SSE | One connection delivered moments for all three fixture IDs |
+| Replay attestation | 200, 64-character evidence hash, Ed25519 signature returned |
+| Eleventh attestation in one minute | 429 |
+| Request body >4 KiB | 413 |
+| CSP frame protection | `frame-ancestors 'none'` present |
+
+## UI/browser smoke tests
+
+- Match Center renders three independent fixtures with BRA/NOR, POR/ESP and FRA/MAR flags/codes.
+- Multiplex SSE replay updates score, minute, momentum and timeline per fixture.
+- Selecting Portugalâ€“Spain updates the scoreboard to fixture `18198205`, `POR 1â€“2 ESP` without navigation.
+- Catch-up loads eight events, supports `1x/2x/4x`, jump-to-latest, and returns to the newest live cache.
+- Live filter excludes historical replay; it never implies a completed match is currently live.
+- Upcoming hub converted UTC to `Asia/Bangkok`, rendered France–Spain and England–Argentina, and kept third-place/final participants as `TBD`.
+- Integrity regression rejects Brazil or another eliminated team in a confirmed future fixture.
+- Saved filter returned exactly one selected fixture; calendar payload is covered by unit tests without triggering an unsolicited download.
+- Judge Verification Lab returned and locally verified a short-lived evidence-bound Ed25519 proof without Phantom or SOL.
+- Browser result audit reached `FRA 2–0 MAR`, `POR 0–1 ESP` and `BRA 1–2 NOR`; the Live filter returned zero fixtures because all fallback matches are historical.
+- Upcoming audit showed only `France–Spain`, `England–Argentina`, `TBD–TBD` and `TBD–TBD`, each with provenance and no eliminated participant.
+- Watch-room vote changes `aria-pressed` and displays confirmation.
+- 375px responsive viewport has `scrollWidth == clientWidth`; no horizontal overflow.
+- Scoreboard, timeline, topbar and wallet control remain present at mobile width.
+- No localhost console warnings/errors observed.
+
+## Build and dependency checks
+
+```bash
+npm run lint
+npm run build
+npm audit --omit=dev
+```
+
+- ESLint: passed.
+- Next.js production compilation and TypeScript: passed.
+- Remaining audit result: three moderate transitive advisories under `@solana/web3.js → jayson → uuid`; zero high/critical.
+
+## Public devnet and live-credential verification — 13 July 2026
+
+- Activated TxLINE devnet level `1` with an Explorer-visible subscription transaction.
+- Authenticated `fixtures/snapshot` returned five covered fixtures.
+- Connected directly to `/api/scores/stream`: HTTP `200`, `text/event-stream`, heartbeat received, token redacted.
+- Deployed the 285,632-byte PulseProof program to public devnet.
+- Initialized the config PDA with a fixed local/production attestor public key.
+- Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
+- `36/36` unit/integration tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+
+## Remaining external verification
+
+- A score-changing TxLINE stream record during a covered live fixture; the current 30-second proof window contained only a genuine heartbeat.
+- Hosting-platform SSE duration/buffering on the final public domain.
+- Phantom extension UI recording against the deployed program; the same disposable wallet already produced the Explorer-visible devnet claim through the transaction builder.

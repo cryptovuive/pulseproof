@@ -1,0 +1,23 @@
+[package]
+name = "pulseproof"
+version = "0.1.0"
+description = "Proof-of-Watch match memories for the TxODDS World Cup hackathon"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "pulseproof"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.32.1"
