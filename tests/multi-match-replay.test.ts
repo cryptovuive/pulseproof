@@ -56,4 +56,12 @@ describe("multi-match demo and catch-up", () => {
     expect(brazilNorway.moments.find((moment) => moment.id === "bra-nor-goal-100"))
       .toMatchObject({ minuteLabel: "90+10", participant: "Neymar Jr", score: [1, 2] });
   });
+
+  it("keeps catch-up statistics progressive so spoiler mode does not reveal the ending", () => {
+    const full = buildDemoPulse(18198205);
+    const atKickoff = pulseAtMoment(full, 1);
+    expect(summarizeCatchUp(atKickoff.moments)).toMatchObject({ goals: 0, cards: 0, reviews: 0 });
+    const afterWinner = pulseAtMoment(full, 4);
+    expect(summarizeCatchUp(afterWinner.moments)).toMatchObject({ goals: 1, cards: 1, reviews: 0 });
+  });
 });

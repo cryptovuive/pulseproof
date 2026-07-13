@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Bell, BellRing, CalendarPlus, Clock3, Radio } from "lucide-react";
 import { TeamFlag } from "@/components/team-flag";
 import { buildFixtureCalendar, formatKickoffCountdown } from "@/lib/schedule";
+import { fixtureHasFollowedTeam } from "@/lib/fan-preferences";
 import { getTeamBranding } from "@/lib/team-branding";
 import type { ScheduleEntry } from "@/types/pulse";
 
@@ -18,7 +19,7 @@ function kickoffParts(startTime: string) {
   };
 }
 
-export function UpcomingMatchHub() {
+export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: string[] }) {
   const [entries, setEntries] = useState<ScheduleEntry[]>([]);
   const [source, setSource] = useState<"txline-fixtures" | "verified-schedule">("verified-schedule");
   const [stale, setStale] = useState(false);
@@ -27,7 +28,7 @@ export function UpcomingMatchHub() {
   const [now, setNow] = useState(0);
   const [timezone, setTimezone] = useState("Local time");
   const [reminders, setReminders] = useState<number[]>([]);
-  const [filter, setFilter] = useState<"all" | "reminders">("all");
+  const [filter, setFilter] = useState<"all" | "following" | "reminders">("all");
 
   useEffect(() => {
     const hydrateFrame = window.requestAnimationFrame(() => {
@@ -76,8 +77,12 @@ export function UpcomingMatchHub() {
   }, []);
 
   const shown = useMemo(
-    () => filter === "reminders" ? entries.filter((entry) => reminders.includes(entry.fixture.fixtureId)) : entries,
-    [entries, filter, reminders],
+    () => filter === "reminders"
+      ? entries.filter((entry) => reminders.includes(entry.fixture.fixtureId))
+      : filter === "following"
+        ? entries.filter((entry) => fixtureHasFollowedTeam(entry.fixture.homeTeam, entry.fixture.awayTeam, followedTeams))
+        : entries,
+    [entries, filter, followedTeams, reminders],
   );
 
   const toggleReminder = (fixtureId: number) => {
@@ -110,6 +115,7 @@ export function UpcomingMatchHub() {
           <span className={`schedule-source ${source} ${stale ? "stale" : ""}`}><Radio size={11} /> {source === "txline-fixtures" ? "TxLINE snapshot" : stale ? "Schedule needs re-check" : "Cross-checked schedule"}</span>
           <div className="schedule-filters">
             <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>All</button>
+            <button disabled={!followedTeams.length} className={filter === "following" ? "active" : ""} onClick={() => setFilter("following")}>Following {followedTeams.length || ""}</button>
             <button className={filter === "reminders" ? "active" : ""} onClick={() => setFilter("reminders")}><Bell size={11} /> Saved {reminders.length || ""}</button>
           </div>
         </div>
@@ -123,9 +129,9 @@ export function UpcomingMatchHub() {
           const kickoff = kickoffParts(entry.fixture.startTime);
           const saved = reminders.includes(entry.fixture.fixtureId);
           return (
-            <article className={`upcoming-match ${index === 0 && filter === "all" ? "next" : ""}`} key={entry.fixture.fixtureId}>
+            <article className={`upcoming-match ${index === 0 && filter === "all" ? "next" : ""} ${filter === "following" ? "personalized" : ""}`} key={entry.fixture.fixtureId}>
               <div className="upcoming-date">
-                <span>{index === 0 && filter === "all" ? source === "txline-fixtures" ? "Next TxLINE-covered match" : "Next confirmed match" : entry.fixture.stage}</span>
+                <span>{filter === "following" ? "For your followed team" : index === 0 && filter === "all" ? source === "txline-fixtures" ? "Next TxLINE-covered match" : "Next confirmed match" : entry.fixture.stage}</span>
                 <strong>{kickoff.date}</strong>
                 <small>{kickoff.time} · source {kickoff.utc}</small>
               </div>
@@ -146,7 +152,7 @@ export function UpcomingMatchHub() {
             </article>
           );
         })}
-        {!loading && !shown.length && <div className="schedule-empty">{filter === "reminders" ? "No saved matches yet. Choose Remind me on a fixture." : "No future covered fixtures are currently published."}</div>}
+        {!loading && !shown.length && <div className="schedule-empty">{filter === "reminders" ? "No saved matches yet. Choose Remind me on a fixture." : filter === "following" ? "No upcoming fixture currently includes a followed team." : "No future covered fixtures are currently published."}</div>}
       </div>
       {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Teams are never inferred; verify the linked sources or activate TxLINE before relying on it." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Final and third-place participants stay TBD until the semi-finals finish. An activated TxLINE token replaces this fallback with the current fixture snapshot.`}</p>}
     </section>

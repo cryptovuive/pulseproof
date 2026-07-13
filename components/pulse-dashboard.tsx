@@ -8,12 +8,16 @@ import {
   CirclePause,
   CirclePlay,
   Clock3,
+  Eye,
+  EyeOff,
   Goal,
   Radio,
   RotateCcw,
+  Share2,
   ShieldCheck,
   SkipForward,
   Sparkles,
+  Star,
   Trophy,
   Users,
   WalletCards,
@@ -29,11 +33,22 @@ import { submitMomentClaim } from "@/lib/solana-client";
 import { getTeamBranding } from "@/lib/team-branding";
 import { TeamFlag } from "@/components/team-flag";
 import { UpcomingMatchHub } from "@/components/upcoming-match-hub";
+import {
+  DEFAULT_FAN_PREFERENCES,
+  filterMatches,
+  normalizeFanPreferences,
+  selectPreferredFixture,
+  toggleFollowedTeam,
+  type FanPreferences,
+  type MatchFilter,
+} from "@/lib/fan-preferences";
+import { buildMatchBrief, freshnessLabel, sportingMoments } from "@/lib/match-experience";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
 import type { MatchOverview, MatchPulse, MomentAttestation, PulseMoment } from "@/types/pulse";
 
 type StreamStatus = "connecting" | "live" | "complete" | "paused" | "error";
 const JUDGE_DEMO_WALLET = "8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV";
+const FAN_PREFERENCES_KEY = "pulseproof.fan-preferences.v1";
 
 function shortKey(value: string) {
   return `${value.slice(0, 4)}…${value.slice(-4)}`;
@@ -74,7 +89,11 @@ export function PulseDashboard() {
   const [catchUpIndex, setCatchUpIndex] = useState(1);
   const [catchUpPlaying, setCatchUpPlaying] = useState(false);
   const [catchUpSpeed, setCatchUpSpeed] = useState(1);
-  const [matchFilter, setMatchFilter] = useState<"all" | "live" | "finished">("all");
+  const [matchFilter, setMatchFilter] = useState<MatchFilter>("all");
+  const [preferences, setPreferences] = useState<FanPreferences>(DEFAULT_FAN_PREFERENCES);
+  const [preferencesReady, setPreferencesReady] = useState(false);
+  const [revealedScores, setRevealedScores] = useState<Set<number>>(() => new Set());
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [wallet, setWallet] = useState<BrowserWallet | null>(null);
   const [walletKey, setWalletKey] = useState<string>("");
   const [claiming, setClaiming] = useState<string>("");
@@ -97,21 +116,34 @@ export function PulseDashboard() {
       return (await response.json()) as MatchPulse;
     }));
     const byId = Object.fromEntries(initial.map((item) => [item.fixture.fixtureId, item]));
-    const preferred = fixtureBody.matches.find((match) => match.phase.includes("LIVE")) ?? fixtureBody.matches[0];
+    let savedPreferences = DEFAULT_FAN_PREFERENCES;
+    try {
+      savedPreferences = normalizeFanPreferences(JSON.parse(localStorage.getItem(FAN_PREFERENCES_KEY) ?? "null"));
+    } catch {
+      savedPreferences = DEFAULT_FAN_PREFERENCES;
+    }
+    const requestedFixtureId = Number(new URLSearchParams(window.location.search).get("fixture"));
+    const selected = selectPreferredFixture(
+      fixtureBody.matches,
+      Number.isSafeInteger(requestedFixtureId) && requestedFixtureId > 0 ? requestedFixtureId : undefined,
+      savedPreferences.lastFixtureId,
+    );
     const streamFixtureIds = fixtureBody.matches
       .filter((match) => match.source !== "demo-replay")
       .map((match) => match.fixture.fixtureId);
-    return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected: preferred.fixture.fixtureId };
+    return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected, savedPreferences };
   }, []);
 
   useEffect(() => {
     let active = true;
     void loadInitial()
-      .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected }) => {
+      .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected, savedPreferences }) => {
         if (!active) return;
         setMatches(loadedMatches);
         setPulses(loadedPulses);
         setSelectedFixtureId(selected);
+        setPreferences({ ...savedPreferences, lastFixtureId: selected });
+        setPreferencesReady(true);
         if (!streamFixtureIds.length) {
           setStatus("complete");
           return;
@@ -164,6 +196,16 @@ export function PulseDashboard() {
   }, [loadInitial, streamGeneration]);
 
   useEffect(() => {
+    if (!preferencesReady) return;
+    localStorage.setItem(FAN_PREFERENCES_KEY, JSON.stringify(preferences));
+  }, [preferences, preferencesReady]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
     if (!catchUp || !catchUpPlaying) return;
     const timer = window.setInterval(() => {
       setCatchUpIndex((current) => {
@@ -179,11 +221,10 @@ export function PulseDashboard() {
 
   const livePulse = pulses[selectedFixtureId] ?? null;
   const pulse = catchUp ? pulseAtMoment(catchUp, catchUpIndex) : livePulse;
-  const visibleMatches = useMemo(() => matches.filter((match) => {
-    if (matchFilter === "finished") return match.phase === "FT";
-    if (matchFilter === "live") return match.source !== "demo-replay" && ["LIVE", "HT", "ET", "PEN"].includes(match.phase);
-    return true;
-  }), [matchFilter, matches]);
+  const visibleMatches = useMemo(
+    () => filterMatches(matches, matchFilter, preferences.followedTeams),
+    [matchFilter, matches, preferences.followedTeams],
+  );
 
   const toggleStream = () => {
     if (!pulse) return;
@@ -203,6 +244,34 @@ export function PulseDashboard() {
     setCatchUp(null);
     setCatchUpPlaying(false);
     setRoomVote(null);
+    setPreferences((current) => ({ ...current, lastFixtureId: fixtureId }));
+    const url = new URL(window.location.href);
+    url.searchParams.set("fixture", String(fixtureId));
+    window.history.replaceState({}, "", url);
+  };
+
+  const toggleTeam = (team: string) => {
+    setPreferences((current) => toggleFollowedTeam(current, team));
+    setNotice(preferences.followedTeams.includes(team) ? `${team} removed from My Pulse.` : `${team} added to My Pulse.`);
+  };
+
+  const shareSelectedMatch = async () => {
+    if (!pulse) return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("fixture", String(pulse.fixture.fixtureId));
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setNotice("Match link copied. It opens this exact fixture and resumes the same context.");
+    } catch {
+      setNotice(url.toString());
+    }
+  };
+
+  const toggleSpoilerShield = () => {
+    const next = !preferences.spoilerFree;
+    setPreferences((current) => ({ ...current, spoilerFree: next }));
+    if (next) setRevealedScores(new Set());
+    setNotice(next ? "Spoiler Shield enabled for every finished match." : "Finished scores and recaps are visible again.");
   };
 
   const startCatchUp = async () => {
@@ -212,10 +281,13 @@ export function PulseDashboard() {
       const response = await fetch(`/api/matches/${livePulse.fixture.fixtureId}${query}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Historical match log is not available yet");
       const full = (await response.json()) as MatchPulse;
-      setCatchUp(full);
+      const signals = sportingMoments(full.moments);
+      if (!signals.length) throw new Error("No on-pitch moments are available for catch-up yet");
+      const replay = { ...full, moments: signals };
+      setCatchUp(replay);
       setCatchUpIndex(1);
       setCatchUpPlaying(true);
-      setNotice(`Catch-up loaded: ${full.moments.length} verified match events.`);
+      setNotice(`Catch-up loaded: ${signals.length} on-pitch moments. Metadata updates are hidden.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not load catch-up");
     }
@@ -339,16 +411,24 @@ export function PulseDashboard() {
     );
   }
 
-  const latest = pulse.moments.at(-1);
+  const signalMoments = sportingMoments(pulse.moments);
+  const latest = signalMoments.at(-1);
   const displayMinute = latest?.minuteLabel ?? pulse.minute;
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
   const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
   const competitionEvidenceUrl = pulse.provenance?.sourceUrl ?? pulse.fixture.competitionSourceUrl;
-  const hasSignalMoments = pulse.moments.some((moment) => moment.type !== "moment");
+  const hasSignalMoments = signalMoments.length > 0;
   const scoreKnown = pulse.source === "demo-replay" || pulse.moments.some((moment) => Boolean(moment.score));
+  const spoilerProtected = preferences.spoilerFree && livePulse?.phase === "FT" && !catchUp && !revealedScores.has(pulse.fixture.fixtureId);
+  const scoreVisible = scoreKnown && !spoilerProtected;
   const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
-  const catchUpSummary = catchUp ? summarizeCatchUp(catchUp.moments) : null;
+  const catchUpSummary = catchUp ? summarizeCatchUp(pulse.moments) : null;
+  const matchBrief = buildMatchBrief(pulse);
+  const hiddenMetadataCount = pulse.moments.length - signalMoments.length;
+  const freshness = freshnessLabel(pulse, nowMs);
+  const homeFollowed = preferences.followedTeams.includes(pulse.fixture.homeTeam);
+  const awayFollowed = preferences.followedTeams.includes(pulse.fixture.awayTeam);
 
   return (
     <main className="app-shell">
@@ -384,11 +464,20 @@ export function PulseDashboard() {
         <button onClick={toggleStream}>{playing ? <CirclePause size={15} /> : <CirclePlay size={15} />} {playing ? "Pause" : "Restart"}</button>
       </section>
 
+      <section className="my-pulse-bar" aria-label="My Pulse preferences">
+        <div><Star size={15} fill={preferences.followedTeams.length ? "currentColor" : "none"} /><span>My Pulse</span><b>{preferences.followedTeams.length} followed team{preferences.followedTeams.length === 1 ? "" : "s"}</b></div>
+        <p>{preferences.followedTeams.length ? preferences.followedTeams.join(" · ") : "Follow a team below to create your personal matchday feed."}</p>
+        <button disabled={!preferences.followedTeams.length} onClick={() => setMatchFilter("mine")}><Star size={13} /> My matches</button>
+        <button className={preferences.spoilerFree ? "active" : ""} aria-pressed={preferences.spoilerFree} onClick={toggleSpoilerShield}>
+          {preferences.spoilerFree ? <EyeOff size={13} /> : <Eye size={13} />} {preferences.spoilerFree ? "Spoiler shield on" : "Hide finished scores"}
+        </button>
+      </section>
+
       <section className="match-center" aria-label="Match center">
         <div className="match-center-head">
           <div><span className="eyebrow">Multi-match center</span><h2>Follow every covered fixture</h2></div>
           <div className="match-filters" aria-label="Filter matches">
-            {(["all", "live", "finished"] as const).map((filter) => (
+            {(["all", "live", "finished", "mine"] as const).map((filter) => (
               <button key={filter} className={matchFilter === filter ? "active" : ""} onClick={() => setMatchFilter(filter)}>{filter}</button>
             ))}
           </div>
@@ -397,6 +486,7 @@ export function PulseDashboard() {
           {visibleMatches.map((match) => {
             const home = getTeamBranding(match.fixture.homeTeam);
             const away = getTeamBranding(match.fixture.awayTeam);
+            const hideScore = preferences.spoilerFree && match.phase === "FT" && !revealedScores.has(match.fixture.fixtureId);
             return (
               <button
                 className={`match-tile ${match.fixture.fixtureId === selectedFixtureId ? "selected" : ""}`}
@@ -407,17 +497,17 @@ export function PulseDashboard() {
                 <span className="match-tile-top"><b>{match.phase}</b><small>{match.phase === "FT" ? "Full time" : match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
                 <span className={`match-competition ${match.fixture.competition === "FIFA World Cup 2026" ? "world-cup" : "unverified"}`}>{match.fixture.competition}</span>
                 <span className="match-stage"><span>{match.fixture.stage}</span><small>{competitionSourceLabel(match.fixture.competitionSource)}</small></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{match.scoreKnown ? match.score[0] : "–"}</b></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{match.scoreKnown ? match.score[1] : "–"}</b></span>
-                <span className="match-tile-foot"><Radio size={11} /> {match.momentCount} {match.source === "demo-replay" ? "report events · open recap" : "feed events"}</span>
+                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{hideScore ? "•" : match.scoreKnown ? match.score[0] : "–"}</b></span>
+                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{hideScore ? "•" : match.scoreKnown ? match.score[1] : "–"}</b></span>
+                <span className="match-tile-foot">{hideScore ? <EyeOff size={11} /> : <Radio size={11} />} {hideScore ? "Result hidden · open spoiler-free" : `${match.momentCount} ${match.source === "demo-replay" ? "report events · open recap" : "source records"}`}</span>
               </button>
             );
           })}
-          {!visibleMatches.length && <div className="empty-matches">No fixtures in this filter.</div>}
+          {!visibleMatches.length && <div className="empty-matches">{matchFilter === "mine" ? "Follow France, Spain or another team below to build My Matches." : "No fixtures in this filter."}</div>}
         </div>
       </section>
 
-      <UpcomingMatchHub />
+      <UpcomingMatchHub followedTeams={preferences.followedTeams} />
 
       <div className="dashboard-grid" id="top">
         <section className="main-column">
@@ -449,6 +539,7 @@ export function PulseDashboard() {
               <span className="competition-meta"><b>{pulse.fixture.competition}</b><small>{pulse.fixture.stage}</small><em>{competitionSourceLabel(pulse.fixture.competitionSource)}</em></span>
               <span><Clock3 size={13} /> {displayMinute}&apos;</span>
             </div>
+            <div className="freshness-row"><span><Wifi size={12} /> {freshness}</span><button onClick={() => void shareSelectedMatch()}><Share2 size={12} /> Copy match link</button></div>
             <div className="teams">
               <div className="team team-home">
                 <div className="team-orb" role="img" aria-label={`${homeBrand.canonicalName} flag, team code ${homeBrand.code}`}>
@@ -457,10 +548,12 @@ export function PulseDashboard() {
                 </div>
                 <h1>{pulse.fixture.homeTeam}</h1>
                 <span>Home</span>
+                <button className={`team-follow ${homeFollowed ? "active" : ""}`} aria-pressed={homeFollowed} onClick={() => toggleTeam(pulse.fixture.homeTeam)}><Star size={12} fill={homeFollowed ? "currentColor" : "none"} /> {homeFollowed ? "Following" : "Follow"}</button>
               </div>
               <div className="score">
-                <strong>{scoreKnown ? pulse.score[0] : "–"}</strong><i>:</i><strong>{scoreKnown ? pulse.score[1] : "–"}</strong>
+                <strong>{scoreVisible ? pulse.score[0] : spoilerProtected ? "•" : "–"}</strong><i>:</i><strong>{scoreVisible ? pulse.score[1] : spoilerProtected ? "•" : "–"}</strong>
                 <small>Fixture #{pulse.fixture.fixtureId}</small>
+                {spoilerProtected && <button className="reveal-score" onClick={() => setRevealedScores((current) => new Set(current).add(pulse.fixture.fixtureId))}><Eye size={12} /> Reveal result</button>}
               </div>
               <div className="team team-away">
                 <div className="team-orb" role="img" aria-label={`${awayBrand.canonicalName} flag, team code ${awayBrand.code}`}>
@@ -469,11 +562,12 @@ export function PulseDashboard() {
                 </div>
                 <h1>{pulse.fixture.awayTeam}</h1>
                 <span>Away</span>
+                <button className={`team-follow ${awayFollowed ? "active" : ""}`} aria-pressed={awayFollowed} onClick={() => toggleTeam(pulse.fixture.awayTeam)}><Star size={12} fill={awayFollowed ? "currentColor" : "none"} /> {awayFollowed ? "Following" : "Follow"}</button>
               </div>
             </div>
             <div className="momentum-block">
-              <div className="section-label"><span>Match pulse</span><span>{hasSignalMoments ? `${pulse.momentum}% · ${100 - pulse.momentum}%` : "Awaiting sporting events"}</span></div>
-              {hasSignalMoments ? <>
+              <div className="section-label"><span>Match pulse</span><span>{spoilerProtected ? "Protected" : hasSignalMoments ? `${pulse.momentum}% · ${100 - pulse.momentum}%` : "Awaiting sporting events"}</span></div>
+              {spoilerProtected ? <div className="momentum-labels"><span>Spoiler Shield also hides the final momentum balance.</span></div> : hasSignalMoments ? <>
                 <div className="momentum-track"><span style={{ width: `${pulse.momentum}%` }} /></div>
                 <div className="momentum-labels"><span>{pulse.fixture.homeTeam} pressure</span><span>{pulse.fixture.awayTeam} pressure</span></div>
               </> : <div className="momentum-labels"><span>Coverage metadata only — no pressure estimate yet.</span></div>}
@@ -483,24 +577,28 @@ export function PulseDashboard() {
           <article className="pulse-card panel">
             <div className="panel-heading">
               <div>
-                <span className="eyebrow">Latest signal</span>
-                <h2>{latest?.title}</h2>
+                <span className="eyebrow">{spoilerProtected ? "Spoiler shield" : pulse.phase === "FT" ? "Match brief" : "Latest signal"}</span>
+                <h2>{spoilerProtected ? "The result is protected" : matchBrief.headline}</h2>
               </div>
-              <div className="signal-icon"><Zap size={22} /></div>
+              <div className="signal-icon">{spoilerProtected ? <EyeOff size={22} /> : <Zap size={22} />}</div>
             </div>
-            <p>{latest?.description}</p>
+            {spoilerProtected
+              ? <p>Start Catch-up to experience the match from kick-off, or reveal the full result when you are ready.</p>
+              : <div className="brief-lines">{matchBrief.lines.map((line) => <p key={line}>{line}</p>)}</div>}
             <div className="explain-row">
-              <Sparkles size={15} /> Plain-language context generated deterministically from the {pulse.source === "demo-replay" ? "cross-checked fallback action" : "TxLINE action type"}.
+              <Sparkles size={15} /> {spoilerProtected ? "No score, scorer or card details are exposed until you choose." : `Built deterministically from ${signalMoments.length} on-pitch source event${signalMoments.length === 1 ? "" : "s"}; no unsupported stats are inferred.`}
             </div>
           </article>
 
           <article className="timeline panel">
             <div className="panel-heading compact">
-              <div><span className="eyebrow">Live timeline</span><h2>{hasSignalMoments ? "Moments that moved the match" : "Verified feed metadata"}</h2></div>
-              <span className="event-count">{pulse.moments.length} events</span>
+              <div><span className="eyebrow">On-pitch timeline</span><h2>{spoilerProtected ? "Timeline protected" : hasSignalMoments ? "Moments that moved the match" : "Waiting for sporting events"}</h2></div>
+              <span className="event-count">{signalMoments.length} on-pitch</span>
             </div>
             <div className="timeline-list">
-              {[...pulse.moments].reverse().map((moment) => (
+              {spoilerProtected ? (
+                <div className="timeline-empty"><EyeOff size={20} /><strong>Spoiler shield is active</strong><span>Use Catch-up for a progressive replay, or reveal the result above.</span></div>
+              ) : [...signalMoments].reverse().map((moment) => (
                 <div className={`timeline-item ${moment.type}`} key={moment.id}>
                   <div className="minute">{moment.minuteLabel ?? moment.minute}&apos;</div>
                   <div className="event-node">{iconFor(moment)}</div>
@@ -527,6 +625,7 @@ export function PulseDashboard() {
                   </button>
                 </div>
               ))}
+              {!spoilerProtected && !signalMoments.length && <div className="timeline-empty"><Radio size={20} /><strong>TxLINE is connected</strong><span>No goal, shot, card, VAR or phase event has arrived. {hiddenMetadataCount ? `${hiddenMetadataCount} technical metadata update${hiddenMetadataCount === 1 ? " is" : "s are"} hidden from this consumer timeline.` : ""}</span></div>}
             </div>
           </article>
         </section>
