@@ -2,6 +2,15 @@
 
 PulseProof is a live football second screen that turns TxLINE score events into simple fan context and a verifiable **Proof of Watch** on Solana. It is designed for the TxODDS **Consumer and Fan Experiences** track.
 
+## Public release
+
+- Live app: [https://pulseproof-production-06fa.up.railway.app](https://pulseproof-production-06fa.up.railway.app)
+- Health: [https://pulseproof-production-06fa.up.railway.app/api/health](https://pulseproof-production-06fa.up.railway.app/api/health)
+- Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
+- CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
+
+The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields; PulseProof leaves those values explicitly unavailable and uses the separately source-linked schedule instead of inventing dates or tournament status.
+
 ## Verified devnet deployment
 
 - PulseProof program: [`74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet)
@@ -20,14 +29,14 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Multi-match center for up to eight covered fixtures with live/finished filters and standard team flags/codes.
 - Direct TxLINE `/scores/stream` SSE bridge with fixture filtering, sequence de-duplication, heartbeat and reconnect.
 - Snapshot-to-now and historical Catch-up with timeline scrubbing and 1x/2x/4x playback.
-- Upcoming Match Hub sourced from the TxLINE fixture snapshot, with local timezone, countdown, saved reminders and `.ics` calendar export.
+- Upcoming Match Hub prefers complete TxLINE fixture metadata and otherwise uses a source-linked, integrity-checked schedule, with local timezone, countdown, saved reminders and `.ics` calendar export.
 - Judge Verification Lab that proves an evidence-bound Ed25519 attestation without requiring Phantom, SOL or a transaction.
 - Three completed, externally cross-checked match replays whose local sequence IDs remain explicitly non-TxLINE.
 - Phantom wallet connection and raw Solana transaction builder.
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Thirty-six automated unit tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and ten adversarial/integrity assertions.
+- Thirty-eight automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 

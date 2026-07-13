@@ -119,9 +119,11 @@ export function normalizeFixture(raw: AnyRecord): Fixture {
     fixtureId: numberValue(raw, "FixtureId", "fixtureId") ?? 0,
     homeTeam: participant1IsHome ? participant1 : participant2,
     awayTeam: participant1IsHome ? participant2 : participant1,
-    startTime: stringValue(raw, "StartTime", "startTime") ?? new Date().toISOString(),
-    stage: stringValue(raw, "CompetitionName", "competitionName", "Group", "group") ?? "World Cup 2026",
-    gameState: numberValue(raw, "GameState", "gameState") ?? 1,
+    // The devnet snapshot can intentionally contain only IDs and participants.
+    // An empty value is safer than presenting request time as an official kick-off.
+    startTime: stringValue(raw, "StartTime", "startTime") ?? "",
+    stage: stringValue(raw, "CompetitionName", "competitionName", "Group", "group") ?? "TxLINE fixture · competition unavailable",
+    gameState: numberValue(raw, "GameState", "gameState") ?? -1,
   };
 }
 
@@ -148,7 +150,9 @@ function momentCopy(type: MomentType, teamName: string) {
     var: ["VAR review", "A major moment is being checked.", 8, 5],
     halftime: ["Half-time pulse", "A natural pause to read how the match has changed.", 8, 4],
     final: ["Full-time memory", "The final TxLINE record seals this match.", 20, 7],
-    moment: ["Live match update", "A new verified TxLINE event arrived.", 2, 1],
+    // Comments and coverage metadata are useful provenance, but are not sporting
+    // achievements and must never mint fan points by themselves.
+    moment: ["TxLINE coverage update", "A verified feed metadata event arrived.", 0, 0],
   };
   return copy[type];
 }
@@ -207,7 +211,8 @@ export async function getFixturePulse(fixture: Fixture, historical = false): Pro
   const moments = raw.map((entry) => normalizeScoreRecord(entry, fixture));
   const last = moments.at(-1);
   const score = [...moments].reverse().find((moment) => moment.score)?.score ?? [0, 0];
-  const phase = last?.type === "final" ? "FT" : last?.type === "halftime" ? "HT" : "LIVE";
+  const phase = inferMatchPhase(moments);
+  const { network } = getTxLineConfig();
   return {
     fixture,
     source: (historical ? "txline-historical" : "txline-live") as DataSource,
@@ -215,13 +220,20 @@ export async function getFixturePulse(fixture: Fixture, historical = false): Pro
     minute: last?.minute ?? 0,
     score,
     momentum: calculateMomentum(moments),
-    updatedAt: last?.occurredAt ?? new Date().toISOString(),
+    updatedAt: last?.occurredAt ?? fixture.startTime,
     moments,
     provenance: {
-      provider: historical ? "TxLINE historical score log" : "TxLINE live score snapshot",
+      provider: historical ? `TxLINE ${network} historical score log` : `TxLINE ${network} score snapshot`,
       verifiedAt: new Date().toISOString(),
     },
   };
+}
+
+export function inferMatchPhase(moments: PulseMoment[]): string {
+  if (moments.some((moment) => moment.type === "final")) return "FT";
+  if (moments.some((moment) => moment.type === "halftime")) return "HT";
+  if (moments.some((moment) => moment.type === "kickoff")) return "LIVE";
+  return moments.length ? "COVERED" : "WAITING";
 }
 
 function statKeysForMoment(moment: PulseMoment): number[] {

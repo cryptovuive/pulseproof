@@ -49,7 +49,14 @@ export async function listAvailableFixtures(): Promise<{
     try {
       const fixtures = await getFixtures();
       const candidates = [...fixtures]
-        .sort((a, b) => Math.abs(Date.parse(a.startTime) - Date.now()) - Math.abs(Date.parse(b.startTime) - Date.now()))
+        .sort((a, b) => {
+          const aTime = Date.parse(a.startTime);
+          const bTime = Date.parse(b.startTime);
+          if (Number.isFinite(aTime) && Number.isFinite(bTime)) return Math.abs(aTime - Date.now()) - Math.abs(bTime - Date.now());
+          if (Number.isFinite(aTime)) return -1;
+          if (Number.isFinite(bTime)) return 1;
+          return a.fixtureId - b.fixtureId;
+        })
         .slice(0, 8);
       const loaded = await Promise.allSettled(candidates.map((fixture) => getFixturePulse(fixture)));
       const matches: MatchOverview[] = candidates.map((fixture, index) => {
@@ -65,7 +72,11 @@ export async function listAvailableFixtures(): Promise<{
             momentCount: result.value.moments.length,
           };
         }
-        return { fixture, source: "txline-live", phase: "NS", minute: 0, score: [0, 0], updatedAt: fixture.startTime, momentCount: 0 };
+        return { fixture, source: "txline-live", phase: "WAITING", minute: 0, score: [0, 0], updatedAt: fixture.startTime, momentCount: 0 };
+      });
+      matches.sort((a, b) => {
+        const liveDifference = Number(b.phase === "LIVE") - Number(a.phase === "LIVE");
+        return liveDifference || b.momentCount - a.momentCount || a.fixture.fixtureId - b.fixture.fixtureId;
       });
       return { fixtures, matches, source: "txline-live" };
     } catch (error) {

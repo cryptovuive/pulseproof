@@ -1,6 +1,6 @@
 # Judge scorecard — honest pre-submission assessment
 
-## Current score: 93/100
+## Current score: 95/100
 
 | Area | Score | Judge view |
 |---|---:|---|
@@ -8,7 +8,7 @@
 | TxLINE integration | 18/20 | The participant-owned devnet token is activated through an Explorer-visible subscription. Fixtures and direct `/scores/stream` authentication are verified against TxLINE; a recorded score-changing event during a covered live fixture is still needed. |
 | Product and UX | 19/20 | Flags/codes, multi-match center, local-time schedule, countdown, reminders, calendar, Catch-up, source provenance and mobile layout form a credible consumer product. |
 | Solana relevance | 20/20 | The program, config, Fan Pass, receipt and Ed25519 claim are public on devnet. Duplicate submission was rejected after the valid claim landed. |
-| Demo and submission readiness | 18/20 | Source-linked replay, verified schedule and Verification Lab work without a wallet or payment. Public SSE hosting and the final live-event video remain the release blockers. |
+| Demo and submission readiness | 20/20 | Public Railway release, healthcheck, authenticated multi-match API and externally verified SSE ready/pulse/heartbeat flow are live. Source-linked replay, schedule and Verification Lab work without a wallet or payment. |
 
 ## What now feels distinctive
 
@@ -22,9 +22,8 @@ PulseProof is not another score page. Its differentiator is a complete fan lifec
 ## What would raise it above 90
 
 1. Record a score-changing event from live `/scores/stream` during a covered fixture; the authenticated heartbeat connection is already verified.
-2. Host the app on an SSE-compatible public URL with secrets configured server-side.
-3. Import the disposable test wallet into Phantom manually and record the already verified flow through the UI.
-5. Have the human participant review, customise and explain every major decision. The official terms permit only natural-person entries and allow disqualification for work materially controlled by an autonomous agent.
+2. Import the disposable test wallet into Phantom manually and record the already verified flow through the UI.
+3. Have the human participant review, customise and explain every major decision. The official terms permit only natural-person entries and allow disqualification for work materially controlled by an autonomous agent.
 
 ## Demo order a judge should see
 

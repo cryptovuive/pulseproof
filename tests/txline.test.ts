@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateMomentum, normalizeFixture, normalizeScoreRecord } from "@/lib/txline";
+import { calculateMomentum, inferMatchPhase, normalizeFixture, normalizeScoreRecord } from "@/lib/txline";
 
 describe("TxLINE normalisation", () => {
   const fixture = normalizeFixture({
@@ -15,6 +15,11 @@ describe("TxLINE normalisation", () => {
     expect(fixture).toMatchObject({ fixtureId: 18209181, homeTeam: "France", awayTeam: "Morocco", gameState: 1 });
   });
 
+  it("does not invent fixture metadata omitted by the devnet snapshot", () => {
+    const sparse = normalizeFixture({ FixtureId: 7, Participant1: "France", Participant2: "Spain" });
+    expect(sparse).toMatchObject({ startTime: "", stage: "TxLINE fixture · competition unavailable", gameState: -1 });
+  });
+
   it("maps a score action without trusting client-authored copy", () => {
     const moment = normalizeScoreRecord(
       { FixtureId: 18209181, Seq: 41, Ts: 1783628400000, Action: "goal", Participant: "Morocco", Minute: 18, Stats: { 1: 0, 2: 1 } },
@@ -28,5 +33,12 @@ describe("TxLINE normalisation", () => {
       normalizeScoreRecord({ Seq: index + 1, Action: "goal", Participant: "France", Minute: index }, fixture),
     );
     expect(calculateMomentum(moments)).toBeLessThanOrEqual(88);
+  });
+
+  it("does not call metadata-only coverage a live match or award it points", () => {
+    const metadata = normalizeScoreRecord({ Seq: 1, Action: "coverage_update" }, fixture);
+    expect(metadata).toMatchObject({ type: "moment", points: 0, badge: 0 });
+    expect(inferMatchPhase([metadata])).toBe("COVERED");
+    expect(inferMatchPhase([])).toBe("WAITING");
   });
 });

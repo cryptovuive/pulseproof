@@ -11,7 +11,7 @@ export async function listUpcomingSchedule(now = new Date()): Promise<{
     try {
       const current = now.getTime();
       const entries: ScheduleEntry[] = (await getFixtures())
-        .filter((fixture) => Date.parse(fixture.startTime) > current)
+        .filter((fixture) => Number.isFinite(Date.parse(fixture.startTime)) && Date.parse(fixture.startTime) > current)
         .sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))
         .slice(0, 16)
         .map((fixture) => ({
@@ -20,7 +20,10 @@ export async function listUpcomingSchedule(now = new Date()): Promise<{
           coverage: "txline-confirmed",
           provenance: { provider: "TxLINE fixtures snapshot", verifiedAt: now.toISOString() },
         }));
-      return { entries, source: "txline-fixtures" };
+      // Devnet may publish covered fixture IDs without authoritative kick-off
+      // metadata. In that case use the separately sourced schedule instead of
+      // manufacturing dates from the time of the API request.
+      if (entries.length) return { entries, source: "txline-fixtures" };
     } catch (error) {
       if (!demoReplayEnabled()) throw error;
     }

@@ -13,6 +13,8 @@
 
 All addresses and signatures are public devnet evidence. Wallet, TxLINE token, attestor secret and program keypair remain local/hosting secrets.
 
+Public web release: `https://pulseproof-production-06fa.up.railway.app` on Railway project `poetic-growth`. The service uses `Dockerfile` + `railway.json`, `/api/health` as its deploy healthcheck, and server-only secret variables.
+
 ## 1. Activate TxLINE on one network
 
 Follow the official World Cup free-tier guide. Keep RPC, TxLINE program, API host, wallet and activation transaction on the same network.
@@ -96,6 +98,8 @@ npm start
 ```
 
 The hosting platform must support long-lived streaming responses. If it buffers or terminates SSE, keep the same UI but switch the client to poll `/api/matches/{fixtureId}` every three seconds.
+
+The Railway release was externally verified with a 20-second streaming request: HTTP `200`, `Content-Type: text/event-stream`, `X-Accel-Buffering: no`, followed by `ready`, `pulse` and a 15-second `heartbeat` while the connection remained open.
 
 ## 6. Release verification
 

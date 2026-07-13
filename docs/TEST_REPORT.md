@@ -1,6 +1,6 @@
 # Verification report
 
-Date: 12 July 2026
+Date: 13 July 2026
 Environment: Windows + WSL2 Ubuntu 24.04, Node.js 20.19, Rust 1.97, Solana CLI 2.3.0, Anchor 0.32.1.
 
 ## Automated unit tests
@@ -11,9 +11,11 @@ Command:
 npm test
 ```
 
-Result: **36/36 passed** across eight suites.
+Result: **38/38 passed** across eight suites.
 
 - TxLINE fixture and score-action schema normalisation.
+- Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
+- Metadata-only coverage records never imply live play or award fan points.
 - Momentum bounds.
 - Canonical Ed25519 message verification.
 - Post-signature points tampering rejection.
@@ -129,10 +131,13 @@ npm audit --omit=dev
 - Deployed the 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `36/36` unit/integration tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- `38/38` unit/integration tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
+- Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
+- Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.
+- Sparse devnet fixtures no longer invent a start time, competition or game state; metadata-only `coverage_update/comment` records are labelled `COVERED`, award zero points and never imply the match is live.
 
 ## Remaining external verification
 
 - A score-changing TxLINE stream record during a covered live fixture; the current 30-second proof window contained only a genuine heartbeat.
-- Hosting-platform SSE duration/buffering on the final public domain.
 - Phantom extension UI recording against the deployed program; the same disposable wallet already produced the Explorer-visible devnet claim through the transaction builder.

@@ -1,6 +1,6 @@
 # Submission-ready copy
 
-Replace the remaining live-app/video placeholders before submission. The on-chain links below were verified on public devnet.
+Replace the remaining video placeholder before submission. The app, repository and on-chain links below were verified publicly.
 
 ## Project name
 
@@ -37,7 +37,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana Ed25519 precompile verification with exact preceding-instruction and message checks.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
-- Lint, production build, eleven unit tests and a real local-validator adversarial suite pass.
+- Lint, production build, 38 unit/integration tests and a real local-validator adversarial suite pass.
 
 ## Commercial path
 
@@ -45,12 +45,12 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 
 ## Links
 
-- Live app: `<https://...>`
+- Live app: `https://pulseproof-production-06fa.up.railway.app`
 - Demo video (≤5 minutes): `<https://...>`
 - Public repository: `https://github.com/cryptovuive/pulseproof`
 - Devnet program: `https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet`
 - Example transaction: `https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet`
-- Health endpoint: `<https://.../api/health>`
+- Health endpoint: `https://pulseproof-production-06fa.up.railway.app/api/health`
 
 ## TxLINE feedback — edit after real use
 

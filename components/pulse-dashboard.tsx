@@ -330,6 +330,7 @@ export function PulseDashboard() {
   const latest = pulse.moments.at(-1);
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
+  const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
   const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE live") : status;
   const catchUpSummary = catchUp ? summarizeCatchUp(catchUp.moments) : null;
 
@@ -353,10 +354,12 @@ export function PulseDashboard() {
       </header>
 
       <section className="demo-banner" role="note">
-        <div><Radio size={14} /> {pulse.source === "demo-replay" ? "Labelled demo mode" : "Live TxLINE mode"}</div>
+        <div><Radio size={14} /> {pulse.source === "demo-replay" ? "Labelled demo mode" : txLineDevnet ? "TxLINE devnet coverage" : "Live TxLINE mode"}</div>
         <p>
           {pulse.source === "demo-replay"
             ? "Results and key moments are cross-checked from published reports; demo sequence IDs are not represented as TxLINE-verified data."
+            : txLineDevnet
+              ? "Fixture IDs, teams and events come from the activated TxLINE devnet feed. Missing competition or kick-off fields stay explicitly unavailable; the official schedule is sourced separately."
             : "Scores and match events are being read from TxLINE's live SSE feed using an activated Solana subscription."}
         </p>
         {pulse.provenance?.sourceUrl && <a className="banner-source" href={pulse.provenance.sourceUrl} target="_blank" rel="noreferrer">Source · {pulse.provenance.provider}</a>}
