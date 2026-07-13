@@ -455,9 +455,11 @@ export function PulseDashboard() {
               </div>
             </div>
             <div className="momentum-block">
-              <div className="section-label"><span>Match pulse</span><span>{pulse.momentum}% · {100 - pulse.momentum}%</span></div>
-              <div className="momentum-track"><span style={{ width: `${pulse.momentum}%` }} /></div>
-              <div className="momentum-labels"><span>{pulse.fixture.homeTeam} pressure</span><span>{pulse.fixture.awayTeam} pressure</span></div>
+              <div className="section-label"><span>Match pulse</span><span>{hasSignalMoments ? `${pulse.momentum}% · ${100 - pulse.momentum}%` : "Awaiting sporting events"}</span></div>
+              {hasSignalMoments ? <>
+                <div className="momentum-track"><span style={{ width: `${pulse.momentum}%` }} /></div>
+                <div className="momentum-labels"><span>{pulse.fixture.homeTeam} pressure</span><span>{pulse.fixture.awayTeam} pressure</span></div>
+              </> : <div className="momentum-labels"><span>Coverage metadata only — no pressure estimate yet.</span></div>}
             </div>
           </article>
 
@@ -477,7 +479,7 @@ export function PulseDashboard() {
 
           <article className="timeline panel">
             <div className="panel-heading compact">
-              <div><span className="eyebrow">Live timeline</span><h2>Moments that moved the match</h2></div>
+              <div><span className="eyebrow">Live timeline</span><h2>{hasSignalMoments ? "Moments that moved the match" : "Verified feed metadata"}</h2></div>
               <span className="event-count">{pulse.moments.length} events</span>
             </div>
             <div className="timeline-list">
@@ -521,8 +523,8 @@ export function PulseDashboard() {
 
           <article className="room-card panel">
             <div className="room-title"><Users size={17} /><span>Watch room</span><b>{roomTotal} fans</b></div>
-            <h3>Who owns the next ten minutes?</h3>
-            <p>React with your read. No wagers, no entry fee—just a shared fan pulse.</p>
+            <h3>{hasSignalMoments ? "Who owns the next ten minutes?" : "Fan room preview"}</h3>
+            <p>This prototype vote stays local to your browser. No wagers, no entry fee—just a shared fan pulse.</p>
             <div className="room-options">
               <button className={roomVote === "home" ? "active" : ""} aria-pressed={roomVote === "home"} onClick={() => voteInRoom("home")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={homeBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.homeTeam}<b>{roomPercent(roomCounts.home)}%</b></button>
               <button className={roomVote === "away" ? "active" : ""} aria-pressed={roomVote === "away"} onClick={() => voteInRoom("away")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={awayBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.awayTeam}<b>{roomPercent(roomCounts.away)}%</b></button>
