@@ -15,30 +15,48 @@ const VERIFIED_UPCOMING_FIXTURES: Array<{
   sourceUrl: string;
 }> = [
   {
-    fixture: { fixtureId: 101, homeTeam: "France", awayTeam: "Spain", startTime: "2026-07-14T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Semi-final · Dallas Stadium", gameState: 0 },
+    fixture: { fixtureId: 101, homeTeam: "France", awayTeam: "Spain", startTime: "2026-07-14T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: FIFA_SCHEDULE_URL, stage: "Semi-final · Dallas Stadium", gameState: 0 },
     coverage: "externally-confirmed",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,
   },
   {
-    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Semi-final · Atlanta Stadium", gameState: 0 },
+    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_ENGLAND_URL, stage: "Semi-final · Atlanta Stadium", gameState: 0 },
     coverage: "externally-confirmed",
     provider: "FIFA schedule + AP quarter-final confirmation",
     sourceUrl: AP_ENGLAND_URL,
   },
   {
-    fixture: { fixtureId: 103, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Third place · Miami Stadium", gameState: 0 },
+    fixture: { fixtureId: 103, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: FIFA_SCHEDULE_URL, stage: "Third place · Miami Stadium", gameState: 0 },
     coverage: "participants-pending",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,
   },
   {
-    fixture: { fixtureId: 104, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", stage: "Final · New York New Jersey Stadium", gameState: 0 },
+    fixture: { fixtureId: 104, homeTeam: "TBD", awayTeam: "TBD", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: FIFA_SCHEDULE_URL, stage: "Final · New York New Jersey Stadium", gameState: 0 },
     coverage: "participants-pending",
     provider: "FIFA match schedule",
     sourceUrl: FIFA_SCHEDULE_URL,
   },
 ];
+
+export function enrichFixtureFromVerifiedSchedule(fixture: Fixture, now = new Date()): Fixture {
+  if (fixture.competitionSource !== "unavailable") return fixture;
+  const match = VERIFIED_UPCOMING_FIXTURES.find(({ fixture: verified }) =>
+    verified.homeTeam === fixture.homeTeam && verified.awayTeam === fixture.awayTeam,
+  );
+  if (!match) return fixture;
+  const withinVerificationWindow = Math.abs(Date.parse(match.fixture.startTime) - now.getTime()) <= 7 * 24 * 60 * 60_000;
+  if (!withinVerificationWindow) return fixture;
+  return {
+    ...fixture,
+    startTime: fixture.startTime || match.fixture.startTime,
+    competition: match.fixture.competition,
+    competitionSource: "verified-schedule",
+    competitionSourceUrl: match.sourceUrl,
+    stage: fixture.stage === "Stage unavailable" ? match.fixture.stage : fixture.stage,
+  };
+}
 
 export function verifiedSchedule(now = new Date()): ScheduleEntry[] {
   const current = now.getTime();

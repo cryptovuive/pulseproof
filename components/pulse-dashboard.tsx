@@ -56,6 +56,13 @@ const iconFor = (moment: PulseMoment) => {
   return <Zap size={15} />;
 };
 
+const competitionSourceLabel = (source: MatchPulse["fixture"]["competitionSource"]) => ({
+  txline: "Competition from TxLINE",
+  "verified-schedule": "Competition cross-checked with published schedule",
+  "published-report": "Result cross-checked with published report",
+  unavailable: "Competition not supplied by TxLINE",
+})[source];
+
 export function PulseDashboard() {
   const [pulses, setPulses] = useState<Record<number, MatchPulse>>({});
   const [matches, setMatches] = useState<MatchOverview[]>([]);
@@ -337,6 +344,7 @@ export function PulseDashboard() {
   const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
   const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
   const txLineDevnet = pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
+  const competitionEvidenceUrl = pulse.provenance?.sourceUrl ?? pulse.fixture.competitionSourceUrl;
   const hasSignalMoments = pulse.moments.some((moment) => moment.type !== "moment");
   const scoreKnown = pulse.source === "demo-replay" || pulse.moments.some((moment) => Boolean(moment.score));
   const statusLabel = catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
@@ -367,10 +375,12 @@ export function PulseDashboard() {
           {pulse.source === "demo-replay"
             ? "Results and key moments are cross-checked from published reports; demo sequence IDs are not represented as TxLINE-verified data."
             : txLineDevnet
-              ? "Fixture IDs, teams and events come from the activated TxLINE devnet feed. Missing competition or kick-off fields stay explicitly unavailable; the official schedule is sourced separately."
+              ? pulse.fixture.competitionSource === "verified-schedule"
+                ? "Fixture ID, teams and events come from TxLINE devnet; competition, round and kick-off are cross-checked separately against the published World Cup schedule."
+                : "Fixture IDs, teams and events come from the activated TxLINE devnet feed. Missing competition or kick-off fields stay explicitly unavailable; the official schedule is sourced separately."
             : "Scores and match events are being read from TxLINE's live SSE feed using an activated Solana subscription."}
         </p>
-        {pulse.provenance?.sourceUrl && <a className="banner-source" href={pulse.provenance.sourceUrl} target="_blank" rel="noreferrer">Source · {pulse.provenance.provider}</a>}
+        {competitionEvidenceUrl && <a className="banner-source" href={competitionEvidenceUrl} target="_blank" rel="noreferrer">Source · {pulse.provenance?.sourceUrl ? pulse.provenance.provider : competitionSourceLabel(pulse.fixture.competitionSource)}</a>}
         <button onClick={toggleStream}>{playing ? <CirclePause size={15} /> : <CirclePlay size={15} />} {playing ? "Pause" : "Restart"}</button>
       </section>
 
@@ -396,7 +406,7 @@ export function PulseDashboard() {
               >
                 <span className="match-tile-top"><b>{match.phase}</b><small>{match.phase === "FT" ? "Full time" : match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
                 <span className={`match-competition ${match.fixture.competition === "FIFA World Cup 2026" ? "world-cup" : "unverified"}`}>{match.fixture.competition}</span>
-                <span className="match-stage">{match.fixture.stage}</span>
+                <span className="match-stage"><span>{match.fixture.stage}</span><small>{competitionSourceLabel(match.fixture.competitionSource)}</small></span>
                 <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{match.scoreKnown ? match.score[0] : "–"}</b></span>
                 <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{match.scoreKnown ? match.score[1] : "–"}</b></span>
                 <span className="match-tile-foot"><Radio size={11} /> {match.momentCount} {match.source === "demo-replay" ? "report events · open recap" : "feed events"}</span>
@@ -436,7 +446,7 @@ export function PulseDashboard() {
           <article className="scoreboard panel">
             <div className="scoreboard-meta">
               <div><span className="live-dot" /> {pulse.phase}</div>
-              <span className="competition-meta"><b>{pulse.fixture.competition}</b><small>{pulse.fixture.stage}</small></span>
+              <span className="competition-meta"><b>{pulse.fixture.competition}</b><small>{pulse.fixture.stage}</small><em>{competitionSourceLabel(pulse.fixture.competitionSource)}</em></span>
               <span><Clock3 size={13} /> {displayMinute}&apos;</span>
             </div>
             <div className="teams">

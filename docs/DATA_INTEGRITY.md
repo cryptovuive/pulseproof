@@ -9,6 +9,7 @@ PulseProof treats an incorrect fixture as a product failure, even when the UI is
 3. Participants that depend on future results are rendered as `TBD`; PulseProof never predicts or infers a winner.
 4. If a fallback is older than six hours it is visibly marked `Schedule needs re-check`.
 5. If a source is unavailable and no verified fallback exists, the UI shows an empty state instead of generating a match.
+6. A sparse TxLINE fixture receives tournament/stage/kick-off enrichment only when its home and away teams exactly match a current verified schedule entry inside a seven-day window; the TxLINE fixture ID and event source are preserved and the metadata source is shown separately.
 
 ## Current verified bracket state
 

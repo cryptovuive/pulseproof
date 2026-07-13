@@ -12,7 +12,7 @@ describe("TxLINE normalisation", () => {
   });
 
   it("maps the documented fixture schema", () => {
-    expect(fixture).toMatchObject({ fixtureId: 18209181, homeTeam: "France", awayTeam: "Morocco", competition: "Competition unavailable · TxLINE devnet", stage: "Stage unavailable", gameState: 1 });
+    expect(fixture).toMatchObject({ fixtureId: 18209181, homeTeam: "France", awayTeam: "Morocco", competition: "Competition unavailable · TxLINE devnet", competitionSource: "unavailable", stage: "Stage unavailable", gameState: 1 });
   });
 
   it("does not invent fixture metadata omitted by the devnet snapshot", () => {
@@ -28,7 +28,7 @@ describe("TxLINE normalisation", () => {
       CompetitionName: "FIFA World Cup 2026",
       Group: "Semi-final",
     });
-    expect(complete).toMatchObject({ competition: "FIFA World Cup 2026", stage: "Semi-final" });
+    expect(complete).toMatchObject({ competition: "FIFA World Cup 2026", competitionSource: "txline", stage: "Semi-final" });
   });
 
   it("maps a score action without trusting client-authored copy", () => {

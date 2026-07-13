@@ -60,7 +60,9 @@ button { color: inherit; }
 .match-competition { width: fit-content; max-width: 100%; padding: 4px 7px; border: 1px solid var(--line); border-radius: 999px; color: #aab0aa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 8px; font-weight: 850; letter-spacing: .06em; text-transform: uppercase; }
 .match-competition.world-cup { color: #c5d2ff; border-color: rgba(93,140,255,.32); background: rgba(93,140,255,.09); }
 .match-competition.unverified { color: #d3aa6b; border-color: rgba(255,195,107,.25); background: rgba(255,195,107,.06); }
-.match-stage { min-height: 22px; color: #747b75; overflow: hidden; font-size: 8px; line-height: 1.35; }
+.match-stage { min-height: 31px; display: grid; gap: 2px; color: #747b75; overflow: hidden; font-size: 8px; line-height: 1.35; }
+.match-stage > span, .match-stage > small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.match-stage > small { color: #59615b; font-size: 7px; }
 .match-tile-team { gap: 8px; }
 .match-tile-team strong { font-size: 11px; letter-spacing: .09em; }
 .match-tile-team > b { margin-left: auto; font-size: 21px; font-variant-numeric: tabular-nums; }
@@ -139,6 +141,7 @@ button { color: inherit; }
 .competition-meta { max-width: 390px; display: grid; justify-items: center; gap: 3px; text-align: center; }
 .competition-meta b { color: #c4d1ff; font-size: 10px; }
 .competition-meta small { color: #747b75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 8px; }
+.competition-meta em { color: #59615b; font-size: 7px; font-style: normal; letter-spacing: .04em; text-transform: none; }
 .live-dot { width: 7px; height: 7px; background: var(--acid); border-radius: 50%; box-shadow: 0 0 0 5px rgba(217,255,67,.08); }
 .teams { position: relative; margin: 36px auto 25px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 36px; max-width: 760px; }
 .team { text-align: center; display: grid; justify-items: center; }

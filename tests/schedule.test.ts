@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFixtureCalendar, formatKickoffCountdown, scheduleIntegrityIssues, verifiedSchedule } from "@/lib/schedule";
+import { buildFixtureCalendar, enrichFixtureFromVerifiedSchedule, formatKickoffCountdown, scheduleIntegrityIssues, verifiedSchedule } from "@/lib/schedule";
 
 describe("upcoming match schedule", () => {
   it("returns only future cross-checked fixtures without inventing final participants", () => {
@@ -29,5 +29,27 @@ describe("upcoming match schedule", () => {
     expect(calendar).toContain("DTSTART:20260714T190000Z");
     expect(calendar).toContain("TRIGGER:-PT10M");
     expect(calendar).toContain("Fixture cross-checked via FIFA match schedule");
+  });
+
+  it("enriches only an exact, current schedule match and preserves the TxLINE fixture ID", () => {
+    const txlineFixture = {
+      fixtureId: 18237038,
+      homeTeam: "France",
+      awayTeam: "Spain",
+      startTime: "",
+      competition: "Competition unavailable · TxLINE devnet",
+      competitionSource: "unavailable" as const,
+      stage: "Stage unavailable",
+      gameState: -1,
+    };
+    expect(enrichFixtureFromVerifiedSchedule(txlineFixture, new Date("2026-07-13T00:00:00.000Z"))).toMatchObject({
+      fixtureId: 18237038,
+      competition: "FIFA World Cup 2026",
+      competitionSource: "verified-schedule",
+      stage: "Semi-final · Dallas Stadium",
+      startTime: "2026-07-14T19:00:00.000Z",
+    });
+    expect(enrichFixtureFromVerifiedSchedule({ ...txlineFixture, homeTeam: "Vietnam", awayTeam: "Myanmar" }, new Date("2026-07-13T00:00:00.000Z")))
+      .toMatchObject({ competitionSource: "unavailable", stage: "Stage unavailable" });
   });
 });

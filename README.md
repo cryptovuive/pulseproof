@@ -9,7 +9,7 @@ PulseProof is a live football second screen that turns TxLINE score events into 
 - Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
 - CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
 
-The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields; PulseProof leaves those values explicitly unavailable and uses the separately source-linked schedule instead of inventing dates or tournament status.
+The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields. PulseProof enriches only an exact current team-pair match from the separately source-linked verified schedule and labels that provenance; unmatched fixtures stay explicitly unavailable instead of receiving an invented tournament.
 
 ## Verified devnet deployment
 
@@ -36,7 +36,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Forty-two automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- Forty-three automated unit/integration tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 

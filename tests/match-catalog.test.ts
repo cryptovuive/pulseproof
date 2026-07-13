@@ -9,6 +9,7 @@ vi.mock("@/lib/txline", () => ({
     awayTeam: "Myanmar",
     startTime: "",
     competition: "Competition unavailable · TxLINE devnet",
+    competitionSource: "unavailable",
     stage: "Stage unavailable",
     gameState: -1,
   }],

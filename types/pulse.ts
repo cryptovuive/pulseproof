@@ -17,6 +17,8 @@ export interface Fixture {
   awayTeam: string;
   startTime: string;
   competition: string;
+  competitionSource: "txline" | "verified-schedule" | "published-report" | "unavailable";
+  competitionSourceUrl?: string;
   stage: string;
   gameState: number;
 }

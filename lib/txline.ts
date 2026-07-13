@@ -115,6 +115,7 @@ export function normalizeFixture(raw: AnyRecord): Fixture {
   const participant1 = String(raw.Participant1 ?? raw.participant1 ?? "Team 1");
   const participant2 = String(raw.Participant2 ?? raw.participant2 ?? "Team 2");
   const participant1IsHome = raw.Participant1IsHome ?? raw.participant1IsHome ?? true;
+  const competition = stringValue(raw, "CompetitionName", "competitionName");
   return {
     fixtureId: numberValue(raw, "FixtureId", "fixtureId") ?? 0,
     homeTeam: participant1IsHome ? participant1 : participant2,
@@ -122,7 +123,8 @@ export function normalizeFixture(raw: AnyRecord): Fixture {
     // The devnet snapshot can intentionally contain only IDs and participants.
     // An empty value is safer than presenting request time as an official kick-off.
     startTime: stringValue(raw, "StartTime", "startTime") ?? "",
-    competition: stringValue(raw, "CompetitionName", "competitionName") ?? "Competition unavailable · TxLINE devnet",
+    competition: competition ?? "Competition unavailable · TxLINE devnet",
+    competitionSource: competition ? "txline" : "unavailable",
     stage: stringValue(raw, "Group", "group", "Stage", "stage") ?? "Stage unavailable",
     gameState: numberValue(raw, "GameState", "gameState") ?? -1,
   };

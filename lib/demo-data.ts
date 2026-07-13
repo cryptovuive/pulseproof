@@ -6,6 +6,8 @@ export const DEMO_FIXTURE: Fixture = {
   awayTeam: "Morocco",
   startTime: "2026-07-09T20:00:00.000Z",
   competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://www.skysports.com/football/france-vs-morocco/report/549862",
   stage: "Quarter-final · Match 97 · Boston Stadium",
   gameState: 1,
 };
@@ -16,6 +18,8 @@ export const BRAZIL_NORWAY_FIXTURE: Fixture = {
   awayTeam: "Norway",
   startTime: "2026-07-05T20:00:00.000Z",
   competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://fdp.fifa.org/assetspublic/ce281/r12541/pdf/FullTimeMatchReport-English.pdf",
   stage: "Round of 16 · Match 91 · New York/New Jersey Stadium",
   gameState: 1,
 };
@@ -26,6 +30,8 @@ export const PORTUGAL_SPAIN_FIXTURE: Fixture = {
   awayTeam: "Spain",
   startTime: "2026-07-06T19:00:00.000Z",
   competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://fdp.fifa.org/assetspublic/ce281/r12538/pdf/FullTimeMatchReport-English.pdf",
   stage: "Round of 16 · Match 93 · Dallas Stadium",
   gameState: 1,
 };
