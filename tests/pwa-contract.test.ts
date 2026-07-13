@@ -34,4 +34,9 @@ describe("installable offline shell contract", () => {
     expect(worker).toContain('.catch(() => caches.match("/")');
     expect(worker).toContain('key.startsWith("pulseproof-shell-")');
   });
+
+  it("ships public PWA assets in the production container", () => {
+    const dockerfile = readFileSync(join(process.cwd(), "Dockerfile"), "utf8");
+    expect(dockerfile).toContain("/app/public ./public");
+  });
 });

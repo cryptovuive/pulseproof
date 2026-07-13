@@ -30,7 +30,7 @@ Engineering/product readiness is approximately **92/100**, but a hackathon judge
 - Spoiler-protected alert copy and a persistent in-app inbox; replay/metadata cannot manufacture alert activity.
 - Four-step Quick Product Tour so a time-constrained judge reaches TxLINE, Catch-up and Solana evidence quickly.
 - Installable PWA and bounded Offline Recap Pack; API/SSE traffic is never cached and all verification/claim actions fail closed offline.
-- Automated coverage increased to 74 tests across 16 suites.
+- Automated coverage increased to 75 tests across 16 suites.
 
 ## Highest-return actions before submission
 
