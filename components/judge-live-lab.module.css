@@ -1,0 +1,104 @@
+.liveLab {
+  position: relative;
+  margin: 0 0 28px;
+  padding: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(217, 255, 67, .22);
+  border-radius: 22px;
+  background: radial-gradient(circle at 100% 0, rgba(217, 255, 67, .09), transparent 33%), #111512;
+}
+
+.liveLab::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background-image: linear-gradient(rgba(255, 255, 255, .018) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.liveLabHeader, .liveLabSummary, .liveLabChecks { position: relative; }
+.liveLabHeader { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 35px; align-items: end; }
+.liveLabHeader span { color: #d9ff43; font: 850 11px/1 ui-monospace, monospace; letter-spacing: .1em; }
+.liveLabHeader h2 { margin: 12px 0 9px; font-size: clamp(30px, 3vw, 48px); line-height: 1; letter-spacing: -.04em; }
+.liveLabHeader p { max-width: 850px; margin: 0; color: #8f9b91; line-height: 1.55; }
+
+.liveLabButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 190px;
+  height: 48px;
+  border: 0;
+  border-radius: 11px;
+  background: #d9ff43;
+  color: #10140d;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.liveLabButton:disabled { cursor: wait; opacity: .78; }
+.liveLabButton svg { width: 18px; }
+
+.liveLabSummary {
+  display: grid;
+  grid-template-columns: 95px 95px 95px 1fr;
+  align-items: center;
+  gap: 9px;
+  margin: 25px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .17);
+}
+
+.liveLabSummary > div { display: flex; align-items: baseline; gap: 6px; }
+.liveLabSummary strong { color: #d9ff43; font: 900 20px/1 ui-monospace, monospace; }
+.liveLabSummary span { color: #717d74; font-size: 10px; text-transform: uppercase; }
+.liveLabSummary p { justify-self: end; margin: 0; color: #657068; font: 700 10px/1.4 ui-monospace, monospace; }
+.liveLabChecks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+
+.liveLabCheck {
+  display: grid;
+  grid-template-columns: 28px 35px minmax(0, 1fr) 25px;
+  align-items: start;
+  gap: 11px;
+  min-height: 112px;
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, .075);
+  border-radius: 13px;
+  background: rgba(25, 30, 26, .88);
+  transition: border-color .25s, background .25s, transform .25s;
+}
+
+.liveLabCheck.running { border-color: rgba(136, 169, 255, .45); background: rgba(93, 140, 255, .07); transform: translateY(-1px); }
+.liveLabCheck.pass { border-color: rgba(217, 255, 67, .23); background: rgba(217, 255, 67, .04); }
+.liveLabCheck.fail { border-color: rgba(255, 103, 103, .35); background: rgba(255, 103, 103, .045); }
+.checkNumber { padding-top: 3px; color: #59645b; font: 800 10px/1 ui-monospace, monospace; }
+.checkIcon { width: 31px; height: 31px; padding: 7px; border-radius: 9px; background: rgba(255, 255, 255, .045); color: #7f8b81; }
+.running .checkIcon { color: #88a9ff; }
+.pass .checkIcon { color: #d9ff43; }
+.fail .checkIcon { color: #ff8181; }
+.checkCopy > div { display: flex; justify-content: space-between; gap: 12px; }
+.checkCopy h3 { margin: 0; color: #dde3dd; font-size: 13px; }
+.checkCopy time { color: #707b72; font: 700 9px/1 ui-monospace, monospace; }
+.checkCopy p { margin: 5px 0 10px; color: #717c73; font-size: 11px; line-height: 1.4; }
+.checkCopy code { display: block; overflow: hidden; color: #a6b0a8; font: 650 9px/1.45 ui-monospace, monospace; text-overflow: ellipsis; white-space: nowrap; }
+.checkStatus { display: grid; place-items: center; min-height: 30px; }
+.checkStatus svg { width: 19px; }
+.pass .checkStatus { color: #d9ff43; }
+.fail .checkStatus { color: #ff8181; }
+.running .checkStatus { color: #88a9ff; }
+.checkStatus > span { width: 8px; height: 8px; border-radius: 50%; background: #343b35; }
+.spin { animation: lab-spin 1s linear infinite; }
+
+@keyframes lab-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .liveLabChecks, .liveLabHeader { grid-template-columns: 1fr; }
+  .liveLabButton { width: 100%; }
+  .liveLabSummary { grid-template-columns: repeat(3, 1fr); }
+  .liveLabSummary p { grid-column: 1 / -1; justify-self: start; }
+}

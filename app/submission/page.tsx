@@ -22,6 +22,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { PORTUGAL_SPAIN_FIXTURE, PORTUGAL_SPAIN_MOMENTS } from "@/lib/demo-data";
+import { JudgeLiveLab } from "@/components/judge-live-lab";
 import styles from "./page.module.css";
 
 const LIVE_APP = "https://pulseproof-production-06fa.up.railway.app";
@@ -201,6 +202,7 @@ function SubmissionPortal() {
         <h1>PulseProof turns live match events into context, Catch-up and verifiable fan memories.</h1>
         <p>Everything below is public, source-labelled and reproducible. No wagering, financial rewards or fabricated community activity.</p>
       </section>
+      <JudgeLiveLab />
       <section className={styles.videoSection}>
         <video controls preload="metadata" poster="/pulseproof-demo-poster.svg"><source src="/pulseproof-demo.mp4" type="video/mp4" /><track default kind="captions" src="/pulseproof-demo.vtt" srcLang="en" label="English" /></video>
         <aside><span>DEMO CHAPTERS · UNDER 5 MINUTES</span>{chapters.map(([time, title]) => <div key={time}><time>{time}</time><p>{title}</p></div>)}</aside>
