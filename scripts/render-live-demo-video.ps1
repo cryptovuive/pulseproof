@@ -7,6 +7,13 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Speech
 Add-Type -AssemblyName System.Windows.Forms
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class PulseProofWindowFocus {
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+"@
 
 $ffmpeg = 'C:\ffmpeg\bin\ffmpeg.exe'
 $ffprobe = 'C:\ffmpeg\bin\ffprobe.exe'
@@ -45,16 +52,27 @@ function Capture-Browser([string]$url, [int]$seconds, [string]$target, [string]$
     '--no-default-browser-check',
     '--disable-session-crashed-bubble',
     '--disable-features=Translate,PasswordLeakDetection',
+    '--disable-gpu',
     '--force-device-scale-factor=1',
     '--window-position=0,0',
     '--window-size=1920,1080',
+    '--new-window',
     '--kiosk',
     $url
   )
   try {
     Start-Process -FilePath $chrome -ArgumentList $arguments | Out-Null
     Start-Sleep -Seconds 4
-    & $ffmpeg -loglevel error -y -f gdigrab -draw_mouse 0 -framerate 30 -video_size 1920x1080 -i desktop -t $seconds -an -c:v libx264 -preset veryfast -crf 19 -pix_fmt yuv420p $target
+    $windowProcess = Get-CimInstance Win32_Process |
+      Where-Object { $_.Name -eq 'chrome.exe' -and $_.CommandLine -like "*$profilePath*" } |
+      ForEach-Object { Get-Process -Id $_.ProcessId -ErrorAction SilentlyContinue } |
+      Where-Object { $_.MainWindowHandle -ne 0 } |
+      Select-Object -First 1
+    if (-not $windowProcess) { throw "Could not resolve the capture window for $name" }
+    [PulseProofWindowFocus]::ShowWindow($windowProcess.MainWindowHandle, 3) | Out-Null
+    Start-Sleep -Seconds 1
+    $windowHandle = '0x{0:X}' -f $windowProcess.MainWindowHandle.ToInt64()
+    & $ffmpeg -loglevel error -y -f gdigrab -draw_mouse 0 -framerate 30 -i "hwnd=$windowHandle" -t $seconds -an -vf 'scale=1920:1080' -c:v libx264 -preset veryfast -crf 19 -pix_fmt yuv420p $target
     if ($LASTEXITCODE -ne 0) { throw "Screen capture failed for $name" }
   } finally {
     Stop-CaptureChrome $profilePath
@@ -71,7 +89,7 @@ if (-not $SkipCapture) {
 $scenes = Get-Content -Raw -Encoding UTF8 $sceneFile | ConvertFrom-Json
 $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $synth.SelectVoice('Microsoft Zira Desktop')
-$synth.Rate = 1
+$synth.Rate = 3
 $synth.Volume = 100
 
 function Format-VttTime([double]$seconds) {

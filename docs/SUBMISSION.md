@@ -1,6 +1,6 @@
 # Submission-ready copy
 
-The 4:14 demo video, judge room, app, repository and on-chain links below are submission-ready and publicly verifiable.
+The 2:24 live product-test video, judge room, app, repository and on-chain links below are submission-ready and publicly verifiable.
 
 ## Project name
 
@@ -48,7 +48,7 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 
 - Live app: `https://pulseproof-production-06fa.up.railway.app`
 - Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
-- Demo video (4:14): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
+- Demo video (2:24): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
 - English captions: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.vtt`
 - 1080p thumbnail: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo-thumbnail.png`
 - Public repository: `https://github.com/cryptovuive/pulseproof`

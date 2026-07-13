@@ -17,19 +17,20 @@ describe("judge submission assets", () => {
     expect(thumbnail.length).toBeGreaterThan(100_000);
   });
 
-  it("publishes twelve caption cues and ends before five minutes", () => {
+  it("publishes five live-demo caption cues and ends before five minutes", () => {
     const vtt = readFileSync(join(root, "public", "pulseproof-demo.vtt"), "utf8");
     const cues = [...vtt.matchAll(/(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})/g)];
-    expect(cues).toHaveLength(12);
+    expect(cues).toHaveLength(5);
     const final = cues.at(-1)!;
     const finalSeconds = Number(final[5]) * 3600 + Number(final[6]) * 60 + Number(final[7]) + Number(final[8]) / 1000;
     expect(finalSeconds).toBeLessThan(300);
   });
 
-  it("keeps one source frame and narration block per chapter", () => {
-    const scenes = JSON.parse(readFileSync(join(root, "submission-assets", "video", "narration-scenes.json"), "utf8")) as Array<{ frame: string; title: string; text: string }>;
-    expect(scenes).toHaveLength(12);
-    expect(new Set(scenes.map((scene) => scene.frame)).size).toBe(12);
+  it("keeps one live capture/still and narration block per chapter", () => {
+    const scenes = JSON.parse(readFileSync(join(root, "submission-assets", "video", "live-demo-scenes.json"), "utf8")) as Array<{ source: string; kind: string; title: string; text: string }>;
+    expect(scenes).toHaveLength(5);
+    expect(new Set(scenes.map((scene) => scene.source)).size).toBe(5);
+    expect(scenes.filter((scene) => scene.kind === "video")).toHaveLength(3);
     expect(scenes.every((scene) => scene.title.length > 5 && scene.text.split(/\s+/).length > 25)).toBe(true);
   });
 

@@ -1,65 +1,51 @@
-# Demo video — delivered at 4:13.859
+# Demo video — delivered at 2:24.046
 
 Public video: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
 
 Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
 
-The reproducible source narration is in `submission-assets/video/narration-scenes.json`; `scripts/render-submission-video.ps1` produces the 1080p MP4, twelve WebVTT cues, full transcript and chapter metadata, and rejects any output of five minutes or longer. The outline below is the original human-recording plan retained for reference.
+The reproducible scene specification is `submission-assets/video/live-demo-scenes.json`. `scripts/render-live-demo-video.ps1` records three real browser clips from isolated Chrome profiles, mixes narration, emits five WebVTT cues plus transcript/chapter metadata, and rejects any output of five minutes or longer.
 
-## 0:00–0:30 — problem
+## 0:00–0:15 — the late-fan problem
 
-“Most football fans watch with a phone in hand, but today’s second screens are either raw scoreboards, noisy feeds or betting products. PulseProof gives mainstream fans a clear shared match pulse and a verifiable memory of the moments they actually watched—without wagers or financial rewards.”
+One concise positioning frame: a trusted second screen for a fan who arrives late, loses connectivity or wants context without spoilers.
 
-Show the dashboard hero and labelled source badge.
+## 0:15–1:19 — real deployed product walkthrough
 
-## 0:30–1:25 — fan experience
+The production app runs with the opt-in `judgeDemo=1` route and visibly labels every action as `LIVE WALKTHROUGH`.
 
-- Start the replay before recording or use a live covered match.
-- Show score, minute and stage changing.
-- Point to momentum and explain it is an engagement visual, not betting probability.
-- Show latest-signal copy and timeline receiving a goal/card/VAR event.
-- Click a watch-room option; state that reactions have no stake, entry fee or prize.
+1. Load the public World Cup finished-match replay with its published-report label.
+2. Press Spoiler Shield; all finished scores become hidden.
+3. Press Start Catch-up; the normal consumer handler fetches the replay and advances through the visible prefix.
+4. Scroll the real event timeline while the summary changes.
+5. Save the sanitised offline recap using the same UI control available to a fan.
+6. Press Judge Verification Lab; request and locally verify a fresh short-lived Ed25519 proof.
 
-## 1:25–2:15 — TxLINE integration
+## 1:19–1:45 — seven fresh production checks
 
-Open the architecture diagram or code briefly:
+The production Judge Room runs, in sequence:
 
-- `POST /auth/guest/start`
-- `/api/fixtures/snapshot`
-- `/api/scores/snapshot/{fixtureId}`
-- `/api/scores/historical/{fixtureId}`
-- `/api/scores/stat-validation?...&statKeys=`
+1. health/network/credential identity;
+2. live-versus-replay catalog separation;
+3. public SSE `ready + pulse` without polling;
+4. two-event spoiler-prefix isolation;
+5. fresh browser-side Ed25519 verification;
+6. executable TxLINE/PulseProof programs plus finalized receipt status;
+7. PWA cache boundary that excludes APIs, SSE and proofs.
 
-Explain that the token stays server-side, sequence comes from TxLINE, and raw data is transformed rather than redistributed. If replaying, say clearly: “This replay uses externally cross-checked results with locally assigned demo sequence IDs; those IDs are not TxLINE records. The same server route prioritises TxLINE whenever the activated token is configured.”
+## 1:45–2:03 — public devnet evidence
 
-## 2:15–3:25 — wallet and smart contract
+Solana Explorer visibly shows `Success`, `Finalized`, signature, fee payer and slot `475862643`. Narration explicitly calls this a reference receipt; it is not presented as a new Phantom click.
 
-- Connect the prepared devnet Phantom wallet.
-- Claim a goal or final moment.
-- Show local signature verification, then the confirmed Solana signature/explorer.
-- Explain canonical fields: wallet, fixture, moment hash, points, badge, expiry.
-- Show `FanPass` and `MomentReceipt` PDAs.
-- Attempt a duplicate claim or show the passing replay-resistance test.
+## 2:03–2:24 — differentiated close
 
-## 3:25–4:05 — architecture and safety
+The final frame explains the system-level combination: source honesty, progressive Catch-up, offline retention, non-transferable anti-replay memory and an in-product SSE-to-Solana flight recorder.
 
-- TxLINE is live sports input.
-- Attestor re-fetches the server-side record; stat-based moments also call validation proof and store only its digest.
-- Ed25519 precompile verifies the signature.
-- Contract pins attestor, requires five-minute expiry, clamps points/badge and prevents replay.
-- No FIFA branding, wagering, token rewards or API credential in the client.
+## Recording integrity checklist
 
-## 4:05–4:35 — commercial path and close
-
-“PulseProof starts free for fans. Fan clubs, media and sponsors pay for branded rooms, engagement analytics and loyalty activation. The moat is the real-time, verifiable fan graph powered by TxLINE—not resale of the data. The demo, API health route, public repo and tests are available in the submission.”
-
-End on the Proof of Watch card and repository URL.
-
-## Recording checklist
-
-- Keep final file below 5:00.
-- Browser zoom 100%; hide bookmarks/private tabs.
-- Never display API token, secret key, wallet seed or `.env`.
-- Show the source link; do not call a fallback replay “live TxLINE”.
-- Use a funded devnet wallet and pre-test the exact moment claim.
-- Record backup clip of the Solana explorer transaction.
+- H.264/AAC, 1920×1080, 30 fps, 144.046 seconds.
+- Each live clip is captured by its isolated Chrome `HWND`, not by recording the desktop.
+- No API token, secret key, seed phrase, `.env`, personal tab or private session appears.
+- Finished report replay is never called live TxLINE data.
+- The Explorer receipt is described as already finalized, not as a transaction clicked during this recording.
+- Contact-sheet and dedicated midpoint review confirm product, 7/7 proof and Explorer frames.

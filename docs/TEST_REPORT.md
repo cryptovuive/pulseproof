@@ -38,7 +38,7 @@ Result: **86/86 passed** across nineteen suites.
 - Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
 - Offline Recap Pack validation, metadata removal, raw-action sanitisation, de-duplication and an eight-match storage bound.
 - PWA manifest contract plus service-worker guarantees that API and SSE traffic are never cached.
-- Submission MP4 container/size contract, twelve caption cues, sub-five-minute final cue and one narration source per chapter.
+- Submission MP4 container/size contract, five live-demo caption cues, sub-five-minute final cue and one capture/still source per chapter.
 - Judge room contract for the public video, captions, Explorer evidence and deterministic capture slides.
 
 ## Smart-contract compilation
@@ -147,12 +147,12 @@ npm audit --omit=dev
 
 ## Submission video verification
 
-- Final duration: **253.859 seconds (4:13.859)**, below the five-minute limit enforced by the renderer.
-- Video: H.264, 1920×1080, 30 fps; audio: AAC narration; MP4 size: 7,852,683 bytes.
-- Twelve chapter markers, twelve English WebVTT caption cues and a full text transcript are included.
+- Final duration: **144.046 seconds (2:24.046)**, below the five-minute limit enforced by the renderer.
+- Video: H.264, 1920×1080, 30 fps; audio: AAC narration; MP4 size: 6,447,104 bytes.
+- Five chapter markers, five English WebVTT caption cues and a full text transcript are included.
 - A separate 1920×1080 PNG thumbnail is ready for the submission form or social preview.
-- FFmpeg volume audit measured −20.8 dB mean and −2.7 dB peak, with no clipping.
-- Visual review sampled ten points across the finished encode, including the labelled Railway product, finalized Explorer transaction and public green CI evidence.
+- FFmpeg volume audit measured −22.2 dB mean and −3.2 dB peak, with no clipping.
+- Visual review sampled ten points across the finished encode plus dedicated mid-frames. It confirms the real product walkthrough, fresh 7/7 production proof run and finalized Explorer transaction; no personal desktop/session frame is present.
 
 ## Public devnet and live-credential verification — 13 July 2026
 

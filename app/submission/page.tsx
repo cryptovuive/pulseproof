@@ -33,18 +33,11 @@ const TRANSACTION = "vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx
 const EXPLORER = `https://explorer.solana.com/tx/${TRANSACTION}?cluster=devnet`;
 
 const chapters = [
-  ["00:00", "A consumer problem worth solving"],
-  ["00:20", "The deployed consumer product"],
-  ["00:40", "The complete matchday loop"],
-  ["01:00", "Catch-up without spoilers"],
-  ["01:22", "TxLINE integration and accuracy"],
-  ["01:45", "Offline recap and retention"],
-  ["02:08", "Proof of Watch on Solana"],
-  ["02:29", "Public Explorer evidence"],
-  ["02:48", "Security and anti-replay"],
-  ["03:10", "Reproducible test evidence"],
-  ["03:33", "Green continuous integration"],
-  ["03:49", "Commercial path and close"],
+  ["00:00", "The late-fan problem"],
+  ["00:15", "Real deployed product walkthrough"],
+  ["01:19", "Seven fresh production checks"],
+  ["01:45", "Public Solana devnet evidence"],
+  ["02:03", "A defensible fan memory loop"],
 ];
 
 function Brand() {

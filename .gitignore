@@ -13,5 +13,13 @@ submission-assets/video/frames/
 submission-assets/video/processed/
 submission-assets/video/review/
 submission-assets/video/segments/
+submission-assets/video/live-audio/
+submission-assets/video/live-captures/
+submission-assets/video/live-segments/
+submission-assets/video/*-mid*.png
+submission-assets/video/focus-test*
+submission-assets/video/hwnd-test*
+submission-assets/video/live-contact-sheet.png
+submission-assets/video/product-proof-final.png
 *.log
 !.env.example
