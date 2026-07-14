@@ -17,8 +17,10 @@ import { decodeFanAlias, fanAliasAddress } from "@/lib/fan-alias";
 export interface BrowserWallet {
   publicKey: PublicKey | null;
   isPhantom?: boolean;
-  connect(): Promise<{ publicKey: PublicKey }>;
+  connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>;
   disconnect(): Promise<void>;
+  on?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
+  off?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
   signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
   signAndSendTransaction(transaction: Transaction): Promise<{ signature: string }>;
 }
@@ -85,6 +87,18 @@ function connection() {
 
 function profileAddress(owner: PublicKey, program = programId()) {
   return PublicKey.findProgramAddressSync([textEncoder.encode("fan_profile"), owner.toBytes()], program)[0];
+}
+
+function fanEpochAddress(owner: PublicKey, program = programId()) {
+  return PublicKey.findProgramAddressSync([textEncoder.encode("fan_epoch"), owner.toBytes()], program)[0];
+}
+
+async function fanEpochValue(rpc: Connection, address: PublicKey) {
+  const account = await rpc.getAccountInfo(address, "confirmed");
+  if (!account) return 0n;
+  const data = Buffer.from(account.data);
+  if (data.length < 49) throw new Error("Fan epoch account has an unexpected layout");
+  return data.readBigUInt64LE(40);
 }
 
 async function createProfileInstruction(owner: PublicKey, profile: PublicKey, program: PublicKey) {
@@ -216,8 +230,10 @@ export async function submitMomentClaim(wallet: BrowserWallet, attestation: Mome
     program,
   );
   const fanProfile = profileAddress(owner, program);
+  const fanEpoch = fanEpochAddress(owner, program);
+  const epoch = await fanEpochValue(rpc, fanEpoch);
   const [receipt] = PublicKey.findProgramAddressSync(
-    [textEncoder.encode("receipt"), owner.toBytes(), momentHash],
+    [textEncoder.encode("receipt"), owner.toBytes(), u64(epoch), momentHash],
     program,
   );
 
@@ -249,6 +265,7 @@ export async function submitMomentClaim(wallet: BrowserWallet, attestation: Mome
           { pubkey: config, isSigner: false, isWritable: false },
           { pubkey: fanPass, isSigner: false, isWritable: true },
           { pubkey: fanProfile, isSigner: false, isWritable: true },
+          { pubkey: fanEpoch, isSigner: false, isWritable: true },
           { pubkey: receipt, isSigner: false, isWritable: true },
         { pubkey: owner, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -275,10 +292,12 @@ export async function submitQuizClaim(wallet: BrowserWallet, attestation: QuizAt
   const program = programId();
   const rpc = connection();
   const profile = profileAddress(owner, program);
+  const fanEpoch = fanEpochAddress(owner, program);
+  const epoch = await fanEpochValue(rpc, fanEpoch);
   const quizHash = Uint8Array.from(Buffer.from(attestation.payload.quizHash, "hex"));
   const [config] = PublicKey.findProgramAddressSync([textEncoder.encode("config")], program);
   const [receipt] = PublicKey.findProgramAddressSync(
-    [textEncoder.encode("quiz_receipt"), owner.toBytes(), quizHash],
+    [textEncoder.encode("quiz_receipt"), owner.toBytes(), u64(epoch), quizHash],
     program,
   );
   const transaction = new Transaction();
@@ -292,6 +311,7 @@ export async function submitQuizClaim(wallet: BrowserWallet, attestation: QuizAt
       keys: [
         { pubkey: config, isSigner: false, isWritable: false },
         { pubkey: profile, isSigner: false, isWritable: true },
+        { pubkey: fanEpoch, isSigner: false, isWritable: true },
         { pubkey: receipt, isSigner: false, isWritable: true },
         { pubkey: owner, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -315,10 +335,12 @@ export async function submitRewardRedemption(wallet: BrowserWallet, attestation:
   const program = programId();
   const rpc = connection();
   const profile = profileAddress(owner, program);
+  const fanEpoch = fanEpochAddress(owner, program);
+  const epoch = await fanEpochValue(rpc, fanEpoch);
   const rewardHash = Uint8Array.from(Buffer.from(attestation.payload.rewardHash, "hex"));
   const [config] = PublicKey.findProgramAddressSync([textEncoder.encode("config")], program);
   const [receipt] = PublicKey.findProgramAddressSync(
-    [textEncoder.encode("reward_receipt"), owner.toBytes(), rewardHash],
+    [textEncoder.encode("reward_receipt"), owner.toBytes(), u64(epoch), rewardHash],
     program,
   );
   const transaction = new Transaction();
@@ -332,6 +354,7 @@ export async function submitRewardRedemption(wallet: BrowserWallet, attestation:
       keys: [
         { pubkey: config, isSigner: false, isWritable: false },
         { pubkey: profile, isSigner: false, isWritable: true },
+        { pubkey: fanEpoch, isSigner: false, isWritable: true },
         { pubkey: receipt, isSigner: false, isWritable: true },
         { pubkey: owner, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },

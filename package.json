@@ -14,13 +14,16 @@
     "contract:e2e": "tsx scripts/localnet-e2e.ts",
     "contract:e2e:devnet": "tsx scripts/devnet-e2e.ts",
     "contract:retired:devnet": "tsx scripts/verify-retired-reward-devnet.ts",
+    "contract:reset:devnet": "tsx scripts/reset-devnet-test-profile.ts",
     "contract:alias:devnet": "tsx scripts/devnet-alias-e2e.ts",
     "contract:e2e:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-localnet-e2e.ps1",
     "wallet:create": "tsx scripts/create-phantom-test-wallet.ts",
     "wallet:test": "tsx scripts/test-phantom-wallet.ts",
     "wallet:e2e:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-wallet-e2e.ps1",
     "attestor:create": "tsx scripts/create-attestor-secret.ts",
-    "txline:verify": "tsx scripts/verify-txline-stream.ts"
+    "txline:verify": "tsx scripts/verify-txline-stream.ts",
+    "capture:france-spain:start": "powershell -ExecutionPolicy Bypass -File scripts/start-france-spain-live-capture.ps1",
+    "capture:france-spain:finalize": "powershell -ExecutionPolicy Bypass -File scripts/finalize-france-spain-live-capture.ps1"
   },
   "dependencies": {
     "@solana/web3.js": "1.98.4",

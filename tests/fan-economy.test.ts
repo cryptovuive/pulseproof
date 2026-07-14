@@ -6,6 +6,20 @@ import { getDailyQuizQuestions, getDailyQuizRound, getPracticeQuizRound, getQuiz
 import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 
 describe("fan progression economy", () => {
+  it("shares one eager Phantom session across the live center and Fan Zone", () => {
+    const layout = readFileSync(join(process.cwd(), "app", "layout.tsx"), "utf8");
+    const provider = readFileSync(join(process.cwd(), "components", "wallet-session-provider.tsx"), "utf8");
+    const dashboard = readFileSync(join(process.cwd(), "components", "pulse-dashboard.tsx"), "utf8");
+    const fanZone = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
+    expect(layout).toContain("<WalletSessionProvider>{children}</WalletSessionProvider>");
+    expect(provider).toContain("onlyIfTrusted: true");
+    expect(provider).toContain('provider.on?.("accountChanged"');
+    expect(dashboard).toContain("useWalletSession()");
+    expect(fanZone).toContain("useWalletSession()");
+    expect(dashboard).not.toContain("useState<BrowserWallet");
+    expect(fanZone).not.toContain("useState<BrowserWallet");
+  });
+
   it("ships a unique 36-item non-financial cosmetic catalog", () => {
     expect(REWARD_CATALOG).toHaveLength(36);
     expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(36);
@@ -79,7 +93,16 @@ describe("sourced World Cup quiz", () => {
     expect(round.maxPoints).toBe(70);
     expect(JSON.stringify(round)).not.toContain("correctIndex");
     expect(JSON.stringify(round)).not.toContain("explanation");
+    expect(JSON.stringify(round)).not.toContain("sourceUrl");
+    expect(JSON.stringify(round)).not.toContain("sourceLabel");
     expect(round.catalogSize).toBe(10_000);
+  });
+
+  it("keeps source provenance server-side and removes answer-hint links from the quiz UI", () => {
+    const component = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
+    expect(component).not.toContain("question.sourceUrl");
+    expect(component).not.toContain("question.sourceLabel");
+    expect(QUIZ_BANK.every((question) => question.sourceUrl.startsWith("https://"))).toBe(true);
   });
 
   it("keeps the mascot archive aligned to FIFA's official history", () => {
