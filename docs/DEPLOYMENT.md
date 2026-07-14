@@ -46,6 +46,8 @@ anchor build
 
 When the local WSL VM is unavailable, run the manual **Reproducible SBF build** GitHub workflow. It builds inside the digest-pinned official `solanafoundation/anchor:v0.32.1` image and publishes only the `.so`, its SHA-256 digest and the public IDL for one day. Wallet and program keypair files are never uploaded; deployment must still be signed locally by the existing upgrade authority.
 
+The catalog-parity release was reproduced by [workflow run 29336473514](https://github.com/cryptovuive/pulseproof/actions/runs/29336473514). It produced a 409,544-byte `pulseproof.so` with SHA-256 `7701a26b1d713496e92144915ade70619a13aa9acc4eb50a4702c0e11cb039c8`. After deployment, the first 409,544 program bytes read from ProgramData matched that artifact byte-for-byte. The upgrade finalized at slot `476217190` in transaction `5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM` without changing the program address or upgrade authority.
+
 The current local build generated program address `74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn` and synced it across the source/config. The ignored `target/deploy/pulseproof-keypair.json` is required to deploy at that address. If that local key is unavailable, generate a new one and sync IDs before first deploy:
 
 ```bash
@@ -66,6 +68,14 @@ solana airdrop 2
 anchor build
 anchor deploy --provider.cluster devnet
 ```
+
+After a catalog-contract upgrade, run the public rejection probe with the disposable authority wallet:
+
+```bash
+ANCHOR_WALLET=.local-wallets/phantom-test-wallet.json npm run contract:retired:devnet
+```
+
+The probe intentionally records a failed `equip_reward` transaction for retired index `36` and requires the chain to return `InvalidRewardIndex` / custom error `6016`. The catalog-parity release proof is transaction `3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi`.
 
 ## 4. Initialise the contract
 
