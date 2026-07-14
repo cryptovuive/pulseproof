@@ -52,6 +52,7 @@ describe("progression APIs", () => {
       body: JSON.stringify({ wallet, rewardId: "not-real" }),
     }));
     expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store, max-age=0");
   });
 
   it("does not attest any retired shirt reward", async () => {
@@ -70,6 +71,7 @@ describe("progression APIs", () => {
         body: JSON.stringify({ wallet, rewardId }),
       }));
       expect(response.status, rewardId).toBe(404);
+      expect(response.headers.get("cache-control"), rewardId).toBe("no-store, max-age=0");
     }
   });
 });
