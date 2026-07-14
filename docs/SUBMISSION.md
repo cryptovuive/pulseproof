@@ -42,7 +42,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
 - Thirty-six original cosmetics ship in six 1536×1024 WebP atlases; the sourced quiz bank exposes two/four choices and never sends answer keys before grading.
 - Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
-- Lint, TypeScript, production build, 109 unit/integration/contract/submission tests and real local-validator/public-devnet adversarial suites pass.
+- Lint, TypeScript, production build, 110 unit/integration/contract/submission tests and real local-validator/public-devnet adversarial suites pass.
 
 ## Commercial path
 
