@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   assertCatalogEvidence,
+  assertCapsuleEvidence,
   assertChainEvidence,
   assertHealthEvidence,
   assertOfflineBoundary,
@@ -75,6 +76,21 @@ describe("judge live proof validators", () => {
     expect(() => assertReplayIsolation(pulse(), pulse(moments.slice(0, 2)))).not.toThrow();
     const leaked = pulse([moments[0], moments[2]]);
     expect(() => assertReplayIsolation(pulse(), leaked)).toThrow(/future moment/i);
+  });
+
+  it("requires a signed relay to deliver exactly its committed cursor", () => {
+    const evidence = {
+      verified: true as const,
+      capsule: {
+        payload: { version: 1 as const, fixtureId: 42, cursor: 2, source: "demo-replay" as const, prefixHash: "a".repeat(64), issuedAt: 100, expiresAt: 200 },
+        messageBase64: "message",
+        signatureBase64: "signature",
+        attestorPublicKey: "attestor",
+      },
+      pulse: { ...pulse(moments.slice(0, 2)), replayCursor: 2 },
+    };
+    expect(() => assertCapsuleEvidence(evidence)).not.toThrow();
+    expect(() => assertCapsuleEvidence({ ...evidence, pulse: { ...evidence.pulse, moments: moments } })).toThrow(/outside/i);
   });
 
   it("requires executable programs and a confirmed clean receipt", () => {

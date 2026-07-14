@@ -31,10 +31,11 @@ Research URLs:
 3. **Resume/share:** the last fixture and `?fixture=` deep link restore the exact context.
 4. **Protect the experience:** Spoiler Shield hides finished scores, recap, timeline and final momentum until the fan chooses.
 5. **Catch up:** a progressive event replay reveals only the prefix already watched; summary counts cannot leak future goals/cards.
-6. **Understand:** Match Brief uses only published on-pitch records and explicitly reports source-log coverage.
-7. **Remember:** optional Solana Proof of Watch seals an attested moment without creating a transferable financial reward.
-8. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
-9. **Take it offline:** a fan can keep up to eight transformed finished-match recaps on the device; raw feeds, API/SSE responses and claim capability are deliberately excluded.
+6. **Relay safely:** a signed Catch-up Capsule lets a friend start from the same verified prefix without receiving any later event payload.
+7. **Understand:** Match Brief uses only published on-pitch records and explicitly reports source-log coverage.
+8. **Remember:** optional Solana Proof of Watch seals an attested moment without creating a transferable financial reward.
+9. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
+10. **Take it offline:** a fan can keep up to eight transformed finished-match recaps on the device; raw feeds, API/SSE responses and claim capability are deliberately excluded.
 
 ## Accuracy gates for future features
 
@@ -71,7 +72,7 @@ No feature may enter the consumer UI unless all applicable gates pass:
 
 - Moderated, fixture-scoped watch rooms with authenticated real counts.
 - Event-linked reactions and polls with rate limits; no wagering, stakes or transferable prizes.
-- Shareable Catch-up cards that cite the underlying event source.
+- Shipped: Verified Catch-up Capsules that cite the source lane, commit an exact prefix and fail closed when modified, expired or source-divergent.
 
 ## Metrics that protect product quality
 

@@ -12,6 +12,7 @@ import {
   CloudOff,
   Database,
   Fingerprint,
+  Link2,
   Play,
   Radio,
   RotateCcw,
@@ -19,16 +20,17 @@ import {
 } from "lucide-react";
 import {
   assertAttestationEvidence,
+  assertCapsuleEvidence,
   assertCatalogEvidence,
   assertChainEvidence,
   assertHealthEvidence,
   assertOfflineBoundary,
   assertReplayIsolation,
 } from "@/lib/judge-proof";
-import type { MatchOverview, MatchPulse, MomentAttestation } from "@/types/pulse";
+import type { CatchUpCapsule, CatchUpCapsuleRedemption, MatchOverview, MatchPulse, MomentAttestation } from "@/types/pulse";
 import styles from "./judge-live-lab.module.css";
 
-type CheckId = "health" | "catalog" | "stream" | "replay" | "attestation" | "chain" | "offline";
+type CheckId = "health" | "catalog" | "stream" | "replay" | "capsule" | "attestation" | "chain" | "offline";
 type CheckState = {
   id: CheckId;
   label: string;
@@ -43,6 +45,7 @@ const INITIAL_CHECKS: CheckState[] = [
   { id: "catalog", label: "Source-labelled catalog", detail: "Live coverage and published-report replay stay separate", status: "idle" },
   { id: "stream", label: "Real SSE bridge", detail: "Connect to /api/scores/stream and observe public events", status: "idle" },
   { id: "replay", label: "Spoiler isolation", detail: "A two-event prefix cannot see any later match moment", status: "idle" },
+  { id: "capsule", label: "Signed fan relay", detail: "Issue, redeem and verify a two-event Catch-up Capsule", status: "idle" },
   { id: "attestation", label: "Ed25519 receipt", detail: "Issue a fresh proof and verify it inside this browser", status: "idle" },
   { id: "chain", label: "Solana devnet", detail: "Read executable programs and a confirmed reference receipt", status: "idle" },
   { id: "offline", label: "Offline safety boundary", detail: "App shell is cacheable; APIs, SSE and proofs are not", status: "idle" },
@@ -53,6 +56,7 @@ const iconFor = (id: CheckId) => ({
   catalog: Database,
   stream: Radio,
   replay: Activity,
+  capsule: Link2,
   attestation: Fingerprint,
   chain: BadgeCheck,
   offline: CloudOff,
@@ -155,6 +159,24 @@ export function JudgeLiveLab() {
       return { value: full, evidence: `cursor=2 exposed 2/${full.moments.length} events · future IDs absent` };
     });
 
+    await execute("capsule", async () => {
+      if (!replayPulse) throw new Error("No replay prefix is available for capsule testing");
+      const issued = await jsonResponse<{ capsule: CatchUpCapsule; token: string }>("/api/capsules", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ fixtureId: replayPulse.fixture.fixtureId, cursor: 2, mode: "replay" }),
+      });
+      const redeemed = await jsonResponse<CatchUpCapsuleRedemption>(`/api/capsules?token=${encodeURIComponent(issued.token)}`);
+      assertCapsuleEvidence(redeemed);
+      const verified = nacl.sign.detached.verify(
+        Buffer.from(redeemed.capsule.messageBase64, "base64"),
+        Buffer.from(redeemed.capsule.signatureBase64, "base64"),
+        bs58.decode(redeemed.capsule.attestorPublicKey),
+      );
+      if (!verified) throw new Error("Browser-side capsule signature verification returned false");
+      return { value: redeemed, evidence: `verified=true · exactly ${redeemed.pulse.moments.length} signed events · no future payload` };
+    });
+
     await execute("attestation", async () => {
       const moment = replayPulse?.moments.at(-1);
       if (!replayPulse || !moment) throw new Error("No source moment is available for attestation");
@@ -214,7 +236,7 @@ export function JudgeLiveLab() {
         <div>
           <span>LIVE PRODUCT TEST · NO WALLET · NO SOL</span>
           <h2>Don&apos;t trust the pitch. Run the product.</h2>
-          <p>One click exercises production APIs, a real SSE connection, spoiler isolation, browser-side signature verification, Solana devnet and the offline cache boundary.</p>
+          <p>One click exercises production APIs, a real SSE connection, spoiler isolation, a signed fan relay, browser-side signature verification, Solana devnet and the offline cache boundary.</p>
         </div>
         <button onClick={() => void runAll()} disabled={running} className={styles.liveLabButton}>
           {running ? <Activity className={styles.spin} /> : passed === checks.length ? <RotateCcw /> : <Play />}

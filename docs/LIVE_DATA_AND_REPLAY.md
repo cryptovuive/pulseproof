@@ -48,6 +48,12 @@ For a match in progress, Catch-up replays the current score snapshot. For an `FT
 
 Live SSE continues updating the per-fixture cache while the user watches Catch-up. `Return live` therefore jumps to the newest state rather than restarting the page.
 
+## Verified Catch-up Capsules
+
+`POST /api/capsules` reloads the selected source lane, keeps only on-pitch events up to the requested cursor, builds a chained SHA-256 prefix commitment and signs the canonical capsule with the configured Ed25519 attestor. The transport token contains only fixture/cursor/source/digest/time/signature metadata—not the event payload.
+
+`GET /api/capsules?token=...` verifies shape, signature and expiry, reloads the source, recomputes the same prefix commitment and returns only that prefix. Modified tokens, an over-range cursor, missing source history or a changed prefix fail closed. This makes “send what I have watched so far” a safe consumer action rather than a spoiler-bearing deep link.
+
 ## Offline Recap Pack
 
 A fan may save a finished match after its on-pitch recap is available. PulseProof stores only the transformed consumer moments needed for Catch-up, sanitises the original action label and reward fields, de-duplicates by fixture, validates restored records and keeps at most eight matches on the device.

@@ -20,13 +20,14 @@ Reference products:
 | --- | --- | --- | --- |
 | Multiple live fixtures | Usually | Sometimes | TxLINE-backed SSE, one multiplexed connection |
 | Fast finished-match recap | Usually | Rarely | Progressive prefix replay with Spoiler Shield |
+| Share without spoiling | Rarely | Rarely | Ed25519-signed Catch-up Capsule delivers exactly one committed event prefix |
 | Data-source honesty | Inconsistent | Inconsistent | Live, historical and report replay are impossible to confuse in the UI |
 | Offline replay | Sometimes | Rarely | Sanitised consumer pack; APIs, SSE and proofs never enter cache |
 | Fan memory | Account history | Often tokenised | Non-transferable receipt, no betting or financial reward |
 | Anti-replay proof | No | Varies | Canonical Ed25519 message + preceding instruction + receipt PDA |
-| Judge/user reproducibility | No | Rare | Seven-step in-product flight recorder validates SSE to Solana |
+| Judge/user reproducibility | No | Rare | Eight-step in-product flight recorder validates SSE, signed relay and Solana |
 
-The novelty is not any single row. It is a **spoiler-safe, source-labelled, offline-capable fan memory loop whose trust chain is independently runnable inside the product**.
+The novelty is not any single row. It is a **spoiler-safe, source-labelled, offline-capable fan memory loop that can be safely relayed to another fan and whose trust chain is independently runnable inside the product**.
 
 ## Positioning sentence
 
@@ -36,5 +37,5 @@ The novelty is not any single row. It is a **spoiler-safe, source-labelled, offl
 
 - High overlap risk: fixtures, alerts, scores, favourites, generic recaps and local watch-room polls.
 - Medium overlap risk: AI explanations, fan badges, proof of attendance and on-chain loyalty.
-- Lower overlap risk: prefix-safe Catch-up + strict source lanes + consumer-safe offline pack + Ed25519/Solana anti-replay + a public SSE-to-chain verification flight recorder in one product.
+- Lower overlap risk: signed no-future-payload Catch-up relay + strict source lanes + consumer-safe offline pack + Ed25519/Solana anti-replay + a public SSE-to-chain verification flight recorder in one product.
 - No honest audit can guarantee zero overlap with all current or future private submissions. The goal is a distinctive system-level combination and demonstrably stronger execution, not an unverifiable exclusivity claim.

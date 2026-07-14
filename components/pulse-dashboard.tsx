@@ -66,6 +66,7 @@ import {
   type SavedRecapPack,
 } from "@/lib/saved-recaps";
 import type { MatchOverview, MatchPulse, MomentAttestation, PulseMoment } from "@/types/pulse";
+import type { CatchUpCapsule, CatchUpCapsuleRedemption } from "@/types/pulse";
 
 type StreamStatus = "connecting" | "live" | "complete" | "paused" | "error";
 const JUDGE_DEMO_WALLET = "8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV";
@@ -84,7 +85,7 @@ function shortKey(value: string) {
   return `${value.slice(0, 4)}…${value.slice(-4)}`;
 }
 
-function verifyProof(attestation: MomentAttestation) {
+function verifyProof(attestation: Pick<MomentAttestation, "messageBase64" | "signatureBase64" | "attestorPublicKey">) {
   return nacl.sign.detached.verify(
     Buffer.from(attestation.messageBase64, "base64"),
     Buffer.from(attestation.signatureBase64, "base64"),
@@ -139,6 +140,9 @@ export function PulseDashboard() {
   const [notice, setNotice] = useState<string>("");
   const [judgeChecking, setJudgeChecking] = useState(false);
   const [judgeProof, setJudgeProof] = useState<MomentAttestation | null>(null);
+  const [relayCapsule, setRelayCapsule] = useState<CatchUpCapsule | null>(null);
+  const [relayUrl, setRelayUrl] = useState("");
+  const [capsuleCreating, setCapsuleCreating] = useState(false);
   const [demoStep, setDemoStep] = useState("");
   const [roomVote, setRoomVote] = useState<"home" | "away" | "even" | null>(null);
   const [roomCounts, setRoomCounts] = useState({ home: 0, away: 0, even: 0 });
@@ -200,16 +204,27 @@ export function PulseDashboard() {
     } catch {
       savedPreferences = DEFAULT_FAN_PREFERENCES;
     }
-    const requestedFixtureId = Number(new URLSearchParams(window.location.search).get("fixture"));
+    const params = new URLSearchParams(window.location.search);
+    const capsuleToken = params.get("capsule");
+    let capsuleRedemption: CatchUpCapsuleRedemption | undefined;
+    if (capsuleToken) {
+      const capsuleResponse = await fetch(`/api/capsules?token=${encodeURIComponent(capsuleToken)}`, { cache: "no-store" });
+      const capsuleBody = await capsuleResponse.json() as CatchUpCapsuleRedemption & { error?: string };
+      if (!capsuleResponse.ok) throw new Error(capsuleBody.error ?? "This Catch-up Capsule is unavailable");
+      if (!verifyProof(capsuleBody.capsule)) throw new Error("Catch-up Capsule signature did not verify in this browser");
+      capsuleRedemption = capsuleBody;
+      savedPreferences = { ...savedPreferences, spoilerFree: true };
+    }
+    const requestedFixtureId = Number(params.get("fixture"));
     const selected = selectPreferredFixture(
       fixtureBody.matches,
-      Number.isSafeInteger(requestedFixtureId) && requestedFixtureId > 0 ? requestedFixtureId : undefined,
+      capsuleRedemption?.pulse.fixture.fixtureId ?? (Number.isSafeInteger(requestedFixtureId) && requestedFixtureId > 0 ? requestedFixtureId : undefined),
       savedPreferences.lastFixtureId,
     );
     const streamFixtureIds = fixtureBody.matches
       .filter((match) => match.source !== "demo-replay")
       .map((match) => match.fixture.fixtureId);
-    return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected, savedPreferences };
+    return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected, savedPreferences, capsuleRedemption };
   }, []);
 
   useEffect(() => {
@@ -236,12 +251,21 @@ export function PulseDashboard() {
   useEffect(() => {
     let active = true;
     void loadInitial()
-      .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected, savedPreferences }) => {
+      .then(({ streamFixtureIds, matches: loadedMatches, pulses: loadedPulses, selected, savedPreferences, capsuleRedemption }) => {
         if (!active) return;
         setMatches(loadedMatches);
         setPulses(loadedPulses);
         setSelectedFixtureId(selected);
         setPreferences({ ...savedPreferences, lastFixtureId: selected });
+        if (capsuleRedemption) {
+          setCatchUp(capsuleRedemption.pulse);
+          setCatchUpIndex(1);
+          setCatchUpPlaying(true);
+          setRelayCapsule(capsuleRedemption.capsule);
+          setRelayUrl(window.location.href);
+          setNotice(`Verified safe relay: ${capsuleRedemption.capsule.payload.cursor} signed events, with no later moments delivered.`);
+          window.setTimeout(() => document.getElementById("catch-up")?.scrollIntoView({ behavior: "smooth", block: "center" }), 250);
+        }
         setPreferencesReady(true);
         setOfflineMode(false);
         if (!streamFixtureIds.length) {
@@ -403,15 +427,19 @@ export function PulseDashboard() {
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".catchup-primary")?.click(), 900);
     });
     schedule(demoDelay + 20_000, "04 · Timeline advances from the visible event prefix", () => scroll("event-timeline"));
-    schedule(demoDelay + 31_000, "05 · Saving the consumer-safe recap on this device", () => {
+    schedule(demoDelay + 26_000, "05 · Signing a no-spoiler Catch-up Capsule", () => {
+      scroll("catch-up");
+      window.setTimeout(() => document.querySelector<HTMLButtonElement>(".capsule-share")?.click(), 700);
+    });
+    schedule(demoDelay + 33_000, "06 · Saving the consumer-safe recap on this device", () => {
       scroll("catch-up");
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".offline-save")?.click(), 700);
     });
-    schedule(demoDelay + 41_000, "06 · Browser verifies a fresh Ed25519 receipt", () => {
+    schedule(demoDelay + 43_000, "07 · Browser verifies a fresh Ed25519 receipt", () => {
       scroll("proof-of-watch");
       window.setTimeout(() => document.querySelector<HTMLButtonElement>(".judge-lab button")?.click(), 900);
     });
-    schedule(demoDelay + 54_000, "07 · End-to-end product test complete", () => scroll("proof-of-watch"));
+    schedule(demoDelay + 55_000, "08 · End-to-end product test complete", () => scroll("proof-of-watch"));
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [pulseReady]);
 
@@ -432,6 +460,8 @@ export function PulseDashboard() {
     setSelectedFixtureId(fixtureId);
     setCatchUp(null);
     setCatchUpPlaying(false);
+    setRelayCapsule(null);
+    setRelayUrl("");
     setRoomVote(null);
     setPreferences((current) => ({ ...current, lastFixtureId: fixtureId }));
     const url = new URL(window.location.href);
@@ -519,9 +549,47 @@ export function PulseDashboard() {
       setCatchUp(replay);
       setCatchUpIndex(1);
       setCatchUpPlaying(true);
+      setRelayCapsule(null);
+      setRelayUrl("");
       setNotice(`Catch-up loaded: ${signals.length} on-pitch moments. Metadata updates are hidden.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not load catch-up");
+    }
+  };
+
+  const shareCatchUpCapsule = async () => {
+    if (!catchUp || offlineMode) return;
+    setCapsuleCreating(true);
+    try {
+      const response = await fetch("/api/capsules", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          fixtureId: catchUp.fixture.fixtureId,
+          cursor: catchUpIndex,
+          mode: catchUp.source === "demo-replay" ? "replay" : "live",
+        }),
+      });
+      const body = await response.json() as { capsule: CatchUpCapsule; token: string; error?: string };
+      if (!response.ok) throw new Error(body.error ?? "Could not create a Catch-up Capsule");
+      if (!verifyProof(body.capsule)) throw new Error("New capsule signature did not verify locally");
+      const url = new URL("/", window.location.origin);
+      url.searchParams.set("fixture", String(catchUp.fixture.fixtureId));
+      url.searchParams.set("capsule", body.token);
+      setRelayCapsule(body.capsule);
+      setRelayUrl(url.toString());
+      setNotice(`Signed safe relay ready: exactly ${body.capsule.payload.cursor} visible events, zero future-event payloads.`);
+      const copied = await Promise.race([
+        navigator.clipboard.writeText(url.toString()).then(() => true).catch(() => false),
+        new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 1_200)),
+      ]);
+      setNotice(copied
+        ? `Signed safe relay copied: exactly ${body.capsule.payload.cursor} visible events, zero future-event payloads.`
+        : "Signed safe relay verified. Clipboard access is unavailable; the Open signed relay link is ready below.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Could not create a Catch-up Capsule");
+    } finally {
+      setCapsuleCreating(false);
     }
   };
 
@@ -779,10 +847,12 @@ export function PulseDashboard() {
               <span className="catchup-icon"><RotateCcw size={19} /></span>
               <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay only the signal events—goals, pressure swings, cards and VAR—without watching the full broadcast.</p></div>
               <div className="catchup-actions">
-                {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); }}><Radio size={14} /> {offlineMode ? "Return to saved recap" : "Return live"}</button>}
+                {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); setRelayCapsule(null); setRelayUrl(""); }}><Radio size={14} /> {offlineMode ? "Return to saved recap" : "Return live"}</button>}
+                {catchUp && !offlineMode && <button className="capsule-share" disabled={capsuleCreating} onClick={() => void shareCatchUpCapsule()}><Share2 size={14} /> {capsuleCreating ? "Signing…" : "Share safe relay"}</button>}
                 {livePulse?.phase === "FT" && hasSignalMoments && <button className={`offline-save ${recapSaved ? "saved" : ""}`} aria-pressed={recapSaved} onClick={toggleSavedRecap}><Download size={14} /> {recapSaved ? "Saved offline" : "Save offline"}</button>}
               </div>
             </div>
+            {relayCapsule && <div className="relay-proof" role="status"><ShieldCheck size={15} /><div><b>Verified Catch-up Capsule</b><span>Ed25519 signed · {relayCapsule.payload.cursor} event prefix · expires {new Date(relayCapsule.payload.expiresAt * 1_000).toLocaleDateString()}</span></div>{relayUrl && <a href={relayUrl} target="_blank" rel="noreferrer">Open signed relay</a>}<code>{relayCapsule.payload.prefixHash.slice(0, 10)}…{relayCapsule.payload.prefixHash.slice(-8)}</code></div>}
             {catchUp && catchUpSummary && (
               <div className="catchup-controls">
                 <button className="replay-toggle" onClick={() => setCatchUpPlaying((value) => !value)} aria-label={catchUpPlaying ? "Pause catch-up" : "Play catch-up"}>{catchUpPlaying ? <CirclePause size={20} /> : <CirclePlay size={20} />}</button>

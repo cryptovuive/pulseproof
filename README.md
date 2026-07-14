@@ -37,6 +37,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Spoiler Shield that protects finished scores, match brief, timeline and final momentum while keeping Catch-up progressive.
 - Direct TxLINE `/scores/stream` SSE bridge exposed publicly at `/api/scores/stream` (plus `/scores/stream` compatibility alias), with fixture filtering, sequence de-duplication, heartbeat and reconnect.
 - Snapshot-to-now and historical Catch-up with timeline scrubbing and 1x/2x/4x playback.
+- Verified Catch-up Capsules: share an exact spoiler-safe event prefix as an Ed25519-signed link; redemption re-checks the source and returns zero future-event payloads.
 - Upcoming Match Hub prefers complete TxLINE fixture metadata and otherwise uses a source-linked, integrity-checked schedule, with local timezone, countdown, saved reminders and `.ics` calendar export.
 - Judge Verification Lab that proves an evidence-bound Ed25519 attestation without requiring Phantom, SOL or a transaction.
 - Three completed World Cup 2026 replays with source-linked scores, scorer/assist details, cards and stoppage-time labels; local sequence IDs remain explicitly non-TxLINE.
@@ -45,7 +46,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Seventy-nine automated unit/integration/contract/submission tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- Ninety-five automated unit/integration/contract/submission tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 
@@ -96,6 +97,7 @@ The configured API token remains authoritative for every fixture ID it supplies.
 - `lib/txline.ts` — TxLINE authentication, endpoint calls and schema normalisation.
 - `lib/sse.ts` — chunk-safe upstream SSE parsing and score-envelope extraction.
 - `lib/pulse-replay.ts` — deterministic catch-up reconstruction and high-signal summary.
+- `lib/catch-up-capsule.ts` — canonical prefix commitment, bounded token format and Ed25519 issue/verification logic.
 - `lib/saved-recaps.ts` — bounded, validated and consumer-safe offline recap packs.
 - `lib/attestation.ts` — canonical message, moment hash and Ed25519 signing.
 - `lib/solana-client.ts` — browser transaction construction for `create_match_pass` and `claim_moment`.

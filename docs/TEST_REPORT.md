@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **86/86 passed** across nineteen suites.
+Result: **95/95 passed** across twenty-one suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -35,6 +35,7 @@ Result: **86/86 passed** across nineteen suites.
 - My Pulse storage normalization, followed-team filtering, deep-link priority and last-fixture resume.
 - Consumer timeline metadata suppression, deterministic Match Brief and live freshness labels.
 - Progressive Catch-up counts prevent Spoiler Shield from leaking future goals or cards.
+- Catch-up Capsule canonical signing, token bounds, expiry, tamper rejection, source re-check and exact-prefix redemption.
 - Upcoming-fixture ordering, non-negative countdowns and RFC-style calendar reminders.
 - Offline Recap Pack validation, metadata removal, raw-action sanitisation, de-duplication and an eight-match storage bound.
 - PWA manifest contract plus service-worker guarantees that API and SSE traffic are never cached.
@@ -152,7 +153,7 @@ npm audit --omit=dev
 - Five chapter markers, five English WebVTT caption cues and a full text transcript are included.
 - A separate 1920×1080 PNG thumbnail is ready for the submission form or social preview.
 - FFmpeg volume audit measured −22.2 dB mean and −3.2 dB peak, with no clipping.
-- Visual review sampled ten points across the finished encode plus dedicated mid-frames. It confirms the real product walkthrough, fresh 7/7 production proof run and finalized Explorer transaction; no personal desktop/session frame is present.
+- Visual review sampled ten points across the finished encode plus dedicated mid-frames. It confirms the real product walkthrough, fresh 8/8 production proof run and finalized Explorer transaction; no personal desktop/session frame is present.
 
 ## Public devnet and live-credential verification — 13 July 2026
 
@@ -162,7 +163,7 @@ npm audit --omit=dev
 - Deployed the 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `86/86` unit/integration/contract/submission tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- `95/95` unit/integration/contract/submission tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.

@@ -12,6 +12,7 @@ import {
   Film,
   Fingerprint,
   Goal,
+  Link2,
   Radio,
   Route,
   ShieldCheck,
@@ -24,6 +25,7 @@ import {
 import { PORTUGAL_SPAIN_FIXTURE, PORTUGAL_SPAIN_MOMENTS } from "@/lib/demo-data";
 import { JudgeLiveLab } from "@/components/judge-live-lab";
 import styles from "./page.module.css";
+import moat from "./signature-moat.module.css";
 
 const LIVE_APP = "https://pulseproof-production-06fa.up.railway.app";
 const REPOSITORY = "https://github.com/cryptovuive/pulseproof";
@@ -35,7 +37,7 @@ const EXPLORER = `https://explorer.solana.com/tx/${TRANSACTION}?cluster=devnet`;
 const chapters = [
   ["00:00", "The late-fan problem"],
   ["00:15", "Real deployed product walkthrough"],
-  ["01:19", "Seven fresh production checks"],
+  ["01:19", "Eight fresh production checks"],
   ["01:45", "Public Solana devnet evidence"],
   ["02:03", "A defensible fan memory loop"],
 ];
@@ -160,7 +162,7 @@ function CaptureSlide({ slide }: { slide: number }) {
   if (slide === 8) return (
     <CaptureFrame slide={slide} eyebrow="Evidence a judge can reproduce" title="Not a mockup. A deployed, tested system.">
       <div className={styles.metrics}>
-        <article><strong>86 / 86</strong><span>automated tests</span><small>19 suites</small></article>
+        <article><strong>95 / 95</strong><span>automated tests</span><small>21 suites</small></article>
         <article><strong>0</strong><span>known npm vulnerabilities</span><small>audit clean</small></article>
         <article><strong>200</strong><span>public health + SSE</span><small>Railway production</small></article>
         <article><strong>DEVNET</strong><span>program + receipt</span><small>Explorer visible</small></article>
@@ -195,6 +197,10 @@ function SubmissionPortal() {
         <h1>PulseProof turns live match events into context, Catch-up and verifiable fan memories.</h1>
         <p>Everything below is public, source-labelled and reproducible. No wagering, financial rewards or fabricated community activity.</p>
       </section>
+      <section className={moat.signatureMoat}>
+        <div><span>NEW · DEFENSIBLE FAN UTILITY</span><h2>Send the moment, not the spoiler.</h2><p>A Verified Catch-up Capsule shares one Ed25519-signed event prefix. The recipient receives exactly that prefix—never a hidden future goal, card or VAR event—and the source is re-checked before playback.</p><Link href="/?fixture=18198205"><Link2 /> Try the safe relay flow <ExternalLink /></Link></div>
+        <ol><li><b>01</b><span>Choose the exact Catch-up position</span></li><li><b>02</b><span>Sign its source-bound prefix digest</span></li><li><b>03</b><span>Redeem fail-closed with zero future payload</span></li></ol>
+      </section>
       <JudgeLiveLab />
       <section className={styles.videoSection}>
         <video controls preload="metadata" poster="/pulseproof-demo-poster.svg"><source src="/pulseproof-demo.mp4" type="video/mp4" /><track default kind="captions" src="/pulseproof-demo.vtt" srcLang="en" label="English" /></video>
@@ -203,7 +209,7 @@ function SubmissionPortal() {
       <section className={styles.verifyGrid}>
         <a href={`${LIVE_APP}/api/health`} target="_blank" rel="noreferrer"><Wifi /><span>Production health</span><small>TxLINE devnet credentials configured</small></a>
         <a href={EXPLORER} target="_blank" rel="noreferrer"><BadgeCheck /><span>Explorer receipt</span><small>Confirmed public devnet transaction</small></a>
-        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>86 tests · lint · production build</small></a>
+        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>95 tests · lint · production build</small></a>
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Public repository</span><small>Architecture, threat model and test report</small></a>
       </section>
       <section className={styles.honesty}><ShieldCheck /><div><span>DEMO INTEGRITY</span><h2>Live is live. Replay is labelled replay.</h2><p>TxLINE coverage, public SSE and heartbeat evidence are live. Finished-match sequences in the consumer demo are externally cross-checked and explicitly not represented as TxLINE records.</p></div></section>
