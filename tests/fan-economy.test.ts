@@ -21,6 +21,13 @@ describe("fan progression economy", () => {
     expect(rewardIsAvailable(limited, Date.parse("2026-07-14T00:00:00Z"))).toBe(true);
     expect(rewardIsAvailable(limited, Date.parse("2026-07-22T00:00:00Z"))).toBe(false);
     expect(limited.price).toBe(560);
+    expect(limited.availableUntil).toBe("2026-07-21T23:59:59.000Z");
+  });
+
+  it("renders seasonal close times deterministically across server and browser timezones", () => {
+    const component = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
+    expect(component).toContain("formatUtcClose(reward.availableUntil)");
+    expect(component).not.toContain("toLocaleDateString");
   });
 
   it("ships six high-resolution 3-by-2 cosmetic atlases", () => {

@@ -54,6 +54,7 @@ type QuizSubmission = {
 
 const utcDay = () => Math.floor(Date.now() / 86_400_000);
 const shortKey = (value: string) => `${value.slice(0, 4)}…${value.slice(-4)}`;
+const formatUtcClose = (value: string) => `${value.slice(0, 16).replace("T", " · ")} UTC`;
 
 function RewardSprite({ reward, className = "" }: { reward?: RewardItem; className?: string }) {
   if (!reward) return <div className={`${styles.sprite} ${styles.spriteEmpty} ${className}`}><UserRound /></div>;
@@ -357,7 +358,7 @@ export function FanZone() {
         const isEquipped = profile?.equippedBadge === reward.index || profile?.equippedFrame === reward.index || profile?.equippedCharacter === reward.index;
         return <article key={reward.id} className={`${styles.rewardCard} ${styles[reward.rarity]}`}>
           <RewardSprite reward={reward} />
-          <div className={styles.rewardCopy}><div><span>{reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {new Date(reward.availableUntil).toLocaleDateString()}</small>}</div>
+          <div className={styles.rewardCopy}><div><span>{reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}</div>
           <div className={styles.rewardAction}><strong>{reward.price} PTS</strong>{isOwned ? <button disabled={Boolean(busy) || isEquipped} onClick={() => equipReward(reward)}>{isEquipped ? "Equipped" : busy === `equip-${reward.id}` ? "Approving…" : "Equip on-chain"}</button> : <button disabled={Boolean(busy) || !isAvailable} onClick={() => redeemReward(reward)}>{!isAvailable ? "Closed" : busy === `reward-${reward.id}` ? "Approving…" : "Redeem"}</button>}</div>
         </article>;
       })}</div>

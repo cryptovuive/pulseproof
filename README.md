@@ -53,7 +53,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- One hundred nine automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
+- One hundred ten automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 

@@ -37,7 +37,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 - Thirty-six original non-trademarked cosmetics across badges, medals, frames and characters, compressed to six high-resolution WebP atlases.
 - Daily sourced World Cup quiz with 35+ stable FIFA-linked questions, answer non-disclosure and replay-safe wallet receipts.
 - Real SSE fan chat with no seeded users, bounded history and strict link/wagering/secret moderation.
-- Automated coverage increased to 109 tests across 24 suites, plus public browser and devnet proof runners.
+- Automated coverage increased to 110 tests across 24 suites, plus public browser and devnet proof runners.
 
 ## Highest-return actions before submission
 
