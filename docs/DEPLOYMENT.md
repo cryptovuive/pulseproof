@@ -44,6 +44,8 @@ anchor --version
 anchor build
 ```
 
+When the local WSL VM is unavailable, run the manual **Reproducible SBF build** GitHub workflow. It builds inside the digest-pinned official `solanafoundation/anchor:v0.32.1` image and publishes only the `.so`, its SHA-256 digest and the public IDL for one day. Wallet and program keypair files are never uploaded; deployment must still be signed locally by the existing upgrade authority.
+
 The current local build generated program address `74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn` and synced it across the source/config. The ignored `target/deploy/pulseproof-keypair.json` is required to deploy at that address. If that local key is unavailable, generate a new one and sync IDs before first deploy:
 
 ```bash
