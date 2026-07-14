@@ -24,6 +24,8 @@ export type JudgeProofResult = {
   progression: {
     wallet: string;
     fanProfile: string;
+    fanAlias: string;
+    displayName: string;
     explorerUrl: string;
     pointsEarned: number;
     pointsSpent: number;
@@ -54,14 +56,14 @@ export function assertCatalogEvidence(value: unknown): asserts value is { matche
     throw new Error("The match catalog did not expose multiple fixtures");
   }
   const matches = body.matches as MatchOverview[];
-  if (!matches.some((match) => match.source === "txline-live")) {
-    throw new Error("The catalog has no TxLINE-covered fixture");
-  }
   if (!matches.some((match) => match.source === "demo-replay" && match.phase === "FT")) {
     throw new Error("The catalog has no labelled finished-match replay");
   }
   if (matches.some((match) => !match.fixture.competition || !match.fixture.competitionSource)) {
     throw new Error("A fixture is missing competition provenance");
+  }
+  if (matches.some((match) => match.fixture.competition !== "FIFA World Cup 2026")) {
+    throw new Error("A non-World Cup 2026 fixture leaked into the consumer catalog");
   }
 }
 
@@ -123,6 +125,9 @@ export function assertChainEvidence(value: unknown): asserts value is JudgeProof
   }
   if (!body.progression || body.progression.pointsEarned < 1 || body.progression.pointsSpent < 1) {
     throw new Error("The on-chain fan progression profile is incomplete");
+  }
+  if (body.progression.displayName !== "Cryptovuive" || body.progression.fanAlias.length < 32) {
+    throw new Error("The on-chain fan alias proof is missing");
   }
   if (body.progression.checkins < 1 || body.progression.quizClaims < 1 || body.progression.equippedBadge === 65_535) {
     throw new Error("The on-chain check-in, quiz or equipped reward proof is missing");

@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **110/110 passed** across twenty-four suites.
+Result: **114/114 passed** across twenty-four suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -24,10 +24,10 @@ Result: **110/110 passed** across twenty-four suites.
 - Fan Pass point and badge model.
 - Duplicate-receipt model rejection.
 - Deterministic once-per-UTC-day streak awards, streak reset and capped day-seven bonus.
-- Quiz answer non-disclosure, deterministic five-question selection, exact two/four-option schema, official FIFA source links, stale-round rejection and signed result verification.
-- Thirty-six unique catalog items, stable indexes, price bounds, seasonal close enforcement and six high-resolution WebP atlas contracts.
+- Quiz answer non-disclosure, 10,000 stable variant IDs, deterministic daily/practice selection, exact two/four-option schema, official FIFA source links, stale-round rejection and signed result verification.
+- Forty-two unique catalog items including six 3D shirt tributes, stable indexes, price bounds, seasonal close enforcement and six high-resolution WebP atlas contracts.
 - Reward attestation binds wallet, catalog digest, kind, item index and cost; unknown catalog identifiers fail closed.
-- Chat moderation blocks links, wagering, secrets and spam; the room contains no synthetic seed messages and enforces a 50-message ring bound.
+- Chat verifies wallet signatures and FanAlias, rejects tampering/replay, isolates fixture rooms, blocks links/wagering/secrets/spam and enforces a 50-message ring bound.
 - Fan progression model rejects quiz replay, overspending and duplicate reward redemption.
 - Smart Alert preference validation, supported-event classification, followed-team scope, verified-only delivery and Spoiler Shield copy protection.
 - Road-to-the-Final construction preserves chronological semi-finals and intentionally leaves final/third-place participants TBD.
@@ -35,9 +35,9 @@ Result: **110/110 passed** across twenty-four suites.
 - Official team-code and flag-key mapping across every covered schedule team.
 - Chunk-safe SSE parsing across split network boundaries and nested score envelopes.
 - Three-fixture demo isolation, overview consistency and exact replay reconstruction.
-- Hybrid catalog keeps active TxLINE fixtures and three labelled World Cup 2026 finished replays together without ID collisions.
+- Competition allow-list rejects unmatched, unavailable and Club World Cup labels; only proven men's World Cup 2026 fixtures reach the catalog or SSE bridge.
 - Structured scorer, assist, yellow-card and stoppage-time preservation (including 90+1 and 90+10).
-- Exact-pair schedule enrichment labels current World Cup fixtures while leaving unmatched TxLINE devnet fixtures explicitly unavailable.
+- Exact-pair schedule enrichment labels current World Cup fixtures while unmatched TxLINE devnet fixtures remain unavailable and excluded.
 - My Pulse storage normalization, followed-team filtering, deep-link priority and last-fixture resume.
 - Consumer timeline metadata suppression, deterministic Match Brief and live freshness labels.
 - Progressive Catch-up counts prevent Spoiler Shield from leaking future goals or cards.
@@ -171,7 +171,7 @@ npm audit --omit=dev
 - Deployed the original 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `110/110` unit/integration/contract/submission tests, ESLint, TypeScript and production build passed after the Fan Zone release changes.
+- `114/114` unit/integration/contract/submission tests, ESLint, TypeScript, production build, Cargo format and Anchor SBF build passed after the World Cup-only release.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.
@@ -187,6 +187,14 @@ npm audit --omit=dev
 - Read-back state: 85 points earned, 60 spent, one check-in, one quiz claim, reward index 13 owned and equipped.
 - Upgrade, check-in, quiz, redemption and equip signatures were independently queried and all returned `Finalized`.
 - Cosmetic atlases were converted from 14.55 MB of PNG source assets to 1.77 MB of 1536×1024 WebP production assets, an 87.8% transfer reduction while preserving the atlas dimensions.
+
+## World Cup-only + Fan Alias upgrade — 14 July 2026
+
+- Program upgraded at devnet slot `476152519`; upgrade signature `4iryzBYp...5qVk9R8` finalized while retaining Program ID `74cvsTMZ...UGxRMkn`.
+- Fan Alias PDA `HA2NUKea...nj5o9QN` was created/updated twice and read back as `Cryptovuive`; signatures `2VGkYV36...P9GHqq` and `4BaHJBRb...htwuw` confirmed.
+- Unsafe alias `bad/name` was rejected on-chain.
+- Chat tests cover body tampering, signature replay, room isolation, moderation and bounded retention.
+- Quiz tests enumerate all 10,000 stable IDs, validate 2/4-option bounds, verify no answer leak and grade both daily and practice sets.
 
 ## Remaining external verification
 

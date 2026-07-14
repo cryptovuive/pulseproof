@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PublicKey } from "@solana/web3.js";
+import nacl from "tweetnacl";
 import { z } from "zod";
 import {
   addCommunityMessage,
   communityOnlineCount,
+  consumeChatSignature,
   getCommunityMessages,
   subscribeToCommunityChat,
   validateChatText,
 } from "@/lib/community-chat";
 import { consumeAttestationLimit } from "@/lib/rate-limit";
+import { buildChatSigningPayload } from "@/lib/chat-signature";
+import { fetchFanAliasFromChain } from "@/lib/fan-alias";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const messageSchema = z.object({
-  nickname: z.string().trim().min(2).max(24).regex(/^[\p{L}\p{N}_ .-]+$/u),
+  fixtureId: z.number().int().positive(),
+  wallet: z.string().min(32).max(64),
   body: z.string().min(1).max(500),
-  walletHint: z.string().trim().max(16).optional(),
+  signedAt: z.number().int().positive(),
+  signatureBase64: z.string().min(80).max(120),
   team: z.string().regex(/^[A-Z]{2,4}$/).optional(),
 });
 
 const encode = (event: string, payload: unknown) => `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`;
 
 export async function GET(request: NextRequest) {
+  const fixtureId = Number(request.nextUrl.searchParams.get("fixtureId"));
+  if (!Number.isSafeInteger(fixtureId) || fixtureId <= 0) {
+    return NextResponse.json({ error: "A positive fixtureId is required" }, { status: 400 });
+  }
   const encoder = new TextEncoder();
   let unsubscribe = () => {};
   let heartbeat: ReturnType<typeof setInterval> | undefined;
@@ -32,10 +43,10 @@ export async function GET(request: NextRequest) {
         if (closed) return;
         try { controller.enqueue(encoder.encode(encode(event, payload))); } catch { closed = true; }
       };
-      send("ready", { serverTime: new Date().toISOString() });
-      send("history", { messages: getCommunityMessages() });
-      unsubscribe = subscribeToCommunityChat(({ type, payload }) => send(type, payload));
-      send("presence", { online: communityOnlineCount() });
+      send("ready", { serverTime: new Date().toISOString(), fixtureId });
+      send("history", { messages: getCommunityMessages(fixtureId) });
+      unsubscribe = subscribeToCommunityChat(fixtureId, ({ type, payload }) => send(type, payload));
+      send("presence", { online: communityOnlineCount(fixtureId) });
       heartbeat = setInterval(() => send("heartbeat", { at: new Date().toISOString() }), 15_000);
       request.signal.addEventListener("abort", () => {
         closed = true;
@@ -64,6 +75,23 @@ export async function POST(request: NextRequest) {
     const contentLength = Number(request.headers.get("content-length") ?? 0);
     if (contentLength > 2_048) return NextResponse.json({ error: "Request body is too large" }, { status: 413 });
     const body = messageSchema.parse(await request.json());
+    const normalizedBody = validateChatText(body.body);
+    if (Math.abs(Date.now() - body.signedAt) > 2 * 60_000) {
+      return NextResponse.json({ error: "Signed chat message expired" }, { status: 400 });
+    }
+    const publicKey = new PublicKey(body.wallet);
+    const signature = Buffer.from(body.signatureBase64, "base64");
+    if (signature.length !== nacl.sign.signatureLength || !nacl.sign.detached.verify(
+      buildChatSigningPayload({ wallet: body.wallet, fixtureId: body.fixtureId, signedAt: body.signedAt, body: normalizedBody }),
+      signature,
+      publicKey.toBytes(),
+    )) {
+      return NextResponse.json({ error: "Wallet signature did not verify" }, { status: 401 });
+    }
+    const alias = await fetchFanAliasFromChain(publicKey);
+    if (!alias) {
+      return NextResponse.json({ error: "Create an on-chain display name in Fan Zone before posting" }, { status: 403 });
+    }
     const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
     const limit = consumeAttestationLimit(`${forwardedFor}:community-chat`);
     if (!limit.allowed) {
@@ -72,10 +100,13 @@ export async function POST(request: NextRequest) {
         { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
       );
     }
+    consumeChatSignature(body.signatureBase64);
     const message = addCommunityMessage({
-      nickname: body.nickname,
-      body: validateChatText(body.body),
-      walletHint: body.walletHint || undefined,
+      fixtureId: body.fixtureId,
+      nickname: alias.displayName,
+      wallet: body.wallet,
+      walletHint: `${body.wallet.slice(0, 4)}…${body.wallet.slice(-4)}`,
+      body: normalizedBody,
       team: body.team,
     });
     return NextResponse.json({ message }, {

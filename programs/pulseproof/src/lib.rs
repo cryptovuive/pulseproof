@@ -8,6 +8,7 @@ declare_id!("74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn");
 const CONFIG_SEED: &[u8] = b"config";
 const FAN_PASS_SEED: &[u8] = b"fan_pass";
 const FAN_PROFILE_SEED: &[u8] = b"fan_profile";
+const FAN_ALIAS_SEED: &[u8] = b"fan_alias";
 const RECEIPT_SEED: &[u8] = b"receipt";
 const QUIZ_RECEIPT_SEED: &[u8] = b"quiz_receipt";
 const REWARD_RECEIPT_SEED: &[u8] = b"reward_receipt";
@@ -54,6 +55,33 @@ pub mod pulseproof {
         profile.bump = ctx.bumps.fan_profile;
         emit!(FanProfileCreated {
             owner: profile.owner
+        });
+        Ok(())
+    }
+
+    pub fn set_fan_alias(ctx: Context<SetFanAlias>, display_name: String) -> Result<()> {
+        let character_count = display_name.chars().count();
+        require!(
+            (2..=24).contains(&character_count) && display_name.len() <= 48,
+            PulseProofError::InvalidDisplayName
+        );
+        require!(
+            display_name == display_name.trim()
+                && !display_name.chars().any(|character| {
+                    character.is_control() || matches!(character, '<' | '>' | '&' | '|' | '/')
+                }),
+            PulseProofError::InvalidDisplayName
+        );
+
+        let alias = &mut ctx.accounts.fan_alias;
+        alias.owner = ctx.accounts.owner.key();
+        alias.display_name = display_name.clone();
+        alias.updated_at = Clock::get()?.unix_timestamp;
+        alias.bump = ctx.bumps.fan_alias;
+        emit!(FanAliasUpdated {
+            owner: alias.owner,
+            display_name,
+            updated_at: alias.updated_at,
         });
         Ok(())
     }
@@ -408,6 +436,21 @@ pub struct DailyCheckIn<'info> {
 }
 
 #[derive(Accounts)]
+pub struct SetFanAlias<'info> {
+    #[account(
+        init_if_needed,
+        payer = owner,
+        space = 8 + FanAlias::INIT_SPACE,
+        seeds = [FAN_ALIAS_SEED, owner.key().as_ref()],
+        bump,
+    )]
+    pub fan_alias: Account<'info, FanAlias>,
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 #[instruction(fixture_id: u64)]
 pub struct CreateMatchPass<'info> {
     #[account(seeds = [CONFIG_SEED], bump = config.bump)]
@@ -569,6 +612,16 @@ pub struct FanProfile {
 
 #[account]
 #[derive(InitSpace)]
+pub struct FanAlias {
+    pub owner: Pubkey,
+    #[max_len(48)]
+    pub display_name: String,
+    pub updated_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct MomentReceipt {
     pub owner: Pubkey,
     pub fixture_id: u64,
@@ -613,6 +666,13 @@ pub struct MatchPassCreated {
 #[event]
 pub struct FanProfileCreated {
     pub owner: Pubkey,
+}
+
+#[event]
+pub struct FanAliasUpdated {
+    pub owner: Pubkey,
+    pub display_name: String,
+    pub updated_at: i64,
 }
 
 #[event]
@@ -677,7 +737,7 @@ fn owns_reward(profile: &FanProfile, item_index: u16) -> bool {
 
 fn catalog_kind_matches(kind: u8, item_index: u16) -> bool {
     match kind {
-        0 => (6..=17).contains(&item_index),
+        0 => (6..=17).contains(&item_index) || (36..=47).contains(&item_index),
         1 => (0..=5).contains(&item_index) || (18..=23).contains(&item_index),
         2 => (24..=29).contains(&item_index),
         3 => (30..=35).contains(&item_index),
@@ -816,4 +876,6 @@ pub enum PulseProofError {
     RewardNotOwned,
     #[msg("Reward kind does not match the signed catalog index")]
     RewardKindMismatch,
+    #[msg("Display name must be 2-24 safe characters and at most 48 UTF-8 bytes")]
+    InvalidDisplayName,
 }

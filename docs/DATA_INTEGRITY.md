@@ -46,6 +46,16 @@ The source URLs are displayed in the application. Exact scorer, assist, card and
 
 ## World Cup quiz facts
 
+The quiz exposes 10,000 deterministic presentation variants, not 10,000 independent claims. Each variant inherits one source-locked fact, explanation and official FIFA URL from the reviewed private bank, then deterministically changes the question lens and answer order while preserving the correct index. Daily reward rounds contain five distinct base facts; unlimited ten-question practice sets issue no point attestation.
+
+## Competition allow-list
+
+TxLINE devnet fixtures are normalized first, exact-pair enriched only against the verified World Cup schedule, and then filtered. The consumer catalog accepts a competition only when its label contains `World Cup` and `2026` while excluding `Club` and `Women`. A missing competition remains unavailable and is never rendered merely because TxLINE supplied a fixture ID.
+
+## Shirts and mascots
+
+Historical shirt rewards use exact player names, numbers, editions and national color families linked to FIFA articles. The 3D geometry is a simplified fan-art reconstruction with no crest, sponsor or manufacturer mark. Mascot cards use FIFA's official names and forms from 1966–2026; emoji/species markers are explicitly labelled as identifiers rather than copied official mascot art.
+
 - Quiz facts are separate from live TxLINE match data and are never labelled TxLINE-verified.
 - Every public question carries its supporting `fifa.com` or `inside.fifa.com` article URL and a human-readable source label.
 - The question bank prioritises stable historical records and published 2026 format/rules facts. It avoids predictions and volatile active-tournament totals that could become false during the day.

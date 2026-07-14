@@ -13,6 +13,7 @@
     "contract:init": "tsx scripts/initialize-config.ts",
     "contract:e2e": "tsx scripts/localnet-e2e.ts",
     "contract:e2e:devnet": "tsx scripts/devnet-e2e.ts",
+    "contract:alias:devnet": "tsx scripts/devnet-alias-e2e.ts",
     "contract:e2e:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-localnet-e2e.ps1",
     "wallet:create": "tsx scripts/create-phantom-test-wallet.ts",
     "wallet:test": "tsx scripts/test-phantom-wallet.ts",

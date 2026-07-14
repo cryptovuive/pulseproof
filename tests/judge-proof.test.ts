@@ -103,6 +103,8 @@ describe("judge live proof validators", () => {
       progression: {
         wallet: "wallet",
         fanProfile: "profile",
+        fanAlias: "HA2NUKeaLDy9nxf7JvUWhQNDKySqheG68a2B8nj5o9QN",
+        displayName: "Cryptovuive",
         explorerUrl: "https://example.com",
         pointsEarned: 85,
         pointsSpent: 60,

@@ -62,6 +62,7 @@ PULSEPROOF_REWARD_V1|<wallet>|<reward_hash_hex>|<kind>|<item_index>|<cost>|<expi
 | `FanPass` | `fan_pass`, owner, fixture ID LE | owner, fixture, check-in, points, badge bitmap, claims |
 | `MomentReceipt` | `receipt`, owner, moment hash | fixture, hash, points, badge, claimed time |
 | `FanProfile` | `fan_profile`, owner | lifetime earned/spent, UTC streak, check-ins, quiz claims, 256-bit inventory, equipped cosmetics |
+| `FanAlias` | `fan_alias`, owner | wallet-owned UTF-8 display name and update time; separate PDA preserves the deployed FanProfile layout |
 | `QuizReceipt` | `quiz_receipt`, owner, quiz hash | score, points, claimed time |
 | `RewardReceipt` | `reward_receipt`, owner, reward hash | kind, item index, cost, redeemed time |
 
@@ -76,6 +77,7 @@ PULSEPROOF_REWARD_V1|<wallet>|<reward_hash_hex>|<kind>|<item_index>|<cost>|<expi
 - `claim_quiz(hash, score, points, expiry)` — validates the signed daily result and creates a one-use quiz receipt.
 - `redeem_reward(hash, kind, index, cost, expiry)` — spends existing points and atomically writes inventory/receipt state.
 - `equip_reward(kind, index)` — equips an owned catalog item after kind/index validation.
+- `set_fan_alias(display_name)` — creates or updates a wallet-derived alias PDA; the contract enforces length and control/markup-character restrictions.
 
 ## Failure behaviour
 
@@ -106,5 +108,5 @@ A Verified Catch-up Capsule adds a safe relay boundary: `/api/capsules` commits 
 - No TxLINE response database.
 - No raw proof is returned by the attestation endpoint; only a SHA-256 digest and endpoint/stat-key metadata.
 - The server persists no email, real name or IP address. The wallet public key and non-financial progression state are intentionally public in the Fan Profile PDA.
-- Fan chat retains at most 50 moderated messages in one process and does not seed synthetic activity. It is deliberately ephemeral; a production multi-instance room would move to a durable pub/sub service with the same validation rules.
+- Fan chat is scoped by World Cup fixture, retains at most 50 moderated messages in one process and does not seed synthetic activity. A post commits wallet, fixture, timestamp and normalized body in a Phantom signature; the server resolves the name from FanAlias and rejects stale/replayed signatures. It is deliberately ephemeral; a production multi-instance room would move to durable pub/sub with the same validation rules.
 - Fallback results are externally cross-checked and source-linked; their local sequence IDs are never labelled TxLINE-verified.

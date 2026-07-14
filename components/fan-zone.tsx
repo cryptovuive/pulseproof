@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FormEvent } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,9 +13,8 @@ import {
   Flame,
   Gift,
   LockKeyhole,
-  MessageCircle,
-  Radio,
-  Send,
+  Pencil,
+  Rotate3D,
   ShieldCheck,
   Sparkles,
   Trophy,
@@ -27,23 +26,26 @@ import {
 import type { BrowserWallet } from "@/lib/solana-client";
 import {
   fetchFanProfile,
+  fetchFanAlias,
   submitDailyCheckIn,
   submitEquipReward,
+  submitFanAlias,
   submitQuizClaim,
   submitRewardRedemption,
 } from "@/lib/solana-client";
 import { REWARD_CATALOG, REWARD_KIND_CODE, rewardIsAvailable } from "@/lib/reward-catalog";
 import type {
-  CommunityMessage,
+  FanAlias,
   FanProfile,
   QuizAttestation,
   QuizRound,
   RewardAttestation,
   RewardItem,
 } from "@/types/pulse";
+import { MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 import styles from "./fan-zone.module.css";
 
-type RewardFilter = "all" | "badge" | "medal" | "frame" | "character" | "limited";
+type RewardFilter = "all" | "badge" | "medal" | "frame" | "character" | "shirt" | "limited";
 type QuizSubmission = {
   day: number;
   score: number;
@@ -58,6 +60,11 @@ const formatUtcClose = (value: string) => `${value.slice(0, 16).replace("T", " �
 
 function RewardSprite({ reward, className = "" }: { reward?: RewardItem; className?: string }) {
   if (!reward) return <div className={`${styles.sprite} ${styles.spriteEmpty} ${className}`}><UserRound /></div>;
+  if (reward.shirt) return <div
+    aria-label={`${reward.shirt.player} ${reward.shirt.number} archive shirt`}
+    className={`${styles.sprite} ${styles.shirtSprite} ${className}`}
+    style={{ "--shirt-primary": reward.shirt.primary, "--shirt-secondary": reward.shirt.secondary, "--shirt-accent": reward.shirt.accent } as CSSProperties}
+  ><span>{reward.shirt.number}</span></div>;
   const x = ["0%", "50%", "100%"][reward.atlasIndex % 3];
   const y = reward.atlasIndex < 3 ? "0%" : "100%";
   return <div
@@ -71,6 +78,9 @@ export function FanZone() {
   const [wallet, setWallet] = useState<BrowserWallet | null>(null);
   const [walletKey, setWalletKey] = useState("");
   const [profile, setProfile] = useState<FanProfile | null>(null);
+  const [alias, setAlias] = useState<FanAlias | null>(null);
+  const [aliasDraft, setAliasDraft] = useState("");
+  const [editingAlias, setEditingAlias] = useState(false);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
   const [lastSignature, setLastSignature] = useState("");
@@ -79,16 +89,15 @@ export function FanZone() {
   const [quizResult, setQuizResult] = useState<QuizSubmission | null>(null);
   const [quizClaimed, setQuizClaimed] = useState(false);
   const [filter, setFilter] = useState<RewardFilter>("all");
-  const [messages, setMessages] = useState<CommunityMessage[]>([]);
-  const [online, setOnline] = useState(0);
-  const [chatStatus, setChatStatus] = useState<"connecting" | "live" | "offline">("connecting");
-  const [nickname, setNickname] = useState("Fan");
-  const [team, setTeam] = useState("");
-  const [chatBody, setChatBody] = useState("");
+  const [selectedShirt, setSelectedShirt] = useState<RewardItem | null>(null);
+  const [shirtBack, setShirtBack] = useState(false);
 
   const refreshProfile = useCallback(async (key = walletKey) => {
     if (!key) { setProfile(null); return; }
-    setProfile(await fetchFanProfile(key));
+    const [nextProfile, nextAlias] = await Promise.all([fetchFanProfile(key), fetchFanAlias(key)]);
+    setProfile(nextProfile);
+    setAlias(nextAlias);
+    setAliasDraft(nextAlias?.displayName ?? "");
   }, [walletKey]);
 
   useEffect(() => {
@@ -98,39 +107,13 @@ export function FanZone() {
         setQuiz(await response.json() as QuizRound);
       })
       .catch((error) => setNotice(error instanceof Error ? error.message : "Daily quiz is unavailable"));
-    const storageTimer = window.setTimeout(() => {
-      try {
-        setNickname(localStorage.getItem("pulseproof-chat-name") || "Fan");
-        setTeam(localStorage.getItem("pulseproof-chat-team") || "");
-      } catch { /* storage is optional */ }
-    }, 0);
-    return () => window.clearTimeout(storageTimer);
-  }, []);
-
-  useEffect(() => {
-    const source = new EventSource("/api/community/chat");
-    source.addEventListener("ready", () => setChatStatus("live"));
-    source.addEventListener("history", (event) => {
-      const payload = JSON.parse((event as MessageEvent).data) as { messages: CommunityMessage[] };
-      setMessages(payload.messages);
-    });
-    source.addEventListener("message", (event) => {
-      const message = JSON.parse((event as MessageEvent).data) as CommunityMessage;
-      setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current.slice(-49), message]);
-    });
-    source.addEventListener("presence", (event) => {
-      const payload = JSON.parse((event as MessageEvent).data) as { online: number };
-      setOnline(payload.online);
-    });
-    source.onerror = () => setChatStatus("offline");
-    return () => source.close();
   }, []);
 
   const connectWallet = async () => {
     try {
       if (wallet && walletKey) {
         await wallet.disconnect();
-        setWallet(null); setWalletKey(""); setProfile(null);
+        setWallet(null); setWalletKey(""); setProfile(null); setAlias(null); setAliasDraft("");
         return;
       }
       const provider = window.solana;
@@ -166,9 +149,40 @@ export function FanZone() {
     } finally { setBusy(""); }
   };
 
+  const saveAlias = async () => {
+    if (!requireWallet() || !wallet) return;
+    const displayName = aliasDraft.replace(/\s+/g, " ").trim();
+    if ([...displayName].length < 2 || [...displayName].length > 24 || new TextEncoder().encode(displayName).length > 48) {
+      setNotice("Display name must contain 2-24 characters and fit within 48 UTF-8 bytes.");
+      return;
+    }
+    try {
+      setBusy("alias");
+      const signature = await submitFanAlias(wallet, displayName);
+      setLastSignature(signature);
+      await refreshProfile();
+      setEditingAlias(false);
+      setNotice("Display name saved in your Fan Alias PDA. Match chat will verify it against this wallet.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Display name transaction failed");
+    } finally { setBusy(""); }
+  };
+
+  const loadPractice = async () => {
+    try {
+      setBusy("practice");
+      const response = await fetch(`/api/quiz?mode=practice&seed=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("Practice set is unavailable");
+      setQuiz(await response.json() as QuizRound);
+      setAnswers({}); setQuizResult(null); setQuizClaimed(false);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Practice set is unavailable");
+    } finally { setBusy(""); }
+  };
+
   const submitQuiz = async () => {
     if (!quiz) return;
-    if (!requireWallet()) return;
+    if (quiz.mode !== "practice" && !requireWallet()) return;
     if (quiz.questions.some((question) => answers[question.id] === undefined)) {
       setNotice("Choose one answer for all five questions first.");
       return;
@@ -178,13 +192,13 @@ export function FanZone() {
       const response = await fetch("/api/quiz", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ wallet: walletKey, roundId: quiz.roundId, answers: quiz.questions.map((question) => answers[question.id]) }),
+        body: JSON.stringify({ ...(walletKey ? { wallet: walletKey } : {}), roundId: quiz.roundId, answers: quiz.questions.map((question) => answers[question.id]) }),
       });
       const body = await response.json() as QuizSubmission & { error?: string };
       if (!response.ok) throw new Error(body.error || "Quiz could not be graded");
       setQuizResult(body);
       setQuizClaimed(false);
-      setNotice(body.points ? `Knowledge verified: ${body.score}/5. Claim ${body.points} points on-chain when ready.` : "Round complete. Review the sourced explanations and try again tomorrow.");
+      setNotice(body.points ? `Knowledge verified: ${body.score}/${quiz.questions.length}. Claim ${body.points} points on-chain when ready.` : `Practice complete: ${body.score}/${quiz.questions.length}. Review every sourced explanation or load another set.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Quiz could not be graded");
     } finally { setBusy(""); }
@@ -241,31 +255,10 @@ export function FanZone() {
     } finally { setBusy(""); }
   };
 
-  const sendChat = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!chatBody.trim()) return;
-    try {
-      setBusy("chat");
-      const response = await fetch("/api/community/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ nickname, team: team || undefined, body: chatBody, walletHint: walletKey ? shortKey(walletKey) : undefined }),
-      });
-      const body = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(body.error || "Message could not be sent");
-      setChatBody("");
-      try {
-        localStorage.setItem("pulseproof-chat-name", nickname);
-        localStorage.setItem("pulseproof-chat-team", team);
-      } catch { /* storage is optional */ }
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Message could not be sent");
-    } finally { setBusy(""); }
-  };
-
   const filteredRewards = useMemo(() => REWARD_CATALOG.filter((reward) => {
     if (filter === "all") return true;
     if (filter === "limited") return Boolean(reward.availableUntil);
+    if (filter === "shirt") return Boolean(reward.shirt);
     return reward.kind === filter;
   }), [filter]);
   const owned = new Set(profile?.inventory ?? []);
@@ -295,7 +288,11 @@ export function FanZone() {
           {equippedFrame && <RewardSprite reward={equippedFrame} className={styles.avatarFrame} />}
           {equippedBadge && <RewardSprite reward={equippedBadge} className={styles.avatarBadge} />}
         </div>
-        <div className={styles.identityCopy}><span>ON-CHAIN FAN PROFILE</span><h2>{walletKey ? shortKey(walletKey) : "Guest supporter"}</h2><p>{profile ? `${profile.inventory.length} cosmetics owned · ${profile.claims} verified actions` : "Connect and check in to create your profile PDA."}</p></div>
+        <div className={styles.identityCopy}>
+          <span>ON-CHAIN FAN PROFILE</span>
+          {editingAlias ? <div className={styles.aliasEditor}><input aria-label="Display name" autoFocus maxLength={24} value={aliasDraft} onChange={(event) => setAliasDraft(event.target.value)} placeholder="Your fan name" /><button disabled={busy === "alias"} onClick={() => void saveAlias()}>{busy === "alias" ? "Approving…" : "Save on-chain"}</button><button onClick={() => { setEditingAlias(false); setAliasDraft(alias?.displayName ?? ""); }}>Cancel</button></div> : <h2>{alias?.displayName ?? (walletKey ? shortKey(walletKey) : "Guest supporter")} {walletKey && <button className={styles.editAlias} aria-label="Edit display name" onClick={() => setEditingAlias(true)}><Pencil size={14} /></button>}</h2>}
+          <p>{profile ? `${profile.inventory.length} cosmetics owned · ${profile.claims} verified actions · ${walletKey ? shortKey(walletKey) : ""}` : "Connect and check in to create your profile PDA."}</p>
+        </div>
       </article>
       <article className={styles.balanceCard}><span>AVAILABLE</span><strong>{profile?.availablePoints ?? 0}</strong><b>FAN POINTS</b><small>{profile?.pointsEarned ?? 0} earned · {profile?.pointsSpent ?? 0} redeemed</small></article>
       <article className={styles.statCard}><Flame /><strong>{profile?.currentStreak ?? 0} days</strong><span>Current streak</span><small>Best: {profile?.bestStreak ?? 0}</small></article>
@@ -313,9 +310,9 @@ export function FanZone() {
 
     <section className={styles.twoColumn}>
       <article className={styles.quizCard}>
-        <div className={styles.sectionHead}><div><span>02 · DAILY WORLD CUP QUIZ</span><h2>Five sourced questions</h2><p>Two or four choices. Answers remain server-side until the round is graded.</p></div><BookOpenCheck /></div>
+        <div className={styles.sectionHead}><div><span>02 · WORLD CUP QUIZ ENGINE</span><h2>{quiz?.mode === "practice" ? "Ten-question practice set" : "Five-question daily reward round"}</h2><p>10,000 deterministic variants from source-locked facts. Daily points stay single-use; practice is unlimited and reward-free.</p></div><BookOpenCheck /></div>
         {!quiz ? <div className={styles.loading}>Loading sourced questions…</div> : <>
-          <div className={styles.quizMeta}><span>{quiz.edition}</span><b>UP TO {quiz.maxPoints} PTS</b></div>
+          <div className={styles.quizMeta}><span>{quiz.edition}</span><b>{quiz.mode === "practice" ? `${quiz.catalogSize?.toLocaleString("en-US")} VARIANTS` : `UP TO ${quiz.maxPoints} PTS`}</b></div>
           <div className={styles.questions}>{quiz.questions.map((question, index) => {
             const result = quizResult?.results.find((item) => item.questionId === question.id);
             return <fieldset key={question.id} className={result ? (result.correct ? styles.correct : styles.wrong) : ""}>
@@ -330,39 +327,48 @@ export function FanZone() {
               {result && <p className={styles.explanation}>{result.explanation}</p>}
             </fieldset>;
           })}</div>
-          {!quizResult ? <button className={styles.primary} onClick={submitQuiz} disabled={Boolean(busy)}><Sparkles size={17} />{busy === "quiz-grade" ? "Checking sources…" : "Grade my round"}</button> : <div className={styles.quizResult}><div><strong>{quizResult.score}/5</strong><span>{quizResult.points} points authorized</span></div>{quizResult.attestation && <button onClick={claimQuiz} disabled={Boolean(busy) || quizClaimed}><BadgeCheck size={16} />{quizClaimed ? "Claimed on-chain" : busy === "quiz-claim" ? "Waiting for Phantom…" : "Claim points on-chain"}</button>}</div>}
+          {!quizResult ? <button className={styles.primary} onClick={submitQuiz} disabled={Boolean(busy)}><Sparkles size={17} />{busy === "quiz-grade" ? "Checking sources…" : "Grade my round"}</button> : <div className={styles.quizResult}><div><strong>{quizResult.score}/{quiz.questions.length}</strong><span>{quiz.mode === "practice" ? "practice · no points" : `${quizResult.points} points authorized`}</span></div>{quizResult.attestation && <button onClick={claimQuiz} disabled={Boolean(busy) || quizClaimed}><BadgeCheck size={16} />{quizClaimed ? "Claimed on-chain" : busy === "quiz-claim" ? "Waiting for Phantom…" : "Claim points on-chain"}</button>}<button onClick={() => void loadPractice()} disabled={Boolean(busy)}><Rotate3D size={15} />New practice set</button></div>}
         </>}
       </article>
 
       <aside className={styles.chatCard}>
-        <div className={styles.sectionHead}><div><span>03 · LIVE FAN CHAT</span><h2>Matchday commons</h2><p>Ephemeral community chat. No fabricated users or seeded messages.</p></div><MessageCircle /></div>
-        <div className={styles.chatPresence}><span className={chatStatus === "live" ? styles.onlineDot : styles.offlineDot} />{chatStatus === "live" ? `${online} connected now` : chatStatus}<b>NO LINKS · NO BETTING</b></div>
-        <div className={styles.chatLog}>{messages.length ? messages.map((message) => <article key={message.id}>
-          <div><strong>{message.nickname}</strong>{message.team && <span>{message.team}</span>}<small>{new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>
-          <p>{message.body}</p>{message.walletHint && <code>{message.walletHint}</code>}
-        </article>) : <div className={styles.chatEmpty}><Radio /><strong>The room is quiet.</strong><span>Be the first real fan to start the conversation.</span></div>}</div>
-        <form className={styles.chatForm} onSubmit={sendChat}>
-          <div><input value={nickname} onChange={(event) => setNickname(event.target.value)} maxLength={24} aria-label="Chat nickname" /><input value={team} onChange={(event) => setTeam(event.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 3))} placeholder="TEAM" maxLength={3} aria-label="Team code" /></div>
-          <textarea value={chatBody} onChange={(event) => setChatBody(event.target.value)} maxLength={280} placeholder="Talk football, not finances…" aria-label="Chat message" />
-          <button disabled={busy === "chat" || chatStatus !== "live"}><Send size={15} />Send live</button>
-        </form>
+        <div className={styles.sectionHead}><div><span>03 · MATCH-BOUND COMMUNITY</span><h2>Chat now lives with the match</h2><p>Each World Cup 2026 fixture has its own SSE room. Posting requires a wallet signature and the on-chain display name above.</p></div><ShieldCheck /></div>
+        <div className={styles.chatMoved}><strong>No anonymous impersonation.</strong><span>Read freely; connect Phantom and sign only the message you post. Rooms block links, wagering, wallet secrets and replayed signatures.</span><Link href="/">Open World Cup 2026 live rooms <ArrowLeft size={14} /></Link></div>
       </aside>
     </section>
 
+    <section className={styles.mascotArchive}>
+      <div className={styles.sectionHead}><div><span>04 · VERIFIED MASCOT ARCHIVE</span><h2>From Willie to Maple, Zayu and Clutch</h2><p>Names, host editions and character forms are sourced from FIFA. Markers below identify the real species/object; they are not copied official mascot artwork.</p></div><Sparkles /></div>
+      <div className={styles.mascotRail}>{WORLD_CUP_MASCOTS.map((mascot) => <article key={mascot.edition}><span className={styles.mascotMarker} aria-hidden="true">{mascot.marker}</span><small>{mascot.edition} · {mascot.host}</small><h3>{mascot.name}</h3><p>{mascot.form}</p><a href={mascot.edition === 2026 ? MASCOT_2026_SOURCE : MASCOT_HISTORY_SOURCE} target="_blank" rel="noreferrer">Official FIFA source <ExternalLink size={11} /></a></article>)}</div>
+    </section>
+
     <section className={styles.store}>
-      <div className={styles.sectionHead}><div><span>04 · COSMETIC VAULT</span><h2>36 original rewards</h2><p>Badge, medal, frame and character inventory is a non-transferable bitset inside the fan profile PDA.</p></div><Gift /></div>
-      <div className={styles.filters}>{(["all","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
+      <div className={styles.sectionHead}><div><span>05 · COSMETIC + SHIRT VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Six sourced shirt tributes add a code-rendered front/back 3D viewer. They are fan art with no crest, sponsor or claim of official merchandise.</p></div><Gift /></div>
+      <div className={styles.filters}>{(["all","shirt","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
       <div className={styles.rewardGrid}>{filteredRewards.map((reward) => {
         const isOwned = owned.has(reward.index);
         const isAvailable = rewardIsAvailable(reward);
         const isEquipped = profile?.equippedBadge === reward.index || profile?.equippedFrame === reward.index || profile?.equippedCharacter === reward.index;
         return <article key={reward.id} className={`${styles.rewardCard} ${styles[reward.rarity]}`}>
           <RewardSprite reward={reward} />
-          <div className={styles.rewardCopy}><div><span>{reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}</div>
+          <div className={styles.rewardCopy}><div><span>{reward.shirt ? "interactive shirt" : reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}{reward.shirt && <button className={styles.previewShirt} onClick={() => { setSelectedShirt(reward); setShirtBack(false); }}><Rotate3D size={14} /> View 3D front / back</button>}</div>
           <div className={styles.rewardAction}><strong>{reward.price} PTS</strong>{isOwned ? <button disabled={Boolean(busy) || isEquipped} onClick={() => equipReward(reward)}>{isEquipped ? "Equipped" : busy === `equip-${reward.id}` ? "Approving…" : "Equip on-chain"}</button> : <button disabled={Boolean(busy) || !isAvailable} onClick={() => redeemReward(reward)}>{!isAvailable ? "Closed" : busy === `reward-${reward.id}` ? "Approving…" : "Redeem"}</button>}</div>
         </article>;
       })}</div>
     </section>
+
+    {selectedShirt?.shirt && <div className={styles.shirtModal} role="dialog" aria-modal="true" aria-label={`${selectedShirt.name} 3D viewer`}>
+      <button className={styles.modalClose} aria-label="Close shirt viewer" onClick={() => setSelectedShirt(null)}><X size={18} /></button>
+      <div className={styles.shirtMuseum} style={{ backgroundImage: "linear-gradient(90deg, rgba(5,8,7,.2), rgba(5,8,7,.04)), url('/rewards/shirt-vault-v2.png')" }}>
+        <button className={styles.shirtTurntable} aria-label="Rotate shirt front to back" onClick={() => setShirtBack((value) => !value)}>
+          <span className={`${styles.shirtObject} ${shirtBack ? styles.shirtBack : ""}`} style={{ "--shirt-primary": selectedShirt.shirt.primary, "--shirt-secondary": selectedShirt.shirt.secondary, "--shirt-accent": selectedShirt.shirt.accent } as CSSProperties}>
+            <span className={`${styles.shirtFace} ${styles.shirtFront}`}><i>PP</i><b>{selectedShirt.shirt.number}</b><small>{selectedShirt.shirt.team}</small></span>
+            <span className={`${styles.shirtFace} ${styles.shirtRear}`}><i>{selectedShirt.shirt.player}</i><b>{selectedShirt.shirt.number}</b><small>{selectedShirt.shirt.edition}</small></span>
+          </span>
+        </button>
+        <div className={styles.shirtDetails}><span>INTERACTIVE FAN ARCHIVE · {shirtBack ? "BACK" : "FRONT"}</span><h2>{selectedShirt.name}</h2><p>{selectedShirt.description}</p><button onClick={() => setShirtBack((value) => !value)}><Rotate3D size={15} /> Rotate to {shirtBack ? "front" : "back"}</button><a href={selectedShirt.shirt.sourceUrl} target="_blank" rel="noreferrer">{selectedShirt.shirt.sourceLabel} <ExternalLink size={12} /></a><small>Visual reconstruction is intentionally simplified and excludes official crests, manufacturer marks and sponsors.</small></div>
+      </div>
+    </div>}
 
     {(notice || lastSignature) && <div className={styles.notice} role="status"><span>{notice || "Latest transaction finalized on Solana devnet."}</span>{lastSignature && <a href={`https://explorer.solana.com/tx/${lastSignature}?cluster=devnet`} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a>}<button type="button" aria-label="Dismiss notification" onClick={() => { setNotice(""); setLastSignature(""); }}><X size={13} /></button></div>}
     <footer><span>PULSEPROOF FAN ZONE · TXLINE CONSUMER EXPERIENCE</span><span>NON-TRANSFERABLE · NO FINANCIAL REWARDS · DEVNET</span></footer>
