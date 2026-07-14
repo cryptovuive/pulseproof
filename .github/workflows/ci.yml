@@ -19,3 +19,15 @@ jobs:
       - run: npm test
       - run: npm run lint
       - run: npm run build
+
+  contract-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install stable Rust with rustfmt
+        run: rustup toolchain install stable --profile minimal --component rustfmt
+      - name: Check Anchor program formatting
+        run: cargo +stable fmt --manifest-path programs/pulseproof/Cargo.toml -- --check
+      - name: Test reward catalog invariants
+        run: cargo +stable test --manifest-path programs/pulseproof/Cargo.toml

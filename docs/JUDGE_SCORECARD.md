@@ -37,7 +37,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 - Thirty-six non-transferable original cosmetics across badges, medals, frames and characters, plus an official-media 2026 mascot feature and a text-only historical mascot index without emoji or imitation artwork.
 - Daily/practice quiz engine with 10,000 deterministic variants over stable FIFA-linked facts, answer non-disclosure and replay-safe wallet receipts.
 - Real SSE fan chat with no seeded users, bounded history and strict link/wagering/secret moderation.
-- Automated coverage increased to 114 tests across 24 suites, plus public browser and devnet proof runners.
+- Automated coverage increased to 117 tests across 24 suites, plus public browser, native contract and devnet proof runners.
 
 ## Highest-return actions before submission
 

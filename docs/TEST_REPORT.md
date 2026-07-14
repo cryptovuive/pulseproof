@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **114/114 passed** across twenty-four suites.
+Result: **117/117 passed** across twenty-four suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -25,7 +25,7 @@ Result: **114/114 passed** across twenty-four suites.
 - Duplicate-receipt model rejection.
 - Deterministic once-per-UTC-day streak awards, streak reset and capped day-seven bonus.
 - Quiz answer non-disclosure, 10,000 stable variant IDs, deterministic daily/practice selection, exact two/four-option schema, official FIFA source links, stale-round rejection and signed result verification.
-- Thirty-six unique catalog items with stable indexes, price bounds, seasonal close enforcement and six high-resolution atlas contracts; retired shirt reward IDs are explicitly rejected.
+- Thirty-six unique catalog items with stable indexes, price bounds, seasonal close enforcement and six high-resolution atlas contracts; the smart contract and API both reject retired or out-of-range reward indexes.
 - Eighteen sourced mascot records with the official 2026 trio split by host nation and playing role; JPEG integrity and the removal of misleading emoji markers are enforced.
 - Reward attestation binds wallet, catalog digest, kind, item index and cost; unknown catalog identifiers fail closed.
 - Chat verifies wallet signatures and FanAlias, rejects tampering/replay, isolates fixture rooms, blocks links/wagering/secrets/spam and enforces a 50-message ring bound.
@@ -172,7 +172,7 @@ npm audit --omit=dev
 - Deployed the original 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `114/114` unit/integration/contract/submission tests, ESLint, TypeScript, production build, Cargo format and Anchor SBF build passed after the World Cup-only release.
+- `117/117` unit/integration/contract/submission tests, ESLint, TypeScript and the production build pass locally. Cargo format and native Rust invariant tests are required by CI; Anchor SBF build and devnet upgrade must not reuse a stale binary when the local WSL VM is unavailable.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.

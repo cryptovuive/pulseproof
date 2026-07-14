@@ -18,6 +18,21 @@ describe("fan progression economy", () => {
     expect(REWARD_CATALOG.every((reward) => !reward.id.startsWith("shirt-"))).toBe(true);
   });
 
+  it("keeps the on-chain reward allowlist aligned with the 36-item web catalog", () => {
+    const program = readFileSync(join(process.cwd(), "programs", "pulseproof", "src", "lib.rs"), "utf8");
+    expect(program).toContain("const REWARD_CATALOG_ITEM_COUNT: u16 = 36;");
+    expect(program).toContain("item_index < REWARD_CATALOG_ITEM_COUNT");
+    expect(program).not.toContain("(36..=47)");
+  });
+
+  it("removes the retired shirt UI and keeps official mascots outside the claimable vault", () => {
+    const component = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
+    const styles = readFileSync(join(process.cwd(), "components", "fan-zone.module.css"), "utf8");
+    expect(component).not.toMatch(/selectedShirt|shirtBack|shirt-vault|previewShirt/);
+    expect(styles).not.toMatch(/shirtModal|shirtSprite|mannequin/);
+    expect(component).toContain("Official World Cup mascots remain a sourced archive above—not claimable");
+  });
+
   it("time-gates seasonal rewards without changing their catalog price", () => {
     const limited = REWARD_CATALOG.find((reward) => reward.id === "eclipse-final")!;
     expect(rewardIsAvailable(limited, Date.parse("2026-07-14T00:00:00Z"))).toBe(true);

@@ -48,7 +48,7 @@ The contract derives the UTC day from `Clock`, calculates the 10–22 point stre
 
 ### Redeem or equip a different catalog item
 
-The reward signature commits to catalog digest, kind, stable item index and exact cost. The contract rejects duplicate inventory bits and enforces the deployed catalog's kind/index ranges, so a cheap badge cannot be presented or equipped as a frame/character.
+The reward signature commits to catalog digest, kind, stable item index and exact cost. The contract rejects duplicate inventory bits, rejects every index outside the active 0–35 catalog, and enforces exact kind/index ranges, so a retired item or cheap badge cannot be presented or equipped as a frame/character.
 
 ### Abuse fan chat
 
