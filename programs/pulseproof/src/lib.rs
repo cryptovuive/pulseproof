@@ -886,11 +886,7 @@ fn reset_profile_state(profile: &mut FanProfile, points: u64) {
     profile.claims = 0;
 }
 
-fn initialize_fan_epoch(
-    fan_epoch: &mut Account<FanEpoch>,
-    owner: Pubkey,
-    bump: u8,
-) -> Result<()> {
+fn initialize_fan_epoch(fan_epoch: &mut Account<FanEpoch>, owner: Pubkey, bump: u8) -> Result<()> {
     if fan_epoch.owner == Pubkey::default() {
         fan_epoch.owner = owner;
         fan_epoch.epoch = 0;
