@@ -28,6 +28,8 @@ describe("unattended live capture reliability", () => {
     expect(scheduler).toContain("-RestartCount 3");
     expect(scheduler).toContain("-LogonType S4U");
     expect(scheduler).toContain("ensure-live-match-capture.ps1");
+    expect(scheduler).toContain("$RunName-preflight");
+    expect(scheduler).toContain("-DurationSeconds 10");
   });
 
   it("never overwrites an earlier failed attempt", () => {

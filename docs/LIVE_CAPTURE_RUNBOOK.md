@@ -8,16 +8,17 @@ The Codex automation was created without a timezone-bearing `DTSTART` because im
 
 PulseProof now uses Windows Task Scheduler with an absolute local `StartBoundary`:
 
-1. Start 15 minutes before the verified kickoff.
-2. Wake the computer and run under an S4U background token, so a locked screen is not a blocker.
-3. Run a watchdog every three minutes through the capture window.
-4. Verify health, TxLINE credentials, fixture ID, and both teams before recording.
-5. Launch headless Chrome and capture the product page through Chrome DevTools, independent of the desktop surface.
-6. Record public SSE in parallel with receipt timestamps.
-7. Write 15-minute MP4 segments so an interrupted final segment does not corrupt earlier footage.
-8. Store retries in separate attempt directories and never overwrite earlier footage.
-9. Prevent Windows sleep while the worker is active.
-10. Validate every segment with FFprobe and produce a SHA-256 manifest after the window closes.
+1. Run a full ten-second headless recording rehearsal 75 minutes before kickoff.
+2. Start the main capture 15 minutes before the verified kickoff.
+3. Wake the computer and run under an S4U background token, so a locked screen is not a blocker.
+4. Run a watchdog every three minutes through the capture window.
+5. Verify health, TxLINE credentials, fixture ID, and both teams before recording.
+6. Launch headless Chrome and capture the product page through Chrome DevTools, independent of the desktop surface.
+7. Record public SSE in parallel with receipt timestamps.
+8. Write 15-minute MP4 segments so an interrupted final segment does not corrupt earlier footage.
+9. Store retries in separate attempt directories and never overwrite earlier footage.
+10. Prevent Windows sleep while the worker is active.
+11. Validate every segment with FFprobe and produce a SHA-256 manifest after the window closes.
 
 ## Register a match
 
