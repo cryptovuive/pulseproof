@@ -4,10 +4,10 @@ WEBVTT
 PulseProof is a trusted second screen for fans who arrive late.
 
 00:00:15.000 --> 00:01:19.000
-The public product protects the result, runs Catch-up, saves a recap and verifies a receipt.
+The public product protects the result, runs Catch-up, signs a safe relay, saves a recap and verifies a receipt.
 
 00:01:19.000 --> 00:01:45.000
-The Judge Room runs seven fresh production checks from SSE to Solana.
+The Judge Room runs eight fresh production checks from SSE and signed relay to Solana.
 
 00:01:45.000 --> 00:02:03.000
 The reference receipt and PulseProof program are independently visible on Solana Explorer.

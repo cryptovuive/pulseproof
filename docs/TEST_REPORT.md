@@ -149,11 +149,12 @@ npm audit --omit=dev
 ## Submission video verification
 
 - Final duration: **144.046 seconds (2:24.046)**, below the five-minute limit enforced by the renderer.
-- Video: H.264, 1920×1080, 30 fps; audio: AAC narration; MP4 size: 6,447,104 bytes.
+- Video: H.264, 1920×1080, 30 fps; audio: AAC narration; MP4 size: 6,636,520 bytes.
 - Five chapter markers, five English WebVTT caption cues and a full text transcript are included.
 - A separate 1920×1080 PNG thumbnail is ready for the submission form or social preview.
-- FFmpeg volume audit measured −22.2 dB mean and −3.2 dB peak, with no clipping.
-- Visual review sampled ten points across the finished encode plus dedicated mid-frames. It confirms the real product walkthrough, fresh 8/8 production proof run and finalized Explorer transaction; no personal desktop/session frame is present.
+- FFmpeg volume audit measured −22.2 dB mean and −3.3 dB peak, with no clipping.
+- Sequential-decoder visual review sampled the complete encode at twelve-second intervals plus twenty frames across the Catch-up Capsule transition. It confirms the real product walkthrough, fresh 8/8 production proof run and finalized Explorer transaction; no compositor gap or personal desktop/session frame is present.
+- SHA-256: `d1cf7d9aa8f355e1a5ffb8045b7d65d52cdf5b2b9e88393186a9c7d873685c45`.
 
 ## Public devnet and live-credential verification — 13 July 2026
 

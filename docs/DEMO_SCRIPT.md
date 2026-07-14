@@ -51,3 +51,4 @@ The final frame explains the system-level combination: source honesty, signed no
 - Finished report replay is never called live TxLINE data.
 - The Explorer receipt is described as already finalized, not as a transaction clicked during this recording.
 - Contact-sheet and dedicated midpoint review confirm product, 8/8 proof and Explorer frames.
+- Release MP4 SHA-256: `d1cf7d9aa8f355e1a5ffb8045b7d65d52cdf5b2b9e88393186a9c7d873685c45`.
