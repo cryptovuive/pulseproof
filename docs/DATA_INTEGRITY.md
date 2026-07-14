@@ -44,9 +44,19 @@ The local replay is no longer a fictional result simulation. It reflects these e
 
 The source URLs are displayed in the application. Exact scorer, assist, card and stoppage-time fields are taken from the linked FIFA full-time report or published match report. Locally assigned sequence IDs remain explicitly non-TxLINE and `verified: false`; only events received from the authenticated TxLINE adapter may be labelled TxLINE-verified.
 
+## World Cup quiz facts
+
+- Quiz facts are separate from live TxLINE match data and are never labelled TxLINE-verified.
+- Every public question carries its supporting `fifa.com` or `inside.fifa.com` article URL and a human-readable source label.
+- The question bank prioritises stable historical records and published 2026 format/rules facts. It avoids predictions and volatile active-tournament totals that could become false during the day.
+- Correct indexes and explanations stay server-side until a wallet-bound daily round is graded.
+- The round ID is derived from UTC day, contains exactly five deterministic questions and expires when the day changes; the receipt hash also binds the wallet so it cannot be reused by another fan.
+- A fact correction is a code-reviewed catalog update. Existing on-chain receipts prove only the signed round digest/score/points, not that an outdated fact should remain displayed forever.
+
 ## Required production behaviour
 
 - Do not cache fixture participants beyond the source's freshness policy.
 - Do not merge media-reported events into a TxLINE-labelled stream.
 - Do not call an externally verified schedule “TxLINE-covered” until the fixture appears in the participant's TxLINE snapshot.
 - Do not persist or redistribute raw TxLINE datasets.
+- Do not turn fan points, badges or quiz results into transferable tokens, cash value, prizes or wagering mechanics.

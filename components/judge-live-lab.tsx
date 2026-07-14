@@ -47,7 +47,7 @@ const INITIAL_CHECKS: CheckState[] = [
   { id: "replay", label: "Spoiler isolation", detail: "A two-event prefix cannot see any later match moment", status: "idle" },
   { id: "capsule", label: "Signed fan relay", detail: "Issue, redeem and verify a two-event Catch-up Capsule", status: "idle" },
   { id: "attestation", label: "Ed25519 receipt", detail: "Issue a fresh proof and verify it inside this browser", status: "idle" },
-  { id: "chain", label: "Solana devnet", detail: "Read executable programs and a confirmed reference receipt", status: "idle" },
+  { id: "chain", label: "Solana devnet", detail: "Read programs, check-in profile, quiz claim and reward redemption", status: "idle" },
   { id: "offline", label: "Offline safety boundary", detail: "App shell is cacheable; APIs, SSE and proofs are not", status: "idle" },
 ];
 
@@ -203,7 +203,7 @@ export function JudgeLiveLab() {
     await execute("chain", async () => {
       const body = await jsonResponse<unknown>("/api/judge-proof");
       assertChainEvidence(body);
-      return { value: body, evidence: `2 executable programs · receipt slot ${body.receipt.slot} · ${body.receipt.confirmationStatus}` };
+      return { value: body, evidence: `2 programs · ${body.progression.pointsEarned} earned / ${body.progression.pointsSpent} spent · quiz + reward finalized` };
     });
 
     await execute("offline", async () => {

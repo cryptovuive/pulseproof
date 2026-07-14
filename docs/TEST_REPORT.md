@@ -1,6 +1,6 @@
 # Verification report
 
-Date: 13 July 2026
+Date: 14 July 2026
 Environment: Windows + WSL2 Ubuntu 24.04, Node.js 20.19, Rust 1.97, Solana CLI 2.3.0, Anchor 0.32.1.
 
 ## Automated unit tests
@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **95/95 passed** across twenty-one suites.
+Result: **109/109 passed** across twenty-four suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -23,6 +23,12 @@ Result: **95/95 passed** across twenty-one suites.
 - TxLINE proof digest changes the signed evidence hash.
 - Fan Pass point and badge model.
 - Duplicate-receipt model rejection.
+- Deterministic once-per-UTC-day streak awards, streak reset and capped day-seven bonus.
+- Quiz answer non-disclosure, deterministic five-question selection, exact two/four-option schema, official FIFA source links, stale-round rejection and signed result verification.
+- Thirty-six unique catalog items, stable indexes, price bounds, seasonal close enforcement and six high-resolution WebP atlas contracts.
+- Reward attestation binds wallet, catalog digest, kind, item index and cost; unknown catalog identifiers fail closed.
+- Chat moderation blocks links, wagering, secrets and spam; the room contains no synthetic seed messages and enforces a 50-message ring bound.
+- Fan progression model rejects quiz replay, overspending and duplicate reward redemption.
 - Smart Alert preference validation, supported-event classification, followed-team scope, verified-only delivery and Spoiler Shield copy protection.
 - Road-to-the-Final construction preserves chronological semi-finals and intentionally leaves final/third-place participants TBD.
 - Attestation rate-limit window and reset behaviour.
@@ -57,6 +63,7 @@ Results:
 - Solana SBF release build passed.
 - IDL and TypeScript types generated.
 - Program ID synced to `74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`.
+- Fan progression upgrade compiled to SBF and was deployed without changing the existing Program ID.
 
 ## Real local-validator E2E
 
@@ -161,14 +168,25 @@ npm audit --omit=dev
 - Activated TxLINE devnet level `1` with an Explorer-visible subscription transaction.
 - Authenticated `fixtures/snapshot` returned five covered fixtures.
 - Connected directly to `/api/scores/stream`: HTTP `200`, `text/event-stream`, heartbeat received, token redacted.
-- Deployed the 285,632-byte PulseProof program to public devnet.
+- Deployed the original 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `95/95` unit/integration/contract/submission tests, ESLint, production build and Phantom-compatible signature tests passed after release changes.
+- `109/109` unit/integration/contract/submission tests, ESLint, TypeScript and production build passed after the Fan Zone release changes.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.
 - Sparse devnet fixtures no longer invent a start time, competition or game state; metadata-only `coverage_update/comment` records are labelled `COVERED`, award zero points and never imply the match is live.
+
+## Public Fan Progression E2E — 14 July 2026
+
+- Upgraded the same public program in slot `476138207`; ProgramData is now 416,704 bytes. Upgrade transaction: `5MdiMZ6...AgTUV` (finalized).
+- Created Fan Profile PDA `GWW47tJr...XZGgZ` for disposable devnet wallet `8qdg3U5F...LsAyV`.
+- Finalized daily check-in `Wx1UaexR...VUTjRK7`; an immediate second check-in was rejected.
+- Finalized signed TxLINE moment claim `63Xd5qVC...LT97p` and signed quiz claim `2dSD6oJM...qpAzxo`; repeating the same quiz receipt was rejected.
+- Finalized Quiz Spark redemption `5y1ZXtGd...K5QpjA` and equip transaction `2vgZH91e...XW3j7W`; attempting to equip the badge as a character was rejected.
+- Read-back state: 85 points earned, 60 spent, one check-in, one quiz claim, reward index 13 owned and equipped.
+- Upgrade, check-in, quiz, redemption and equip signatures were independently queried and all returned `Finalized`.
+- Cosmetic atlases were converted from 14.55 MB of PNG source assets to 1.77 MB of 1536×1024 WebP production assets, an 87.8% transfer reduction while preserving the atlas dimensions.
 
 ## Remaining external verification
 

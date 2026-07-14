@@ -1,6 +1,6 @@
 # Product growth research and ecosystem roadmap
 
-Checked: 13 July 2026.
+Checked: 14 July 2026.
 
 PulseProof should earn repeat use through relevance, continuity and trust—not fabricated depth, notification spam or financial incentives.
 
@@ -14,6 +14,7 @@ PulseProof should earn repeat use through relevance, continuity and trust—not 
 | Condensed replay and highlights | FIFA+ exposes full replays, extended highlights, highlights, goals and clips. | PulseProof provides a rights-safe event Catch-up and links published sources; it does not restream protected video. |
 | Tournament path and granular alerts | LiveScore's World Cup 2026 hub exposes fixtures, a route to the final, commentary and selectable kick-off/goal/result alerts. | Matchday Command Center shows the source-linked knockout path while Smart Alerts expose only verified TxLINE event types with delay/spoiler controls. |
 | Visual analysis and ratings | SofaScore exposes goal action animation, lineups, ratings and historical comparison. | Defer ratings, xG, lineups, shot maps and player comparison until a licensed provider supplies the underlying fields. |
+| Daily knowledge loop and collection | FIFA's own tournament experiences use football trivia/points to give fans a lightweight reason to return. | A private-answer, source-linked daily quiz awards non-financial points through a replay-safe Solana receipt; points unlock identity cosmetics, never prizes or tokens. |
 
 Research URLs:
 
@@ -36,6 +37,9 @@ Research URLs:
 8. **Remember:** optional Solana Proof of Watch seals an attested moment without creating a transferable financial reward.
 9. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
 10. **Take it offline:** a fan can keep up to eight transformed finished-match recaps on the device; raw feeds, API/SSE responses and claim capability are deliberately excluded.
+11. **Build identity:** daily Solana-clock check-in and sourced quiz claims grow one wallet-owned, non-transferable profile.
+12. **Collect intentionally:** 36 original cosmetics create visible progression; six seasonal pieces close at a disclosed time without pretending to have scarce supply.
+13. **Meet real fans:** the live room starts empty, counts only connected SSE clients and never fabricates conversation or engagement.
 
 ## Accuracy gates for future features
 
@@ -70,7 +74,8 @@ No feature may enter the consumer UI unless all applicable gates pass:
 
 ### Phase 4 — real community layer
 
-- Moderated, fixture-scoped watch rooms with authenticated real counts.
+- Shipped for the hackathon: one global ephemeral SSE room with real presence, bounded history, spam/link/wagering/secret moderation and no seeded users.
+- Remaining: durable fixture-scoped rooms, wallet-signed identity, reports/blocks, cross-instance pub/sub and human moderator tooling.
 - Event-linked reactions and polls with rate limits; no wagering, stakes or transferable prizes.
 - Shipped: Verified Catch-up Capsules that cite the source lane, commit an exact prefix and fail closed when modified, expired or source-divergent.
 
@@ -82,5 +87,7 @@ No feature may enter the consumer UI unless all applicable gates pass:
 - Source-link opens and proof-verification success rate.
 - SSE reconnect/error rate and event freshness while a match is live.
 - Notification disable rate and complaint rate as guardrails against spam.
+- Daily quiz completion/claim rate, seven-day streak survival and points-to-cosmetic redemption conversion.
+- Chat send/error/moderation rate; presence is operational telemetry, never a fake social-proof counter.
 
 Raw browsing history, wallet identity and notification behavior must not be sold or used to create dark patterns.

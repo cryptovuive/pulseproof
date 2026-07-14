@@ -22,4 +22,5 @@ submission-assets/video/hwnd-test*
 submission-assets/video/live-contact-sheet.png
 submission-assets/video/product-proof-final.png
 *.log
+*.tsbuildinfo
 !.env.example

@@ -10,9 +10,9 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 |---|---:|---|
 | Real consumer problem and differentiation | 20/20 | The product handles a real before/during/after fan journey. The signed no-spoiler relay turns “send what I have watched so far” into a source-bound, independently verifiable consumer action rather than another generic score or recap surface. |
 | TxLINE integration | 18/20 | Participant-owned devnet subscription, fixture/snapshot/historical/stat-validation usage, canonical public SSE bridge and a newly recorded fresh `ready + pulse` browser test are real. A captured score-changing event from an active covered match is still missing. |
-| Product and UX | 20/20 | My Pulse, local timezone, reminders, Road to Final, Smart Alerts, Quick Tour, installable PWA, consumer-safe offline Catch-up, shareable verified Capsules, accessibility labels, mobile layout and strict spoiler behavior form a coherent consumer loop. |
-| Solana relevance and security | 18/20 | Public devnet program, Config/FanPass/Receipt PDAs, Ed25519 attestation binding and anti-replay behavior are strong and non-financial. The final submission still needs a short, visible Phantom-to-Explorer UI recording that a judge can follow without reading code. |
-| Demo and submission evidence | 19/20 | A 2:24 1080p demo records real product controls, state changes, eight fresh production checks and the finalized Explorer receipt. Captions, transcript, chapters and the Judge Room remain public. The video honestly does not portray the existing Explorer claim as a newly clicked Phantom transaction. |
+| Product and UX | 20/20 | The matchday loop now continues into a Fan Zone: daily streak, sourced five-question quiz, 36 original cosmetics, equipped avatar identity and real SSE chat. My Pulse, reminders, PWA/offline Catch-up, Capsules, accessibility, mobile layout and strict spoiler behavior remain coherent rather than becoming separate feature demos. |
+| Solana relevance and security | 20/20 | The same public devnet program now has wallet-owned Fan Profile, quiz/reward receipts, deterministic check-in, non-transferable inventory and equipped state. Public E2E proves replay, overspend and kind-confusion controls in addition to Ed25519 moment claims. |
+| Demo and submission evidence | 17/20 | The existing 2:24 demo and Judge Room prove the original live product, but the video predates Fan Zone. The upgraded program and progression transactions are public and Judge Room-readable; a later submission cut should show the new loop visually. |
 
 ## Why this is not honestly 95–100 yet
 
@@ -20,6 +20,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 2. The public app has not been recorded connecting Phantom, signing and opening the resulting Explorer transaction in one uninterrupted flow.
 3. Watch-room votes and counts intentionally remain local; presenting them as a community feature at scale would be misleading.
 4. Browser notifications work while PulseProof is active; closed-app Web Push still needs a consented push subscription and revocation backend.
+5. Fan chat is intentionally ephemeral and single-instance for the hackathon build; durable cross-instance rooms, reports and moderator tools remain production work.
 
 ## Improvements shipped after the audit
 
@@ -32,14 +33,18 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 - Judge Submission Room with public video player, chapters, captions, transcript and direct evidence links.
 - Verified Catch-up Capsules with chained SHA-256 prefix commitment, bounded transport, Ed25519 signature, source re-check and fail-closed redemption.
 - Reproducible 2:24 1080p live-capture renderer with three real browser clips, English narration, chapter metadata, direct HWND isolation and a hard five-minute gate.
-- Automated coverage increased to 95 tests across 21 suites, plus a public eight-step live proof runner.
+- On-chain Fan Progression Economy: Solana-clock check-in streaks, signed quiz claims, signed catalog redemption, 256-slot inventory and equipped identity.
+- Thirty-six original non-trademarked cosmetics across badges, medals, frames and characters, compressed to six high-resolution WebP atlases.
+- Daily sourced World Cup quiz with 35+ stable FIFA-linked questions, answer non-disclosure and replay-safe wallet receipts.
+- Real SSE fan chat with no seeded users, bounded history and strict link/wagering/secret moderation.
+- Automated coverage increased to 109 tests across 24 suites, plus public browser and devnet proof runners.
 
 ## Highest-return actions before submission
 
 1. During the next active covered fixture, capture the canonical `/api/scores/stream` output receiving a real score-changing `moment` and the UI updating from it.
 2. Record the participant-controlled Phantom wallet approving a public devnet claim and opening the resulting Explorer transaction in one uninterrupted clip.
 3. Have the human participant personally review the 2:24 narration and be able to explain every architecture/security decision before submission.
-4. Only after the hackathon evidence is complete, add real Web Push and a moderated backend watch room; neither should delay the core submission.
+4. Before production scale, move chat presence/history to managed pub/sub plus durable moderation, and add real Web Push; neither should delay the core hackathon submission.
 
 With the first two evidence gaps closed, a conservative expected score becomes **97–98/100**. A credible 100/100 or top-three probability cannot be guaranteed because ranking also depends on non-public submissions and judge preference.
 
@@ -49,4 +54,4 @@ With the first two evidence gaps closed, a conservative expected score becomes *
 2. Arm Smart Alerts, show the source-linked bracket and explain why finalists remain TBD.
 3. Open a TxLINE-covered fixture and show the public SSE `ready`, `pulse`, heartbeat and, if available, a real `moment` update.
 4. Enable Spoiler Shield, start Catch-up and prove that Event 1 reports zero future goals/cards/VAR.
-5. Run Judge Verification Lab, connect Phantom, seal one moment and open the devnet Explorer transaction.
+5. Open Fan Zone, show sourced quiz → claim → redeem/equip, then run Judge Verification Lab and open the finalized devnet receipts.
