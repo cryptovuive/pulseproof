@@ -1,0 +1,24 @@
+.signatureMoat {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, .7fr);
+  gap: 28px;
+  margin: 26px 0;
+  padding: 28px;
+  border: 1px solid rgba(217, 255, 67, .3);
+  border-radius: 20px;
+  background: radial-gradient(circle at 0 0, rgba(217, 255, 67, .12), transparent 38%), linear-gradient(135deg, #151a13, #11161e);
+}
+
+.signatureMoat > div > span { color: #d9ff43; font-size: 10px; font-weight: 900; letter-spacing: .1em; }
+.signatureMoat h2 { margin: 7px 0; color: #f5f8f2; font-size: clamp(24px, 3vw, 38px); letter-spacing: -.04em; }
+.signatureMoat p { max-width: 760px; margin: 0; color: #a5ada3; font-size: 12px; line-height: 1.65; }
+.signatureMoat a { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; padding: 10px 13px; border-radius: 9px; background: #d9ff43; color: #10130c; font-size: 10px; font-weight: 900; text-decoration: none; }
+.signatureMoat a svg { width: 14px; height: 14px; }
+.signatureMoat ol { display: grid; align-content: center; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.signatureMoat li { display: grid; grid-template-columns: 32px 1fr; align-items: center; gap: 9px; padding: 10px; border: 1px solid rgba(255, 255, 255, .08); border-radius: 10px; background: rgba(255, 255, 255, .025); }
+.signatureMoat li b { color: #d9ff43; font-size: 9px; }
+.signatureMoat li span { color: #c2c9c0; font-size: 10px; font-weight: 750; }
+
+@media (max-width: 900px) {
+  .signatureMoat { grid-template-columns: 1fr; padding: 20px; }
+}

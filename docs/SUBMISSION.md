@@ -16,7 +16,7 @@ Fans already use a phone while watching football, but most second-screen product
 
 ## Solution
 
-PulseProof translates TxLINE score actions into a live score, momentum visual, plain-language moments and watch-room prompts. A fan can optionally connect a Solana wallet and seal selected moments. The server re-checks the fixture and sequence against TxLINE, signs a short-lived attestation, and the PulseProof program creates an anti-replay receipt while updating a non-transferable Fan Pass.
+PulseProof translates TxLINE score actions into a live score, momentum visual and plain-language moments. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also connect a Solana wallet and seal selected moments. The server re-checks the fixture and sequence against TxLINE, signs a short-lived attestation, and the PulseProof program creates an anti-replay receipt while updating a non-transferable Fan Pass.
 
 There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 
@@ -37,8 +37,9 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana Ed25519 precompile verification with exact preceding-instruction and message checks.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
+- `POST/GET /api/capsules` issues and redeems a bounded signed Catch-up prefix; modified, expired, over-cursor or source-divergent capsules fail closed.
 - Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
-- Lint, production build, 86 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
+- Lint, production build, 94 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
 
 ## Commercial path
 

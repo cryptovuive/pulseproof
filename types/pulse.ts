@@ -106,3 +106,26 @@ export interface MomentAttestation {
     responseDigest: string;
   };
 }
+
+export interface CatchUpCapsulePayload {
+  version: 1;
+  fixtureId: number;
+  cursor: number;
+  source: DataSource;
+  prefixHash: string;
+  issuedAt: number;
+  expiresAt: number;
+}
+
+export interface CatchUpCapsule {
+  payload: CatchUpCapsulePayload;
+  messageBase64: string;
+  signatureBase64: string;
+  attestorPublicKey: string;
+}
+
+export interface CatchUpCapsuleRedemption {
+  verified: true;
+  capsule: CatchUpCapsule;
+  pulse: MatchPulse;
+}

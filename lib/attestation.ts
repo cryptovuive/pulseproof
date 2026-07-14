@@ -39,6 +39,14 @@ function getAttestorKeypair(allowDemoKey: boolean): nacl.SignKeyPair {
   return nacl.sign.keyPair.fromSeed(DEV_SEED);
 }
 
+export function signAttestorMessage(message: Uint8Array, allowDemoKey: boolean) {
+  const keypair = getAttestorKeypair(allowDemoKey);
+  return {
+    signatureBase64: Buffer.from(nacl.sign.detached(message, keypair.secretKey)).toString("base64"),
+    attestorPublicKey: bs58.encode(keypair.publicKey),
+  };
+}
+
 export function issueAttestation(
   wallet: string,
   moment: PulseMoment,
@@ -60,13 +68,11 @@ export function issueAttestation(
     expiresAt: Math.floor(Date.now() / 1000) + 5 * 60,
   };
   const message = canonicalAttestationMessage(payload);
-  const keypair = getAttestorKeypair(allowDemoKey);
-  const signature = nacl.sign.detached(message, keypair.secretKey);
+  const signed = signAttestorMessage(message, allowDemoKey);
   return {
     payload,
     messageBase64: Buffer.from(message).toString("base64"),
-    signatureBase64: Buffer.from(signature).toString("base64"),
-    attestorPublicKey: bs58.encode(keypair.publicKey),
+    ...signed,
     source,
     txlineProof,
   };

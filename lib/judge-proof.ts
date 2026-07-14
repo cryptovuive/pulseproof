@@ -1,4 +1,4 @@
-import type { MatchOverview, MatchPulse, MomentAttestation } from "@/types/pulse";
+import type { CatchUpCapsuleRedemption, MatchOverview, MatchPulse, MomentAttestation } from "@/types/pulse";
 
 export type JudgeProofResult = {
   checkedAt: string;
@@ -69,6 +69,21 @@ export function assertReplayIsolation(full: MatchPulse, prefix: MatchPulse) {
   if (prefix.score[0] !== lastScore[0] || prefix.score[1] !== lastScore[1]) {
     throw new Error("Replay score does not match the visible event prefix");
   }
+}
+
+export function assertCapsuleEvidence(value: unknown): asserts value is CatchUpCapsuleRedemption {
+  const body = value as Partial<CatchUpCapsuleRedemption>;
+  const cursor = body.capsule?.payload?.cursor;
+  if (body.verified !== true) throw new Error("Catch-up Capsule was not verified");
+  if (!body.capsule || !body.pulse || !Number.isSafeInteger(cursor) || (cursor ?? 0) <= 0) {
+    throw new Error("Catch-up Capsule evidence is incomplete");
+  }
+  if (body.pulse.fixture.fixtureId !== body.capsule.payload.fixtureId) throw new Error("Capsule fixture binding failed");
+  if (body.pulse.moments.length !== cursor || body.pulse.replayCursor !== cursor) {
+    throw new Error("Capsule delivered data outside its signed prefix");
+  }
+  if (!/^[a-f0-9]{64}$/.test(body.capsule.payload.prefixHash)) throw new Error("Capsule prefix digest is invalid");
+  if (body.capsule.payload.expiresAt <= body.capsule.payload.issuedAt) throw new Error("Capsule expiry is invalid");
 }
 
 export function assertAttestationEvidence(value: unknown): asserts value is MomentAttestation {

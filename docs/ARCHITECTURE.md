@@ -71,6 +71,8 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 
 Catch-up uses the live snapshot for a match in progress and `/scores/historical/{fixtureId}` after full-time. The browser reconstructs score, minute and momentum at an exact event cursor; it never invents events between TxLINE records.
 
+A Verified Catch-up Capsule adds a safe relay boundary: `/api/capsules` commits only `moments[0..cursor]`, signs fixture/source/cursor/digest/expiry with Ed25519, and places no event payload inside the token. Redemption reloads the source, recomputes the chained prefix hash and returns only the committed prefix. Signature, expiry, range or source mismatch fails closed.
+
 ## Data minimisation
 
 - No TxLINE response database.

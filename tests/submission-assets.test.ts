@@ -41,6 +41,7 @@ describe("judge submission assets", () => {
     expect(page).toContain("explorer.solana.com/tx/");
     expect(page).toContain("params.capture === \"1\"");
     expect(page).toContain("<JudgeLiveLab />");
+    expect(readFileSync(join(root, "components", "judge-live-lab.tsx"), "utf8")).toContain("Signed fan relay");
     expect(readFileSync(join(root, "app", "api", "judge-proof", "route.ts"), "utf8")).toContain("getSignatureStatus");
   });
 });
