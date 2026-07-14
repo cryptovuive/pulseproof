@@ -48,7 +48,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - On-chain Fan Profile PDA with deterministic daily check-in, UTC streak bonus, global earned/spent points, 256-slot non-transferable inventory and equipped badge/frame/character state.
 - Daily five-question reward quiz plus ten-question unlimited practice sets drawn from a deterministic 10,000-variant catalog. Every variant preserves a server-side answer, two/four choices and its supporting FIFA source; practice cannot mint points.
-- Cosmetic vault with 42 non-transferable rewards: badges, medals, avatar frames, characters and six source-linked historical shirt tributes. Each shirt is worn by an anonymous studio mannequin with independent front/back views; the generated visual omits official crests, sponsors and manufacturer marks, while exact names/numbers are rendered as UI text.
+- Cosmetic vault with 36 non-transferable rewards: badges, medals, avatar frames and original PulseProof profile characters.
 - FIFA-sourced mascot archive: official, attributed media for Maple, Zayu and Clutch plus a neutral text-only history index from 1966–2022, so the app never presents invented emoji or imitation artwork as an official mascot.
 - Fixture-scoped fan chat over SSE with real presence, no seeded/fake users and a bounded 50-message room window. Posting requires a fresh Phantom signature and reads the public display name from a wallet-owned Fan Alias PDA; spam, links, wagering terms, wallet secrets and signature replay are rejected.
 - Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
@@ -110,7 +110,7 @@ The configured API token remains authoritative for every TxLINE fixture ID and e
 - `lib/attestation.ts` — canonical message, moment hash and Ed25519 signing.
 - `lib/solana-client.ts` — browser transaction construction for match claims, Fan Profile/Fan Alias, check-in, quiz claim, redemption and equipping.
 - `lib/quiz-bank.ts` — source-backed facts, deterministic 10,000-variant catalog, daily/practice selection and grading.
-- `lib/reward-catalog.ts` — cosmetic and historical-shirt catalog, stable on-chain indexes, prices and seasonal availability.
+- `lib/reward-catalog.ts` — cosmetic catalog, stable on-chain indexes, prices and seasonal availability.
 - `lib/community-chat.ts` — bounded fixture rooms, moderation, presence, signature replay protection and SSE broadcast.
 - `programs/pulseproof/src/lib.rs` — Anchor smart contract.
 - `tests` — signature, integration-model and anti-replay tests.

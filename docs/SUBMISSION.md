@@ -16,7 +16,7 @@ Fans already use a phone while watching football, but most second-screen product
 
 ## Solution
 
-PulseProof translates World Cup 2026 TxLINE score actions into a live score, momentum visual and plain-language moments; unverified competitions are filtered before rendering. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also check in daily, explore 10,000 source-preserving quiz variants, earn non-financial points and unlock 42 cosmetics including six interactive historical shirt tributes. Check-in, quiz claim, redemption and equipped identity live in a wallet-owned Fan Profile PDA; a separate Fan Alias PDA supplies the name for wallet-signed, fixture-scoped SSE chat.
+PulseProof translates World Cup 2026 TxLINE score actions into a live score, momentum visual and plain-language moments; unverified competitions are filtered before rendering. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also check in daily, explore 10,000 source-preserving quiz variants, earn non-financial points and unlock 36 original cosmetics. Check-in, quiz claim, redemption and equipped identity live in a wallet-owned Fan Profile PDA; a separate Fan Alias PDA supplies the name for wallet-signed, fixture-scoped SSE chat.
 
 There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 
@@ -40,7 +40,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - `POST/GET /api/capsules` issues and redeems a bounded signed Catch-up prefix; modified, expired, over-cursor or source-divergent capsules fail closed.
 - Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
 - Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
-- Forty-two cosmetics include six front/back 3D shirt tributes; the sourced quiz engine exposes two/four choices and never sends answer keys before grading.
+- Thirty-six original cosmetics span badges, medals, frames and profile characters; the sourced quiz engine exposes two/four choices and never sends answer keys before grading.
 - Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
 - Lint, TypeScript, production build, 114 unit/integration/contract/submission tests, SBF build and real public-devnet alias adversarial tests pass.
 

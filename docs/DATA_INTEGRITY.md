@@ -52,9 +52,9 @@ The quiz exposes 10,000 deterministic presentation variants, not 10,000 independ
 
 TxLINE devnet fixtures are normalized first, exact-pair enriched only against the verified World Cup schedule, and then filtered. The consumer catalog accepts a competition only when its label contains `World Cup` and `2026` while excluding `Club` and `Women`. A missing competition remains unavailable and is never rendered merely because TxLINE supplied a fixture ID.
 
-## Shirts and mascots
+## Mascots
 
-Historical shirt rewards use exact player names, numbers, editions and national color families linked to FIFA articles. The apparel is an AI-assisted, unbranded visualization worn by an anonymous mannequin; exact names and numbers are separate deterministic UI text, and no crest, sponsor or manufacturer mark is included. The 2026 mascot feature uses downloaded official FIFA media with a direct source link, visible copyright attribution and a non-affiliation notice. Earlier editions use only a neutral year/category seal and FIFA-sourced text—no emoji, generated lookalike or invented character artwork.
+The 2026 mascot feature uses downloaded official FIFA media with a direct source link, visible copyright attribution and a non-affiliation notice. Earlier editions use only a neutral year/category seal and FIFA-sourced text—no emoji, generated lookalike or invented character artwork. Official mascots are an informational archive and are never sold, claimed or represented as user-owned rewards.
 
 - Quiz facts are separate from live TxLINE match data and are never labelled TxLINE-verified.
 - Every public question carries its supporting `fifa.com` or `inside.fifa.com` article URL and a human-readable source label.

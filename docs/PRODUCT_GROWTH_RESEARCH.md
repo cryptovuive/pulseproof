@@ -38,7 +38,7 @@ Research URLs:
 9. **Return:** Road to the Final and verified-event Smart Alerts give the fan a clear reason to come back without inventing news, engagement counts or unsupported statistics.
 10. **Take it offline:** a fan can keep up to eight transformed finished-match recaps on the device; raw feeds, API/SSE responses and claim capability are deliberately excluded.
 11. **Build identity:** daily Solana-clock check-in and sourced quiz claims grow one wallet-owned, non-transferable profile.
-12. **Collect intentionally:** 42 non-transferable cosmetics create visible progression; six source-linked shirt tributes open a mannequin-worn front/back archive and seasonal pieces close at a disclosed time without pretending to have scarce supply.
+12. **Collect intentionally:** 36 non-transferable original cosmetics create visible progression; seasonal pieces close at a disclosed time without pretending to have scarce supply, while official mascots remain a clearly separated informational archive.
 13. **Meet real fans:** the live room starts empty, counts only connected SSE clients and never fabricates conversation or engagement.
 
 ## Accuracy gates for future features

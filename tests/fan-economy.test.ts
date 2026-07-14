@@ -6,24 +6,16 @@ import { getDailyQuizQuestions, getDailyQuizRound, getPracticeQuizRound, getQuiz
 import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 
 describe("fan progression economy", () => {
-  it("ships a unique 42-item non-financial cosmetic catalog", () => {
-    expect(REWARD_CATALOG).toHaveLength(42);
-    expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(42);
-    expect(REWARD_CATALOG.map((reward) => reward.index)).toEqual(Array.from({ length: 42 }, (_, index) => index));
+  it("ships a unique 36-item non-financial cosmetic catalog", () => {
+    expect(REWARD_CATALOG).toHaveLength(36);
+    expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(36);
+    expect(REWARD_CATALOG.map((reward) => reward.index)).toEqual(Array.from({ length: 36 }, (_, index) => index));
     expect(new Set(REWARD_CATALOG.map((reward) => reward.kind))).toEqual(new Set(["badge", "medal", "frame", "character"]));
     expect(REWARD_CATALOG.every((reward) => reward.price > 0 && reward.price <= 10_000)).toBe(true);
     expect(REWARD_CATALOG.every((reward) => reward.atlasIndex >= 0 && reward.atlasIndex < 6)).toBe(true);
     expect(REWARD_CATALOG.filter((reward) => reward.availableUntil).length).toBeGreaterThanOrEqual(6);
     expect(REWARD_KIND_CODE).toEqual({ badge: 0, medal: 1, frame: 2, character: 3 });
-    expect(REWARD_CATALOG.filter((reward) => reward.shirt)).toHaveLength(6);
-    const shirtModels = REWARD_CATALOG.flatMap((reward) => reward.shirt?.modelImage ?? []);
-    expect(new Set(shirtModels).size).toBe(6);
-    for (const model of shirtModels) {
-      const file = readFileSync(join(process.cwd(), "public", model));
-      expect(file.subarray(0, 4).toString()).toBe("RIFF");
-      expect(file.subarray(8, 12).toString()).toBe("WEBP");
-      expect(file.length).toBeGreaterThan(50_000);
-    }
+    expect(REWARD_CATALOG.every((reward) => !reward.id.startsWith("shirt-"))).toBe(true);
   });
 
   it("time-gates seasonal rewards without changing their catalog price", () => {
@@ -86,6 +78,7 @@ describe("sourced World Cup quiz", () => {
       expect.objectContaining({ name: "Clutch", host: "United States", form: "Bald eagle", role: "Midfielder" }),
     ]));
     expect(WORLD_CUP_MASCOTS.every((mascot) => !("marker" in mascot))).toBe(true);
+    expect(JSON.stringify(WORLD_CUP_MASCOTS)).not.toMatch(/\p{Extended_Pictographic}/u);
     for (const image of [MASCOT_2026_HERO.image, ...WORLD_CUP_MASCOTS.flatMap((mascot) => mascot.officialImage ?? [])]) {
       const file = readFileSync(join(process.cwd(), "public", image));
       expect(file.subarray(0, 2).toString("hex")).toBe("ffd8");

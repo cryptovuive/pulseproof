@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -46,7 +45,7 @@ import type {
 import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 import styles from "./fan-zone.module.css";
 
-type RewardFilter = "all" | "badge" | "medal" | "frame" | "character" | "shirt" | "limited";
+type RewardFilter = "all" | "badge" | "medal" | "frame" | "character" | "limited";
 type QuizSubmission = {
   day: number;
   score: number;
@@ -61,12 +60,6 @@ const formatUtcClose = (value: string) => `${value.slice(0, 16).replace("T", " �
 
 function RewardSprite({ reward, className = "" }: { reward?: RewardItem; className?: string }) {
   if (!reward) return <div className={`${styles.sprite} ${styles.spriteEmpty} ${className}`}><UserRound /></div>;
-  if (reward.shirt) return <div
-    aria-label={`${reward.shirt.player} ${reward.shirt.number} archive shirt worn by a mannequin`}
-    className={`${styles.sprite} ${styles.shirtSprite} ${className}`}
-    role="img"
-    style={{ "--shirt-accent": reward.shirt.accent } as CSSProperties}
-  ><span className={styles.shirtThumbModel} style={{ backgroundImage: `url(${reward.shirt.modelImage})` }} aria-hidden="true" /><span className={styles.shirtThumbPrint}><small>{reward.shirt.team}</small><b>{reward.shirt.number}</b></span></div>;
   const x = ["0%", "50%", "100%"][reward.atlasIndex % 3];
   const y = reward.atlasIndex < 3 ? "0%" : "100%";
   return <div
@@ -91,8 +84,6 @@ export function FanZone() {
   const [quizResult, setQuizResult] = useState<QuizSubmission | null>(null);
   const [quizClaimed, setQuizClaimed] = useState(false);
   const [filter, setFilter] = useState<RewardFilter>("all");
-  const [selectedShirt, setSelectedShirt] = useState<RewardItem | null>(null);
-  const [shirtBack, setShirtBack] = useState(false);
 
   const refreshProfile = useCallback(async (key = walletKey) => {
     if (!key) { setProfile(null); return; }
@@ -260,7 +251,6 @@ export function FanZone() {
   const filteredRewards = useMemo(() => REWARD_CATALOG.filter((reward) => {
     if (filter === "all") return true;
     if (filter === "limited") return Boolean(reward.availableUntil);
-    if (filter === "shirt") return Boolean(reward.shirt);
     return reward.kind === filter;
   }), [filter]);
   const owned = new Set(profile?.inventory ?? []);
@@ -349,33 +339,19 @@ export function FanZone() {
     </section>
 
     <section className={styles.store}>
-      <div className={styles.sectionHead}><div><span>05 · COSMETIC + SHIRT VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Six sourced archive tributes are now worn by full 3D mannequins, with independent front/back studio views. They remain unbranded fan art—not official merchandise.</p></div><Gift /></div>
-      <div className={styles.filters}>{(["all","shirt","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
+      <div className={styles.sectionHead}><div><span>05 · COSMETIC REWARD VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Badges, medals, avatar frames and original PulseProof characters only. Official World Cup mascots remain a sourced archive above—not claimable or falsely presented as owned collectibles.</p></div><Gift /></div>
+      <div className={styles.filters}>{(["all","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
       <div className={styles.rewardGrid}>{filteredRewards.map((reward) => {
         const isOwned = owned.has(reward.index);
         const isAvailable = rewardIsAvailable(reward);
         const isEquipped = profile?.equippedBadge === reward.index || profile?.equippedFrame === reward.index || profile?.equippedCharacter === reward.index;
         return <article key={reward.id} className={`${styles.rewardCard} ${styles[reward.rarity]}`}>
           <RewardSprite reward={reward} />
-          <div className={styles.rewardCopy}><div><span>{reward.shirt ? "mannequin archive" : reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}{reward.shirt && <button className={styles.previewShirt} onClick={() => { setSelectedShirt(reward); setShirtBack(false); }}><Rotate3D size={14} /> Open mannequin viewer</button>}</div>
+          <div className={styles.rewardCopy}><div><span>{reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}</div>
           <div className={styles.rewardAction}><strong>{reward.price} PTS</strong>{isOwned ? <button disabled={Boolean(busy) || isEquipped} onClick={() => equipReward(reward)}>{isEquipped ? "Equipped" : busy === `equip-${reward.id}` ? "Approving…" : "Equip on-chain"}</button> : <button disabled={Boolean(busy) || !isAvailable} onClick={() => redeemReward(reward)}>{!isAvailable ? "Closed" : busy === `reward-${reward.id}` ? "Approving…" : "Redeem"}</button>}</div>
         </article>;
       })}</div>
     </section>
-
-    {selectedShirt?.shirt && <div className={styles.shirtModal} role="dialog" aria-modal="true" aria-label={`${selectedShirt.name} mannequin viewer`}>
-      <button className={styles.modalClose} aria-label="Close shirt viewer" onClick={() => setSelectedShirt(null)}><X size={18} /></button>
-      <div className={styles.shirtMuseum} style={{ backgroundImage: "linear-gradient(90deg, rgba(5,8,7,.2), rgba(5,8,7,.04)), url('/rewards/shirt-vault-v2.png')" }}>
-        <button className={styles.shirtTurntable} aria-label={`Show ${shirtBack ? "front" : "back"} mannequin view`} onClick={() => setShirtBack((value) => !value)}>
-          <span className={`${styles.mannequinObject} ${shirtBack ? styles.mannequinBack : styles.mannequinFront}`} style={{ "--model-image": `url(${selectedShirt.shirt.modelImage})`, "--shirt-accent": selectedShirt.shirt.accent } as CSSProperties}>
-            <span className={styles.mannequinImage} aria-hidden="true" />
-            <span className={styles.shirtPrint}>{shirtBack && <i>{selectedShirt.shirt.player}</i>}<b>{selectedShirt.shirt.number}</b>{!shirtBack && <small>{selectedShirt.shirt.team}</small>}</span>
-            <span className={styles.viewBadge}>{shirtBack ? "BACK" : "FRONT"} · TAP TO TURN</span>
-          </span>
-        </button>
-        <div className={styles.shirtDetails}><span>MANNEQUIN ARCHIVE · {shirtBack ? "BACK" : "FRONT"}</span><h2>{selectedShirt.name}</h2><p>{selectedShirt.description}</p><button onClick={() => setShirtBack((value) => !value)}><Rotate3D size={15} /> Show {shirtBack ? "front" : "back"}</button><a href={selectedShirt.shirt.sourceUrl} target="_blank" rel="noreferrer">{selectedShirt.shirt.sourceLabel} <ExternalLink size={12} /></a><small>AI-assisted unbranded apparel visualization on an anonymous mannequin. Exact player name and number are rendered separately in the interface; official crests, manufacturer marks and sponsors are excluded.</small></div>
-      </div>
-    </div>}
 
     {(notice || lastSignature) && <div className={styles.notice} role="status"><span>{notice || "Latest transaction finalized on Solana devnet."}</span>{lastSignature && <a href={`https://explorer.solana.com/tx/${lastSignature}?cluster=devnet`} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a>}<button type="button" aria-label="Dismiss notification" onClick={() => { setNotice(""); setLastSignature(""); }}><X size={13} /></button></div>}
     <footer><span>PULSEPROOF FAN ZONE · TXLINE CONSUMER EXPERIENCE</span><span>NON-TRANSFERABLE · NO FINANCIAL REWARDS · DEVNET</span></footer>
