@@ -71,18 +71,67 @@ export function utcDay(now = Date.now()) {
   return Math.floor(now / 86_400_000);
 }
 
-export function getDailyQuizQuestions(day = utcDay()) {
+export const QUIZ_CATALOG_SIZE = 10_000;
+
+const QUESTION_LENSES = [
+  "Archive check",
+  "Finals vault",
+  "Commentator challenge",
+  "Supporter memory",
+  "Tournament timeline",
+  "History room",
+  "Record book",
+  "Matchday warm-up",
+  "World Cup passport",
+  "Museum audio guide",
+  "Fan analyst desk",
+  "Legacy checkpoint",
+] as const;
+
+function seededOrder(length: number, seed: number) {
+  const order = Array.from({ length }, (_, index) => index);
+  let state = (seed ^ 0x9e3779b9) >>> 0;
+  for (let index = order.length - 1; index > 0; index -= 1) {
+    state = (Math.imul(state ^ (state >>> 16), 0x45d9f3b) + 0x27100001) >>> 0;
+    const swap = state % (index + 1);
+    [order[index], order[swap]] = [order[swap], order[index]];
+  }
+  return order;
+}
+
+export function getQuizVariant(indexInput: number): QuizQuestion {
+  const index = ((Math.trunc(indexInput) % QUIZ_CATALOG_SIZE) + QUIZ_CATALOG_SIZE) % QUIZ_CATALOG_SIZE;
+  const base = QUIZ_BANK[index % QUIZ_BANK.length];
+  const cycle = Math.floor(index / QUIZ_BANK.length);
+  const order = seededOrder(base.options.length, index + cycle * 97);
+  return {
+    ...base,
+    id: `${base.id}-v${String(index).padStart(5, "0")}`,
+    prompt: `${QUESTION_LENSES[cycle % QUESTION_LENSES.length]} · ${base.prompt}`,
+    options: order.map((optionIndex) => base.options[optionIndex]),
+    correctIndex: order.indexOf(base.correctIndex),
+  };
+}
+
+function selectQuizVariants(seed: number, count: number) {
   const selected: QuizQuestion[] = [];
-  for (let step = 0; selected.length < 5; step += 1) {
-    const candidate = QUIZ_BANK[(day * 7 + step * 11) % QUIZ_BANK.length];
-    if (!selected.some((question) => question.id === candidate.id)) selected.push(candidate);
+  const baseIds = new Set<string>();
+  for (let step = 0; selected.length < count && step < QUIZ_CATALOG_SIZE; step += 1) {
+    const variant = getQuizVariant(seed * 7_919 + step * 1_543 + step * step * 17);
+    const baseId = variant.id.replace(/-v\d{5}$/, "");
+    if (baseIds.has(baseId)) continue;
+    baseIds.add(baseId);
+    selected.push(variant);
   }
   return selected;
 }
 
-export function getDailyQuizRound(now = Date.now()): QuizRound {
-  const day = utcDay(now);
-  const questions = getDailyQuizQuestions(day).map((question) => ({
+export function getDailyQuizQuestions(day = utcDay()) {
+  return selectQuizVariants(day, 5);
+}
+
+function publicQuestion(question: QuizQuestion): QuizQuestionPublic {
+  return {
     id: question.id,
     era: question.era,
     difficulty: question.difficulty,
@@ -90,13 +139,33 @@ export function getDailyQuizRound(now = Date.now()): QuizRound {
     options: question.options,
     sourceLabel: question.sourceLabel,
     sourceUrl: question.sourceUrl,
-  }));
+  };
+}
+
+export function getDailyQuizRound(now = Date.now()): QuizRound {
+  const day = utcDay(now);
+  const questions = getDailyQuizQuestions(day).map(publicQuestion);
   return {
     roundId: `world-cup-daily-${day}`,
     edition: "World Cup Daily · sourced facts",
     validForUtcDay: day,
     questions,
     maxPoints: 70,
+    mode: "daily",
+    catalogSize: QUIZ_CATALOG_SIZE,
+  };
+}
+
+export function getPracticeQuizRound(seedInput = Date.now()): QuizRound {
+  const seed = Math.abs(Math.trunc(seedInput)) % 2_147_483_647;
+  return {
+    roundId: `world-cup-practice-${seed}`,
+    edition: "World Cup Practice · sourced facts · no points",
+    validForUtcDay: utcDay(),
+    questions: selectQuizVariants(seed, 10).map(publicQuestion),
+    maxPoints: 0,
+    mode: "practice",
+    catalogSize: QUIZ_CATALOG_SIZE,
   };
 }
 
@@ -119,4 +188,23 @@ export function gradeDailyQuiz(roundId: string, answers: number[], now = Date.no
   const score = results.filter((result) => result.correct).length;
   const points = score * 10 + (score === questions.length ? 20 : 0);
   return { day, score, points, results };
+}
+
+export function gradePracticeQuiz(roundId: string, answers: number[]) {
+  const match = /^world-cup-practice-(\d+)$/.exec(roundId);
+  if (!match) throw new Error("Invalid practice round");
+  const questions = selectQuizVariants(Number(match[1]), 10);
+  if (answers.length !== questions.length) throw new Error("Exactly ten answers are required");
+  answers.forEach((answer, index) => {
+    if (!Number.isInteger(answer) || answer < 0 || answer >= questions[index].options.length) {
+      throw new Error(`Answer ${index + 1} is outside the available options`);
+    }
+  });
+  const results = questions.map((question, index) => ({
+    questionId: question.id,
+    correct: answers[index] === question.correctIndex,
+    correctIndex: question.correctIndex,
+    explanation: question.explanation,
+  }));
+  return { day: utcDay(), score: results.filter((result) => result.correct).length, points: 0, results, attestation: null };
 }

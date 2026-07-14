@@ -38,6 +38,7 @@ import { getTeamBranding } from "@/lib/team-branding";
 import { TeamFlag } from "@/components/team-flag";
 import { MatchdayCommandCenter } from "@/components/matchday-command-center";
 import { UpcomingMatchHub } from "@/components/upcoming-match-hub";
+import { MatchChat } from "@/components/match-chat";
 import {
   DEFAULT_FAN_PREFERENCES,
   filterMatches,
@@ -995,6 +996,14 @@ export function PulseDashboard() {
               <button className={roomVote === "even" ? "active" : ""} aria-pressed={roomVote === "even"} onClick={() => voteInRoom("even")}><span className="mini-orb neutral">–</span>Even<b>{roomPercent(roomCounts.even)}%</b></button>
             </div>
           </article>
+
+          <MatchChat
+            fixtureId={pulse.fixture.fixtureId}
+            fixtureLabel={`${pulse.fixture.homeTeam} vs ${pulse.fixture.awayTeam}`}
+            wallet={wallet}
+            walletKey={walletKey}
+            onNotice={setNotice}
+          />
 
           <article className="trust-card panel" id="proof-of-watch">
             <span className="eyebrow">Why trust this?</span>

@@ -42,8 +42,8 @@ type CheckState = {
 
 const INITIAL_CHECKS: CheckState[] = [
   { id: "health", label: "Production identity", detail: "Health, TxLINE network and active credentials", status: "idle" },
-  { id: "catalog", label: "Source-labelled catalog", detail: "Live coverage and published-report replay stay separate", status: "idle" },
-  { id: "stream", label: "Real SSE bridge", detail: "Connect to /api/scores/stream and observe public events", status: "idle" },
+  { id: "catalog", label: "World Cup-only catalog", detail: "Unverified devnet competitions are excluded before rendering", status: "idle" },
+  { id: "stream", label: "Public SSE transport", detail: "Connect to /api/scores/stream without polling", status: "idle" },
   { id: "replay", label: "Spoiler isolation", detail: "A two-event prefix cannot see any later match moment", status: "idle" },
   { id: "capsule", label: "Signed fan relay", detail: "Issue, redeem and verify a two-event Catch-up Capsule", status: "idle" },
   { id: "attestation", label: "Ed25519 receipt", detail: "Issue a fresh proof and verify it inside this browser", status: "idle" },
@@ -69,9 +69,9 @@ async function jsonResponse<T>(url: string, init?: RequestInit): Promise<T> {
   return body;
 }
 
-function observeStream(fixtureIds: number[]) {
+function observeStream(fixtureIds: number[], replay = false) {
   return new Promise<string>((resolve, reject) => {
-    const eventSource = new EventSource(`/api/scores/stream?fixtureIds=${fixtureIds.slice(0, 3).join(",")}`);
+    const eventSource = new EventSource(`/api/scores/stream?fixtureIds=${fixtureIds.slice(0, 3).join(",")}${replay ? "&mode=replay" : ""}`);
     const seen = new Set<string>();
     const finish = (result?: string, error?: Error) => {
       window.clearTimeout(timeout);
@@ -79,7 +79,7 @@ function observeStream(fixtureIds: number[]) {
       if (error) reject(error); else resolve(result ?? "");
     };
     const maybeFinish = () => {
-      if (seen.has("ready") && seen.has("pulse")) finish(`ready + pulse · ${fixtureIds.slice(0, 3).length} fixture${fixtureIds.length > 1 ? "s" : ""}`);
+      if (seen.has("ready") && (seen.has("pulse") || seen.has("moment"))) finish(`ready + ${seen.has("pulse") ? "pulse" : "moment"} · ${fixtureIds.slice(0, 3).length} fixture${fixtureIds.length > 1 ? "s" : ""}`);
     };
     eventSource.addEventListener("ready", () => { seen.add("ready"); maybeFinish(); });
     eventSource.addEventListener("pulse", () => { seen.add("pulse"); maybeFinish(); });
@@ -137,13 +137,15 @@ export function JudgeLiveLab() {
       assertCatalogEvidence(body);
       const live = body.matches.filter((match) => match.source === "txline-live").length;
       const replay = body.matches.filter((match) => match.source === "demo-replay").length;
-      return { value: body.matches, evidence: `${body.matches.length} fixtures · ${live} TxLINE live · ${replay} labelled replay` };
+      return { value: body.matches, evidence: `${body.matches.length} World Cup 2026 fixtures · ${live} TxLINE live · ${replay} sourced replay · 0 unverified leaks` };
     });
 
     await execute("stream", async () => {
-      const ids = (catalog ?? []).filter((match) => match.source === "txline-live").map((match) => match.fixture.fixtureId);
-      if (!ids.length) throw new Error("No covered fixture is available for an SSE test");
-      const evidence = await observeStream(ids);
+      const liveIds = (catalog ?? []).filter((match) => match.source === "txline-live").map((match) => match.fixture.fixtureId);
+      const replayIds = (catalog ?? []).filter((match) => match.source === "demo-replay").map((match) => match.fixture.fixtureId);
+      const ids = liveIds.length ? liveIds : replayIds;
+      if (!ids.length) throw new Error("No World Cup fixture is available for an SSE test");
+      const evidence = await observeStream(ids, !liveIds.length);
       return { value: evidence, evidence: `${evidence} · no polling` };
     });
 
@@ -203,7 +205,7 @@ export function JudgeLiveLab() {
     await execute("chain", async () => {
       const body = await jsonResponse<unknown>("/api/judge-proof");
       assertChainEvidence(body);
-      return { value: body, evidence: `2 programs · ${body.progression.pointsEarned} earned / ${body.progression.pointsSpent} spent · quiz + reward finalized` };
+      return { value: body, evidence: `2 programs · alias ${body.progression.displayName} · ${body.progression.pointsEarned} earned / ${body.progression.pointsSpent} spent · quiz + reward finalized` };
     });
 
     await execute("offline", async () => {

@@ -2,18 +2,20 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { REWARD_CATALOG, REWARD_KIND_CODE, rewardIsAvailable } from "@/lib/reward-catalog";
-import { getDailyQuizQuestions, getDailyQuizRound, gradeDailyQuiz, QUIZ_BANK } from "@/lib/quiz-bank";
+import { getDailyQuizQuestions, getDailyQuizRound, getPracticeQuizRound, getQuizVariant, gradeDailyQuiz, QUIZ_BANK, QUIZ_CATALOG_SIZE } from "@/lib/quiz-bank";
+import { MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 
 describe("fan progression economy", () => {
-  it("ships a unique 36-item non-financial cosmetic catalog", () => {
-    expect(REWARD_CATALOG).toHaveLength(36);
-    expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(36);
-    expect(REWARD_CATALOG.map((reward) => reward.index)).toEqual(Array.from({ length: 36 }, (_, index) => index));
+  it("ships a unique 42-item non-financial cosmetic catalog", () => {
+    expect(REWARD_CATALOG).toHaveLength(42);
+    expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(42);
+    expect(REWARD_CATALOG.map((reward) => reward.index)).toEqual(Array.from({ length: 42 }, (_, index) => index));
     expect(new Set(REWARD_CATALOG.map((reward) => reward.kind))).toEqual(new Set(["badge", "medal", "frame", "character"]));
     expect(REWARD_CATALOG.every((reward) => reward.price > 0 && reward.price <= 10_000)).toBe(true);
     expect(REWARD_CATALOG.every((reward) => reward.atlasIndex >= 0 && reward.atlasIndex < 6)).toBe(true);
     expect(REWARD_CATALOG.filter((reward) => reward.availableUntil).length).toBeGreaterThanOrEqual(6);
     expect(REWARD_KIND_CODE).toEqual({ badge: 0, medal: 1, frame: 2, character: 3 });
+    expect(REWARD_CATALOG.filter((reward) => reward.shirt)).toHaveLength(6);
   });
 
   it("time-gates seasonal rewards without changing their catalog price", () => {
@@ -62,6 +64,25 @@ describe("sourced World Cup quiz", () => {
     expect(round.maxPoints).toBe(70);
     expect(JSON.stringify(round)).not.toContain("correctIndex");
     expect(JSON.stringify(round)).not.toContain("explanation");
+    expect(round.catalogSize).toBe(10_000);
+  });
+
+  it("keeps the mascot archive aligned to FIFA's official history", () => {
+    expect(WORLD_CUP_MASCOTS).toHaveLength(16);
+    expect(WORLD_CUP_MASCOTS[0]).toMatchObject({ edition: 1966, name: "World Cup Willie", form: "Lion" });
+    expect(WORLD_CUP_MASCOTS.at(-1)).toMatchObject({ edition: 2026, name: "Maple · Zayu · Clutch", form: "Moose · Jaguar · Bald eagle" });
+    expect([MASCOT_HISTORY_SOURCE, MASCOT_2026_SOURCE].every((url) => url.startsWith("https://www.fifa.com/"))).toBe(true);
+  });
+
+  it("exposes ten thousand stable source-preserving variants plus ten-question practice", () => {
+    expect(QUIZ_CATALOG_SIZE).toBe(10_000);
+    const variants = Array.from({ length: QUIZ_CATALOG_SIZE }, (_, index) => getQuizVariant(index));
+    expect(new Set(variants.map((question) => question.id)).size).toBe(10_000);
+    expect(variants.every((question) => [2, 4].includes(question.options.length))).toBe(true);
+    const practice = getPracticeQuizRound(12345);
+    expect(practice.questions).toHaveLength(10);
+    expect(practice.maxPoints).toBe(0);
+    expect(JSON.stringify(practice)).not.toContain("correctIndex");
   });
 
   it("grades a perfect round deterministically and rejects stale rounds", () => {

@@ -1,5 +1,5 @@
 import { demoReplayEnabled } from "@/lib/pulse-service";
-import { scheduleIntegrityIssues, verifiedSchedule } from "@/lib/schedule";
+import { isWorldCup2026Fixture, scheduleIntegrityIssues, verifiedSchedule } from "@/lib/schedule";
 import { getFixtures, hasTxLineCredentials } from "@/lib/txline";
 import type { ScheduleEntry } from "@/types/pulse";
 
@@ -11,6 +11,7 @@ export async function listUpcomingSchedule(now = new Date()): Promise<{
     try {
       const current = now.getTime();
       const entries: ScheduleEntry[] = (await getFixtures())
+        .filter(isWorldCup2026Fixture)
         .filter((fixture) => Number.isFinite(Date.parse(fixture.startTime)) && Date.parse(fixture.startTime) > current)
         .sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))
         .slice(0, 16)

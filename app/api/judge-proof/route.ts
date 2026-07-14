@@ -1,6 +1,7 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { NextResponse } from "next/server";
 import { getTxLineConfig } from "@/lib/txline";
+import { decodeFanAlias, fanAliasAddress } from "@/lib/fan-alias";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -31,11 +32,13 @@ export async function GET() {
       [Buffer.from("fan_profile"), progressionWallet.toBuffer()],
       pulseProofKey,
     );
-    const [pulseProofAccount, txlineAccount, receipt, profileAccount, quizReceipt, rewardReceipt] = await Promise.all([
+    const fanAlias = fanAliasAddress(progressionWallet, pulseProofKey);
+    const [pulseProofAccount, txlineAccount, receipt, profileAccount, aliasAccount, quizReceipt, rewardReceipt] = await Promise.all([
       connection.getAccountInfo(pulseProofKey, "confirmed"),
       connection.getAccountInfo(txlineKey, "confirmed"),
       connection.getSignatureStatus(REFERENCE_RECEIPT, { searchTransactionHistory: true }),
       connection.getAccountInfo(fanProfile, "confirmed"),
+      connection.getAccountInfo(fanAlias, "confirmed"),
       connection.getSignatureStatus(QUIZ_RECEIPT, { searchTransactionHistory: true }),
       connection.getSignatureStatus(REWARD_RECEIPT, { searchTransactionHistory: true }),
     ]);
@@ -43,10 +46,12 @@ export async function GET() {
     if (!txlineAccount) throw new Error("TxLINE program account was not found");
     if (!receipt.value) throw new Error("Reference receipt was not found");
     if (!profileAccount || profileAccount.data.length < 119) throw new Error("Fan progression profile was not found");
+    if (!aliasAccount) throw new Error("Fan Alias PDA was not found");
     if (!quizReceipt.value || !rewardReceipt.value) throw new Error("Fan progression receipts were not found");
 
     const profileOwner = new PublicKey(profileAccount.data.subarray(8, 40)).toBase58();
     if (profileOwner !== PROGRESSION_WALLET) throw new Error("Fan progression owner binding failed");
+    const alias = decodeFanAlias(aliasAccount.data, fanAlias);
 
     return NextResponse.json({
       checkedAt: new Date().toISOString(),
@@ -72,6 +77,8 @@ export async function GET() {
       progression: {
         wallet: PROGRESSION_WALLET,
         fanProfile: fanProfile.toBase58(),
+        fanAlias: alias.address,
+        displayName: alias.displayName,
         explorerUrl: explorerAddress(fanProfile.toBase58()),
         pointsEarned: Number(profileAccount.data.readBigUInt64LE(40)),
         pointsSpent: Number(profileAccount.data.readBigUInt64LE(48)),

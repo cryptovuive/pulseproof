@@ -47,9 +47,9 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Phantom wallet connection and raw Solana transaction builder.
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - On-chain Fan Profile PDA with deterministic daily check-in, UTC streak bonus, global earned/spent points, 256-slot non-transferable inventory and equipped badge/frame/character state.
-- Daily five-question World Cup quiz selected deterministically from a 35+ question private answer bank; every question links to the supporting FIFA source, exposes exactly two or four choices and can be claimed only through a short-lived wallet-bound Ed25519 receipt.
-- Cosmetic vault with 36 original badges, medals, avatar frames and characters across six 1536×1024 WebP atlases; seasonal items have an explicit close time rather than a fabricated scarcity counter.
-- Moderated online fan chat over SSE with real presence, no seeded/fake users, a bounded 50-message memory window, spam/link/wagering/private-key filters and explicit ephemeral-storage disclosure.
+- Daily five-question reward quiz plus ten-question unlimited practice sets drawn from a deterministic 10,000-variant catalog. Every variant preserves a server-side answer, two/four choices and its supporting FIFA source; practice cannot mint points.
+- Cosmetic vault with 42 non-transferable rewards: badges, medals, avatar frames, characters and six source-linked historical shirt tributes. Shirt views are code-rendered, rotate front/back in 3D and intentionally omit official crests, sponsors and manufacturer marks.
+- Fixture-scoped fan chat over SSE with real presence, no seeded/fake users and a bounded 50-message room window. Posting requires a fresh Phantom signature and reads the public display name from a wallet-owned Fan Alias PDA; spam, links, wagering terms, wallet secrets and signature replay are rejected.
 - Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
@@ -96,7 +96,7 @@ Network pairing is strict:
 | Mainnet | `https://txline.txodds.com` | `9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` |
 | Devnet | `https://txline-dev.txodds.com` | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
 
-The configured API token remains authoritative for every fixture ID it supplies. When replay is enabled, the catalog also exposes non-colliding finished World Cup cards as explicitly labelled, source-linked replays; they are never merged into the TxLINE event stream.
+The configured API token remains authoritative for every TxLINE fixture ID and event it supplies, but a fixture is rendered only when its competition metadata or exact-pair schedule enrichment proves it belongs to the men's FIFA World Cup 2026. Unavailable, club and women's competition labels are excluded. When replay is enabled, the catalog also exposes non-colliding finished World Cup cards as explicitly labelled, source-linked replays; they are never merged into the TxLINE event stream.
 
 ## Repository guide
 
@@ -107,10 +107,10 @@ The configured API token remains authoritative for every fixture ID it supplies.
 - `lib/catch-up-capsule.ts` — canonical prefix commitment, bounded token format and Ed25519 issue/verification logic.
 - `lib/saved-recaps.ts` — bounded, validated and consumer-safe offline recap packs.
 - `lib/attestation.ts` — canonical message, moment hash and Ed25519 signing.
-- `lib/solana-client.ts` — browser transaction construction for match claims, Fan Profile creation, check-in, quiz claim, redemption and equipping.
-- `lib/quiz-bank.ts` — server-side sourced World Cup question bank, deterministic daily selection and grading.
-- `lib/reward-catalog.ts` — original cosmetic catalog, stable on-chain indexes, prices and seasonal availability.
-- `lib/community-chat.ts` — bounded ephemeral room, moderation, presence and SSE broadcast.
+- `lib/solana-client.ts` — browser transaction construction for match claims, Fan Profile/Fan Alias, check-in, quiz claim, redemption and equipping.
+- `lib/quiz-bank.ts` — source-backed facts, deterministic 10,000-variant catalog, daily/practice selection and grading.
+- `lib/reward-catalog.ts` — cosmetic and historical-shirt catalog, stable on-chain indexes, prices and seasonal availability.
+- `lib/community-chat.ts` — bounded fixture rooms, moderation, presence, signature replay protection and SSE broadcast.
 - `programs/pulseproof/src/lib.rs` — Anchor smart contract.
 - `tests` — signature, integration-model and anti-replay tests.
 - `docs/VI_HACKATHON_PLAN.md` — detailed Vietnamese product and compliance plan.

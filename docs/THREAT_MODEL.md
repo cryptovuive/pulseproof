@@ -20,7 +20,7 @@
 | App server → browser | moment + attestation | source label, canonical signed payload, no raw credential |
 | Browser → Solana | all instruction fields | Ed25519 precompile plus exact message reconstruction inside the program |
 | Browser → quiz/reward API | wallet, round answers, reward ID | Solana public-key validation, fixed daily round/catalog lookup, rate limit, no client-authored score/cost |
-| Browser → fan chat | nickname, team, message | strict length/schema, URL/wagering/secret filters, duplicate-spam suppression, bounded ring buffer |
+| Browser → fan chat | fixture, wallet, timestamp, signature, message | Ed25519 wallet verification, FanAlias lookup, 2-minute expiry, signature replay cache, strict schema, URL/wagering/secret filters, bounded per-room history |
 
 ## Attack paths and controls
 
@@ -51,6 +51,8 @@ The contract derives the UTC day from `Clock`, calculates the 10–22 point stre
 The reward signature commits to catalog digest, kind, stable item index and exact cost. The contract rejects duplicate inventory bits and enforces the deployed catalog's kind/index ranges, so a cheap badge cannot be presented or equipped as a frame/character.
 
 ### Abuse fan chat
+
+Posting is bound to `PULSEPROOF_CHAT_V1 + wallet + fixtureId + signedAt + normalizedBody`. The API verifies the Ed25519 signature, rejects messages older than two minutes or previously used signatures, and ignores client-authored nicknames in favour of the on-chain FanAlias PDA. Reading remains wallet-free.
 
 The route rejects links, betting/casino language, recovery phrases/private keys, repeated text and overlong content. It retains only 50 in-memory messages and exposes no fake users. Residual moderation risk remains because the hackathon deployment has no account reputation or human moderator queue.
 

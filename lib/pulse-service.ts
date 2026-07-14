@@ -7,7 +7,7 @@ import {
   getDemoMomentsForFixture,
   getDemoOverviews,
 } from "@/lib/demo-data";
-import { enrichFixtureFromVerifiedSchedule } from "@/lib/schedule";
+import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture } from "@/lib/schedule";
 import { calculateMomentum, getFixturePulse, getFixtures, hasTxLineCredentials } from "@/lib/txline";
 import type { Fixture, MatchOverview, MatchPulse } from "@/types/pulse";
 
@@ -48,7 +48,9 @@ export async function listAvailableFixtures(): Promise<{
 }> {
   if (hasTxLineCredentials()) {
     try {
-      const fixtures = (await getFixtures()).map((fixture) => enrichFixtureFromVerifiedSchedule(fixture));
+      const fixtures = (await getFixtures())
+        .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
+        .filter(isWorldCup2026Fixture);
       const candidates = [...fixtures]
         .sort((a, b) => {
           const aTime = Date.parse(a.startTime);
@@ -86,7 +88,7 @@ export async function listAvailableFixtures(): Promise<{
         return {
           fixtures: [...candidates, ...finished.map((match) => match.fixture)],
           matches: [...matches, ...finished],
-          source: finished.length ? "hybrid" : "txline-live",
+          source: candidates.length ? "hybrid" : "demo-replay",
         };
       }
       return { fixtures: candidates, matches, source: "txline-live" };
@@ -101,7 +103,9 @@ export async function listAvailableFixtures(): Promise<{
 export async function loadPulse(fixtureId: number, options: { historical?: boolean; cursor?: number; forceDemo?: boolean } = {}) {
   if (!options.forceDemo && hasTxLineCredentials()) {
     try {
-      const listed = (await getFixtures()).map((fixture) => enrichFixtureFromVerifiedSchedule(fixture));
+      const listed = (await getFixtures())
+        .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
+        .filter(isWorldCup2026Fixture);
       const fixture = listed.find((item) => item.fixtureId === fixtureId);
       if (!fixture) throw new Error(`TxLINE fixture ${fixtureId} is not available to this subscription`);
       return await getFixturePulse(fixture, options.historical);

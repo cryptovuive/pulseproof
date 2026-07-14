@@ -11,6 +11,7 @@ import {
   scoreRecordFixtureId,
 } from "@/lib/txline";
 import type { Fixture, MatchPulse, PulseMoment } from "@/types/pulse";
+import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -110,7 +111,9 @@ export async function GET(request: NextRequest) {
       }
 
       const runLiveBridge = async () => {
-        const fixtureList = await getFixtures();
+        const fixtureList = (await getFixtures())
+          .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
+          .filter(isWorldCup2026Fixture);
         const fixtureMap = new Map(fixtureList.map((fixture) => [fixture.fixtureId, fixture]));
         const missing = fixtureIds.filter((id) => !fixtureMap.has(id));
         if (missing.length) throw new Error(`TxLINE fixtures unavailable: ${missing.join(", ")}`);

@@ -138,12 +138,31 @@ export interface RewardItem {
   kind: RewardKind;
   name: string;
   description: string;
-  collection: "legacy" | "world-2026" | "community" | "mythic" | "frames" | "characters";
+  collection: "legacy" | "world-2026" | "community" | "mythic" | "frames" | "characters" | "shirt-vault";
   rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
   price: number;
   atlas: string;
   atlasIndex: number;
   availableUntil?: string;
+  shirt?: {
+    player: string;
+    number: number;
+    team: string;
+    edition: number;
+    pattern: "solid" | "vertical-stripes" | "horizontal-band";
+    primary: string;
+    secondary: string;
+    accent: string;
+    sourceLabel: string;
+    sourceUrl: string;
+  };
+}
+
+export interface FanAlias {
+  address: string;
+  owner: string;
+  displayName: string;
+  updatedAt: number;
 }
 
 export interface FanProfile {
@@ -180,6 +199,8 @@ export interface QuizRound {
   validForUtcDay: number;
   questions: QuizQuestionPublic[];
   maxPoints: number;
+  mode?: "daily" | "practice";
+  catalogSize?: number;
 }
 
 export interface QuizAttestationPayload {
@@ -217,8 +238,10 @@ export interface RewardAttestation {
 
 export interface CommunityMessage {
   id: string;
+  fixtureId: number;
   nickname: string;
-  walletHint?: string;
+  wallet: string;
+  walletHint: string;
   body: string;
   team?: string;
   createdAt: string;

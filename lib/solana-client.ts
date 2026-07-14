@@ -11,13 +11,15 @@ import {
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import { Buffer } from "buffer";
-import type { FanProfile, MomentAttestation, QuizAttestation, RewardAttestation } from "@/types/pulse";
+import type { FanAlias, FanProfile, MomentAttestation, QuizAttestation, RewardAttestation } from "@/types/pulse";
+import { decodeFanAlias, fanAliasAddress } from "@/lib/fan-alias";
 
 export interface BrowserWallet {
   publicKey: PublicKey | null;
   isPhantom?: boolean;
   connect(): Promise<{ publicKey: PublicKey }>;
   disconnect(): Promise<void>;
+  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
   signAndSendTransaction(transaction: Transaction): Promise<{ signature: string }>;
 }
 
@@ -151,6 +153,32 @@ export async function fetchFanProfile(ownerInput: string | PublicKey): Promise<F
     equippedCharacter: equipped(112),
     claims: readU32(114),
   };
+}
+
+export async function fetchFanAlias(ownerInput: string | PublicKey): Promise<FanAlias | null> {
+  const owner = typeof ownerInput === "string" ? new PublicKey(ownerInput) : ownerInput;
+  const address = fanAliasAddress(owner, programId());
+  const account = await connection().getAccountInfo(address, "confirmed");
+  if (!account) return null;
+  return decodeFanAlias(account.data, address);
+}
+
+export async function submitFanAlias(wallet: BrowserWallet, displayName: string) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const owner = wallet.publicKey;
+  const program = programId();
+  const alias = fanAliasAddress(owner, program);
+  const name = textEncoder.encode(displayName);
+  const transaction = new Transaction().add(new TransactionInstruction({
+    programId: program,
+    keys: [
+      { pubkey: alias, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    data: Buffer.from(concat(await discriminator("set_fan_alias"), u32(name.length), name)),
+  }));
+  return signAndConfirm(wallet, transaction);
 }
 
 export async function submitDailyCheckIn(wallet: BrowserWallet) {

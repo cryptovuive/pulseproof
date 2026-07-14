@@ -8,6 +8,14 @@ export const ELIMINATED_TEAMS_AS_OF_VERIFICATION = new Set([
   "Brazil", "Norway", "Switzerland", "Morocco", "Portugal", "Belgium",
 ]);
 
+export function isWorldCup2026Fixture(fixture: Fixture): boolean {
+  const competition = fixture.competition.trim().toLowerCase();
+  return competition.includes("world cup")
+    && competition.includes("2026")
+    && !competition.includes("club")
+    && !competition.includes("women");
+}
+
 const VERIFIED_UPCOMING_FIXTURES: Array<{
   fixture: Fixture;
   coverage: ScheduleEntry["coverage"];
