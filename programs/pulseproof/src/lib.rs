@@ -17,6 +17,7 @@ const QUIZ_ATTESTATION_PREFIX: &str = "PULSEPROOF_QUIZ_V1";
 const REWARD_ATTESTATION_PREFIX: &str = "PULSEPROOF_REWARD_V1";
 const ED25519_PROGRAM_ID: Pubkey = pubkey!("Ed25519SigVerify111111111111111111111111111");
 const UNEQUIPPED: u16 = u16::MAX;
+const REWARD_CATALOG_ITEM_COUNT: u16 = 36;
 
 #[program]
 pub mod pulseproof {
@@ -286,7 +287,10 @@ pub mod pulseproof {
         expires_at: i64,
     ) -> Result<()> {
         require!(kind < 4, PulseProofError::InvalidRewardKind);
-        require!(item_index < 256, PulseProofError::InvalidRewardIndex);
+        require!(
+            item_index < REWARD_CATALOG_ITEM_COUNT,
+            PulseProofError::InvalidRewardIndex
+        );
         require!(
             catalog_kind_matches(kind, item_index),
             PulseProofError::RewardKindMismatch
@@ -357,6 +361,10 @@ pub mod pulseproof {
 
     pub fn equip_reward(ctx: Context<EquipReward>, kind: u8, item_index: u16) -> Result<()> {
         require!(kind < 4, PulseProofError::InvalidRewardKind);
+        require!(
+            item_index < REWARD_CATALOG_ITEM_COUNT,
+            PulseProofError::InvalidRewardIndex
+        );
         require!(
             catalog_kind_matches(kind, item_index),
             PulseProofError::RewardKindMismatch
@@ -737,7 +745,7 @@ fn owns_reward(profile: &FanProfile, item_index: u16) -> bool {
 
 fn catalog_kind_matches(kind: u8, item_index: u16) -> bool {
     match kind {
-        0 => (6..=17).contains(&item_index) || (36..=47).contains(&item_index),
+        0 => (6..=17).contains(&item_index),
         1 => (0..=5).contains(&item_index) || (18..=23).contains(&item_index),
         2 => (24..=29).contains(&item_index),
         3 => (30..=35).contains(&item_index),
@@ -864,7 +872,7 @@ pub enum PulseProofError {
     InvalidQuizScore,
     #[msg("Reward kind must be badge, medal, frame or character")]
     InvalidRewardKind,
-    #[msg("Reward index must be between 0 and 255")]
+    #[msg("Reward index must be between 0 and 35")]
     InvalidRewardIndex,
     #[msg("Reward cost is outside the accepted range")]
     InvalidRewardCost,
@@ -878,4 +886,26 @@ pub enum PulseProofError {
     RewardKindMismatch,
     #[msg("Display name must be 2-24 safe characters and at most 48 UTF-8 bytes")]
     InvalidDisplayName,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn catalog_kind_ranges_cover_every_active_reward_once() {
+        for item_index in 0..REWARD_CATALOG_ITEM_COUNT {
+            let matching_kinds = (0..4)
+                .filter(|kind| catalog_kind_matches(*kind, item_index))
+                .count();
+            assert_eq!(matching_kinds, 1, "reward index {item_index}");
+        }
+    }
+
+    #[test]
+    fn retired_and_out_of_range_rewards_are_rejected() {
+        for item_index in REWARD_CATALOG_ITEM_COUNT..=u16::MAX {
+            assert!(!(0..4).any(|kind| catalog_kind_matches(kind, item_index)));
+        }
+    }
 }

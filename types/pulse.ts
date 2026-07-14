@@ -138,24 +138,12 @@ export interface RewardItem {
   kind: RewardKind;
   name: string;
   description: string;
-  collection: "legacy" | "world-2026" | "community" | "mythic" | "frames" | "characters" | "shirt-vault";
+  collection: "legacy" | "world-2026" | "community" | "mythic" | "frames" | "characters";
   rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
   price: number;
   atlas: string;
   atlasIndex: number;
   availableUntil?: string;
-  shirt?: {
-    player: string;
-    number: number;
-    team: string;
-    edition: number;
-    pattern: "solid" | "vertical-stripes" | "horizontal-band";
-    primary: string;
-    secondary: string;
-    accent: string;
-    sourceLabel: string;
-    sourceUrl: string;
-  };
 }
 
 export interface FanAlias {

@@ -53,4 +53,23 @@ describe("progression APIs", () => {
     }));
     expect(response.status).toBe(404);
   });
+
+  it("does not attest any retired shirt reward", async () => {
+    const wallet = Keypair.generate().publicKey.toBase58();
+    for (const rewardId of [
+      "shirt-pele-1970",
+      "shirt-maradona-1986",
+      "shirt-zidane-1998",
+      "shirt-ronaldo-2002",
+      "shirt-iniesta-2010",
+      "shirt-messi-2022",
+    ]) {
+      const response = await postReward(new NextRequest("http://localhost/api/rewards/attest", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-forwarded-for": `retired-${rewardId}` },
+        body: JSON.stringify({ wallet, rewardId }),
+      }));
+      expect(response.status, rewardId).toBe(404);
+    }
+  });
 });
