@@ -20,6 +20,8 @@ The public release uses an activated TxLINE devnet token and a Railway-hosted SS
 - TxLINE free-tier subscription: [`54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC`](https://explorer.solana.com/tx/54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC?cluster=devnet)
 - Program deployment: [`4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS`](https://explorer.solana.com/tx/4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS?cluster=devnet)
 - Fan progression upgrade: [`5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV`](https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet)
+- Thirty-six-item catalog parity upgrade: [`5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM`](https://explorer.solana.com/tx/5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM?cluster=devnet)
+- Recorded retired-index rejection (`InvalidRewardIndex`, custom error `6016`): [`3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi`](https://explorer.solana.com/tx/3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi?cluster=devnet)
 - Config initialization: [`3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB`](https://explorer.solana.com/tx/3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB?cluster=devnet)
 - Verified claim: [`vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR`](https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet)
 
@@ -54,7 +56,7 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- One hundred ten automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
+- One hundred seventeen automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 
@@ -73,6 +75,7 @@ npm run contract:e2e:windows
 npm run wallet:e2e:windows
 npm run txline:verify
 npm run contract:e2e:devnet
+npm run contract:retired:devnet
 ```
 
 `wallet:create` generates a disposable Solana keypair that can be imported into Phantom for localnet/devnet testing. Its JSON and base58 import key stay under gitignored `.local-wallets/`, are never printed, and must never hold mainnet funds. Importing that private key into the Phantom extension remains a deliberate human action.

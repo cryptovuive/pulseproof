@@ -172,7 +172,7 @@ npm audit --omit=dev
 - Deployed the original 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `117/117` unit/integration/contract/submission tests, ESLint, TypeScript and the production build pass locally. Cargo format and native Rust invariant tests are required by CI; Anchor SBF build and devnet upgrade must not reuse a stale binary when the local WSL VM is unavailable.
+- `117/117` unit/integration/contract/submission tests, ESLint, TypeScript, production build, Cargo format and native Rust invariant tests pass. A digest-pinned Anchor 0.32.1 workflow built the deployed SBF so the catalog upgrade did not reuse a stale binary when the local WSL VM was unavailable.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.
@@ -196,6 +196,15 @@ npm audit --omit=dev
 - Unsafe alias `bad/name` was rejected on-chain.
 - Chat tests cover body tampering, signature replay, room isolation, moderation and bounded retention.
 - Quiz tests enumerate all 10,000 stable IDs, validate 2/4-option bounds, verify no answer leak and grade both daily and practice sets.
+
+## Retired reward hardening upgrade — 14 July 2026
+
+- Removed six retired shirt rewards from the web catalog, API allowlist, assets and source; the public catalog now contains exactly 36 badges, medals, frames and original characters.
+- Added an on-chain catalog upper bound and native Rust invariants so both `redeem_reward` and `equip_reward` reject index `36` or above before any inventory mutation.
+- Reproducible SBF [workflow run 29336473514](https://github.com/cryptovuive/pulseproof/actions/runs/29336473514) produced a 409,544-byte artifact with SHA-256 `7701a26b1d713496e92144915ade70619a13aa9acc4eb50a4702c0e11cb039c8`.
+- ProgramData read-back matched the complete 409,544-byte artifact exactly after the finalized slot `476217190` upgrade. Upgrade transaction: `5PLxviYF...nXqmM`.
+- A real devnet `equip_reward(kind=0,index=36)` transaction was recorded and failed with `InvalidRewardIndex` / custom error `6016`. Rejection transaction: `3Zx3iHC...73mg7xi`.
+- Every retired reward attestation ID returns HTTP `404`, an unsigned body and `Cache-Control: no-store, max-age=0`; an active reward remains signed and resolves to its stable on-chain index.
 
 ## Remaining external verification
 

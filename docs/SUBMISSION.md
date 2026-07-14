@@ -42,7 +42,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
 - Thirty-six original cosmetics span badges, medals, frames and profile characters; the sourced quiz engine exposes two/four choices and never sends answer keys before grading.
 - Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
-- Lint, TypeScript, production build, 114 unit/integration/contract/submission tests, SBF build and real public-devnet alias adversarial tests pass.
+- Lint, TypeScript, production build, 117 unit/integration/contract/submission tests, native Rust invariants, a reproducible SBF build and real public-devnet adversarial tests pass.
 
 ## Commercial path
 
@@ -60,6 +60,9 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 - Devnet program: `https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet`
 - Example transaction: `https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet`
 - Fan progression upgrade: `https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet`
+- Catalog parity upgrade: `https://explorer.solana.com/tx/5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM?cluster=devnet`
+- Retired-index rejection proof: `https://explorer.solana.com/tx/3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi?cluster=devnet`
+- Reproducible SBF build: `https://github.com/cryptovuive/pulseproof/actions/runs/29336473514`
 - Quiz claim: `https://explorer.solana.com/tx/2dSD6oJMsZNAMSfCTYSkBXuMowc9hSC4dtp5rfwjJz8uYKGR7QJ6Wfy7jwFYYWewxsKA11XYqkX3t4pEPMqpAzxo?cluster=devnet`
 - Reward redemption: `https://explorer.solana.com/tx/5y1ZXtGdmKRMfaSYpW321F9qBzaJQp3ttphfARVC2q9BXEM44dPBZHyUBpQbxN3n8dR9Xf28s8MbXPv2GnK5QpjA?cluster=devnet`
 - Health endpoint: `https://pulseproof-production-06fa.up.railway.app/api/health`

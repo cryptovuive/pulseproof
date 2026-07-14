@@ -11,7 +11,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 | Real consumer problem and differentiation | 20/20 | The product handles a real before/during/after fan journey. The signed no-spoiler relay turns “send what I have watched so far” into a source-bound, independently verifiable consumer action rather than another generic score or recap surface. |
 | TxLINE integration | 18/20 | Participant-owned devnet subscription, fixture/snapshot/historical/stat-validation usage, canonical public SSE bridge and a newly recorded fresh `ready + pulse` browser test are real. A captured score-changing event from an active covered match is still missing. |
 | Product and UX | 20/20 | The matchday loop now continues into a Fan Zone: daily streak, 10,000-variant sourced quiz engine, 36 original cosmetics, sourced mascot archive, equipped avatar identity and wallet-signed fixture chat. My Pulse, reminders, PWA/offline Catch-up, Capsules, accessibility, mobile layout and strict spoiler behavior remain coherent rather than becoming separate feature demos. |
-| Solana relevance and security | 20/20 | The same public devnet program now has wallet-owned Fan Profile, quiz/reward receipts, deterministic check-in, non-transferable inventory and equipped state. Public E2E proves replay, overspend and kind-confusion controls in addition to Ed25519 moment claims. |
+| Solana relevance and security | 20/20 | The same public devnet program now has wallet-owned Fan Profile, quiz/reward receipts, deterministic check-in, non-transferable inventory and equipped state. Public E2E proves replay, overspend and kind-confusion controls; a digest-pinned SBF upgrade plus an Explorer-recorded custom-6016 rejection prove retired rewards fail on-chain too. |
 | Demo and submission evidence | 17/20 | The existing 2:24 demo and Judge Room prove the original live product, but the video predates Fan Zone. The upgraded program and progression transactions are public and Judge Room-readable; a later submission cut should show the new loop visually. |
 
 ## Why this is not honestly 95–100 yet
@@ -38,6 +38,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 - Daily/practice quiz engine with 10,000 deterministic variants over stable FIFA-linked facts, answer non-disclosure and replay-safe wallet receipts.
 - Real SSE fan chat with no seeded users, bounded history and strict link/wagering/secret moderation.
 - Automated coverage increased to 117 tests across 24 suites, plus public browser, native contract and devnet proof runners.
+- Web/API/contract catalog parity: all six retired IDs fail unsigned at the attestor, reward index `36+` fails with `InvalidRewardIndex` on devnet, and the deployed ProgramData bytes match the reproducible CI artifact.
 
 ## Highest-return actions before submission
 
