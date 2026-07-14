@@ -16,7 +16,7 @@ Fans already use a phone while watching football, but most second-screen product
 
 ## Solution
 
-PulseProof translates TxLINE score actions into a live score, momentum visual and plain-language moments. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also connect a Solana wallet and seal selected moments. The server re-checks the fixture and sequence against TxLINE, signs a short-lived attestation, and the PulseProof program creates an anti-replay receipt while updating a non-transferable Fan Pass.
+PulseProof translates TxLINE score actions into a live score, momentum visual and plain-language moments. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also check in daily, answer a five-question source-linked World Cup quiz, earn non-financial points and unlock 36 original badges, medals, frames and characters. Check-in, quiz claim, redemption and equipped identity live in a wallet-owned Fan Profile PDA; a real SSE room lets fans talk without fabricated users.
 
 There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 
@@ -33,13 +33,16 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Next.js application and server routes with a transformed SSE match stream.
 - TxLINE credentials are server-only; network, API host and Solana program are paired.
 - Deterministic schema normaliser handles documented upper/lower-case fields.
-- Anchor smart contract with Config, FanPass and MomentReceipt PDAs.
+- Anchor smart contract with Config, FanPass, FanProfile and moment/quiz/reward receipt PDAs.
 - Solana Ed25519 precompile verification with exact preceding-instruction and message checks.
 - Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
 - Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
 - `POST/GET /api/capsules` issues and redeems a bounded signed Catch-up prefix; modified, expired, over-cursor or source-divergent capsules fail closed.
 - Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
-- Lint, production build, 94 unit/integration/contract/submission tests and a real local-validator adversarial suite pass.
+- Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
+- Thirty-six original cosmetics ship in six 1536×1024 WebP atlases; the sourced quiz bank exposes two/four choices and never sends answer keys before grading.
+- Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
+- Lint, TypeScript, production build, 109 unit/integration/contract/submission tests and real local-validator/public-devnet adversarial suites pass.
 
 ## Commercial path
 
@@ -49,12 +52,16 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 
 - Live app: `https://pulseproof-production-06fa.up.railway.app`
 - Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
+- Fan Zone: `https://pulseproof-production-06fa.up.railway.app/fan-zone`
 - Demo video (2:24): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
 - English captions: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.vtt`
 - 1080p thumbnail: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo-thumbnail.png`
 - Public repository: `https://github.com/cryptovuive/pulseproof`
 - Devnet program: `https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet`
 - Example transaction: `https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet`
+- Fan progression upgrade: `https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet`
+- Quiz claim: `https://explorer.solana.com/tx/2dSD6oJMsZNAMSfCTYSkBXuMowc9hSC4dtp5rfwjJz8uYKGR7QJ6Wfy7jwFYYWewxsKA11XYqkX3t4pEPMqpAzxo?cluster=devnet`
+- Reward redemption: `https://explorer.solana.com/tx/5y1ZXtGdmKRMfaSYpW321F9qBzaJQp3ttphfARVC2q9BXEM44dPBZHyUBpQbxN3n8dR9Xf28s8MbXPv2GnK5QpjA?cluster=devnet`
 - Health endpoint: `https://pulseproof-production-06fa.up.railway.app/api/health`
 
 ## TxLINE feedback — edit after real use

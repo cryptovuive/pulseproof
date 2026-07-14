@@ -14,6 +14,14 @@ flowchart LR
   F -->|"ed25519 ix + claim ix"| S["PulseProof Solana program"]
   S --> P["Fan Pass PDA"]
   S --> R["Moment Receipt PDA"]
+  F -->|"daily check-in"| S
+  F -->|"quiz answers"| Q["Sourced quiz grader"]
+  Q -->|"wallet-bound Ed25519 proof"| F
+  F -->|"redeem catalog item"| C["Reward attestor"]
+  C -->|"signed kind + index + cost"| F
+  S --> FP["Fan Profile PDA"]
+  S --> QR["Quiz / Reward Receipt PDA"]
+  F <-->|"SSE + moderated POST"| CH["Ephemeral fan room"]
 ```
 
 ## Trust boundaries
@@ -23,6 +31,9 @@ flowchart LR
 3. Solana's Ed25519 precompile verifies the signature. The PulseProof program checks that this verification instruction is immediately before `claim_moment` and that the exact public key and canonical message match.
 4. The program does not trust client-authored points, badge, wallet, fixture or expiry because every field is included in the signed message.
 5. A receipt PDA makes duplicate claims fail at account creation.
+6. Daily check-in points are calculated entirely from Solana clock and profile state; the browser cannot choose the day, streak or award.
+7. Quiz answers and explanations stay server-side until grading. The signed quiz digest binds wallet, daily round, score, points and expiry.
+8. Reward authorisation binds catalog digest, kind, stable item index, exact cost and expiry. The contract also enforces catalog kind/index ranges and available balance.
 
 ## Canonical attestation
 
@@ -36,6 +47,13 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 
 `evidence_hash = sha256(source|moment_hash|TxLINE_proof_response_digest_or_feed-event)`. This binds the signed claim to the validation evidence used by the server without publishing the raw TxLINE proof.
 
+Additional canonical messages:
+
+```text
+PULSEPROOF_QUIZ_V1|<wallet>|<quiz_hash_hex>|<score>|<points>|<expires_at>
+PULSEPROOF_REWARD_V1|<wallet>|<reward_hash_hex>|<kind>|<item_index>|<cost>|<expires_at>
+```
+
 ## Smart-contract accounts
 
 | Account | Seeds | Key fields |
@@ -43,6 +61,9 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 | `PulseConfig` | `config` | authority, 32-byte attestor key |
 | `FanPass` | `fan_pass`, owner, fixture ID LE | owner, fixture, check-in, points, badge bitmap, claims |
 | `MomentReceipt` | `receipt`, owner, moment hash | fixture, hash, points, badge, claimed time |
+| `FanProfile` | `fan_profile`, owner | lifetime earned/spent, UTC streak, check-ins, quiz claims, 256-bit inventory, equipped cosmetics |
+| `QuizReceipt` | `quiz_receipt`, owner, quiz hash | score, points, claimed time |
+| `RewardReceipt` | `reward_receipt`, owner, reward hash | kind, item index, cost, redeemed time |
 
 ## Instructions
 
@@ -50,6 +71,11 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 - `update_attestor(attestor)` — authority-only key rotation.
 - `create_match_pass(fixture_id)` — wallet check-in for one fixture.
 - `claim_moment(hash, points, badge, expiry)` — Ed25519-gated reward update and anti-replay receipt.
+- `create_fan_profile()` — creates the wallet-owned progression account and empty non-transferable inventory.
+- `daily_check_in()` — Solana-clock UTC claim, once per day, awarding 10–22 deterministic points.
+- `claim_quiz(hash, score, points, expiry)` — validates the signed daily result and creates a one-use quiz receipt.
+- `redeem_reward(hash, kind, index, cost, expiry)` — spends existing points and atomically writes inventory/receipt state.
+- `equip_reward(kind, index)` — equips an owned catalog item after kind/index validation.
 
 ## Failure behaviour
 
@@ -58,6 +84,8 @@ PULSEPROOF_V1|<wallet>|<fixture_id>|<moment_hash_hex>|<evidence_hash_hex>|<point
 - No active fixture: UI can use historical mode or labelled replay.
 - Attestation expired/wrong wallet/wrong attestor/changed points: contract rejects.
 - Duplicate moment: receipt PDA already exists, so the transaction fails.
+- Duplicate daily check-in, quiz claim or reward: fails through state/day checks or receipt PDA creation.
+- Insufficient points, already-owned item, invalid catalog kind/index, expired authorisation: redemption fails atomically.
 - Contract not deployed: the browser still verifies the attestor signature locally and clearly reports that the devnet write is pending; this is a development fallback, not a successful on-chain claim.
 
 ## Multi-match live path
@@ -77,5 +105,6 @@ A Verified Catch-up Capsule adds a safe relay boundary: `/api/capsules` commits 
 
 - No TxLINE response database.
 - No raw proof is returned by the attestation endpoint; only a SHA-256 digest and endpoint/stat-key metadata.
-- No wallet profile, email, name or IP address is persisted.
+- The server persists no email, real name or IP address. The wallet public key and non-financial progression state are intentionally public in the Fan Profile PDA.
+- Fan chat retains at most 50 moderated messages in one process and does not seed synthetic activity. It is deliberately ephemeral; a production multi-instance room would move to a durable pub/sub service with the same validation rules.
 - Fallback results are externally cross-checked and source-linked; their local sequence IDs are never labelled TxLINE-verified.

@@ -9,6 +9,7 @@ PulseProof is a live football second screen that turns TxLINE score events into 
 - Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
 - CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
 - Judge room: [https://pulseproof-production-06fa.up.railway.app/submission](https://pulseproof-production-06fa.up.railway.app/submission)
+- Fan Zone: [https://pulseproof-production-06fa.up.railway.app/fan-zone](https://pulseproof-production-06fa.up.railway.app/fan-zone)
 - 2:24 live product demo: [https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4)
 
 The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields. PulseProof enriches only an exact current team-pair match from the separately source-linked verified schedule and labels that provenance; unmatched fixtures stay explicitly unavailable instead of receiving an invented tournament.
@@ -18,6 +19,7 @@ The public release uses an activated TxLINE devnet token and a Railway-hosted SS
 - PulseProof program: [`74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet)
 - TxLINE free-tier subscription: [`54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC`](https://explorer.solana.com/tx/54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC?cluster=devnet)
 - Program deployment: [`4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS`](https://explorer.solana.com/tx/4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS?cluster=devnet)
+- Fan progression upgrade: [`5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV`](https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet)
 - Config initialization: [`3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB`](https://explorer.solana.com/tx/3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB?cluster=devnet)
 - Verified claim: [`vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR`](https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet)
 
@@ -44,9 +46,14 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Consumer timeline removes technical coverage records, exposes honest empty states and produces a deterministic Match Brief only from on-pitch source events.
 - Phantom wallet connection and raw Solana transaction builder.
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
+- On-chain Fan Profile PDA with deterministic daily check-in, UTC streak bonus, global earned/spent points, 256-slot non-transferable inventory and equipped badge/frame/character state.
+- Daily five-question World Cup quiz selected deterministically from a 35+ question private answer bank; every question links to the supporting FIFA source, exposes exactly two or four choices and can be claimed only through a short-lived wallet-bound Ed25519 receipt.
+- Cosmetic vault with 36 original badges, medals, avatar frames and characters across six 1536×1024 WebP atlases; seasonal items have an explicit close time rather than a fabricated scarcity counter.
+- Moderated online fan chat over SSE with real presence, no seeded/fake users, a bounded 50-message memory window, spam/link/wagering/private-key filters and explicit ephemeral-storage disclosure.
+- Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- Ninety-five automated unit/integration/contract/submission tests plus a Phantom-compatible wallet signature suite and real local-validator flow covering valid state transitions and adversarial/integrity assertions.
+- One hundred nine automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 
@@ -100,7 +107,10 @@ The configured API token remains authoritative for every fixture ID it supplies.
 - `lib/catch-up-capsule.ts` — canonical prefix commitment, bounded token format and Ed25519 issue/verification logic.
 - `lib/saved-recaps.ts` — bounded, validated and consumer-safe offline recap packs.
 - `lib/attestation.ts` — canonical message, moment hash and Ed25519 signing.
-- `lib/solana-client.ts` — browser transaction construction for `create_match_pass` and `claim_moment`.
+- `lib/solana-client.ts` — browser transaction construction for match claims, Fan Profile creation, check-in, quiz claim, redemption and equipping.
+- `lib/quiz-bank.ts` — server-side sourced World Cup question bank, deterministic daily selection and grading.
+- `lib/reward-catalog.ts` — original cosmetic catalog, stable on-chain indexes, prices and seasonal availability.
+- `lib/community-chat.ts` — bounded ephemeral room, moderation, presence and SSE broadcast.
 - `programs/pulseproof/src/lib.rs` — Anchor smart contract.
 - `tests` — signature, integration-model and anti-replay tests.
 - `docs/VI_HACKATHON_PLAN.md` — detailed Vietnamese product and compliance plan.

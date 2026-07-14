@@ -100,6 +100,18 @@ describe("judge live proof validators", () => {
       pulseProof: { programId: "pulse", executable: true, owner: "loader", explorerUrl: "https://example.com" },
       txline: { programId: "txline", executable: true, explorerUrl: "https://example.com" },
       receipt: { signature: "sig", confirmationStatus: "confirmed", slot: 123, error: null, explorerUrl: "https://example.com" },
+      progression: {
+        wallet: "wallet",
+        fanProfile: "profile",
+        explorerUrl: "https://example.com",
+        pointsEarned: 85,
+        pointsSpent: 60,
+        checkins: 1,
+        quizClaims: 1,
+        equippedBadge: 13,
+        quizReceipt: { signature: "quiz", confirmationStatus: "finalized", error: null, explorerUrl: "https://example.com" },
+        rewardReceipt: { signature: "reward", confirmationStatus: "finalized", error: null, explorerUrl: "https://example.com" },
+      },
     };
     expect(() => assertChainEvidence(evidence)).not.toThrow();
     expect(() => assertChainEvidence({ ...evidence, receipt: { ...evidence.receipt, error: { custom: 1 } } })).toThrow(/receipt/i);

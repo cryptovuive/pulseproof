@@ -39,6 +39,7 @@ button { color: inherit; }
 .wallet-button:hover { transform: translateY(-1px); }
 .tour-button { height: 38px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(217,255,67,.25); border-radius: 999px; padding: 0 12px; background: var(--acid-soft); color: var(--acid); cursor: pointer; font-size: 10px; font-weight: 800; }
 .submission-link { height: 38px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(93,140,255,.25); border-radius: 999px; padding: 0 12px; background: rgba(93,140,255,.07); color: #a9beff; font-size: 10px; font-weight: 800; text-decoration: none; }
+.fan-zone-link { height: 38px; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(217,255,67,.25); border-radius: 999px; padding: 0 12px; background: rgba(217,255,67,.08); color: var(--acid); font-size: 10px; font-weight: 850; text-decoration: none; }
 
 .demo-banner { margin: 18px 0; min-height: 46px; display: grid; grid-template-columns: auto minmax(0,1fr) minmax(0,auto) auto; align-items: center; gap: 20px; border: 1px solid rgba(217,255,67,.18); background: linear-gradient(90deg, rgba(217,255,67,.09), rgba(217,255,67,.025)); border-radius: 12px; padding: 9px 12px 9px 16px; }
 .demo-banner > div { color: var(--acid); display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
@@ -368,6 +369,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; color: #555b5
   .network-pill { display: none; }
   .tour-button { width: 38px; justify-content: center; padding: 0; font-size: 0; }
   .submission-link { width: 38px; justify-content: center; padding: 0; font-size: 0; }
+  .fan-zone-link { width: 38px; justify-content: center; padding: 0; font-size: 0; }
   .wallet-button { padding: 0 11px; }
   .demo-banner { grid-template-columns: 1fr auto; gap: 8px; }
   .demo-banner p { grid-column: 1 / -1; grid-row: 2; }

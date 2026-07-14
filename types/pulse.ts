@@ -129,3 +129,97 @@ export interface CatchUpCapsuleRedemption {
   capsule: CatchUpCapsule;
   pulse: MatchPulse;
 }
+
+export type RewardKind = "badge" | "medal" | "frame" | "character";
+
+export interface RewardItem {
+  id: string;
+  index: number;
+  kind: RewardKind;
+  name: string;
+  description: string;
+  collection: "legacy" | "world-2026" | "community" | "mythic" | "frames" | "characters";
+  rarity: "common" | "rare" | "epic" | "legendary" | "mythic";
+  price: number;
+  atlas: string;
+  atlasIndex: number;
+  availableUntil?: string;
+}
+
+export interface FanProfile {
+  address: string;
+  owner: string;
+  pointsEarned: number;
+  pointsSpent: number;
+  availablePoints: number;
+  checkins: number;
+  quizClaims: number;
+  currentStreak: number;
+  bestStreak: number;
+  lastCheckinDay: number;
+  inventory: number[];
+  equippedBadge: number | null;
+  equippedFrame: number | null;
+  equippedCharacter: number | null;
+  claims: number;
+}
+
+export interface QuizQuestionPublic {
+  id: string;
+  era: "2026" | "history" | "records" | "discipline";
+  difficulty: "rookie" | "pro" | "legend";
+  prompt: string;
+  options: string[];
+  sourceLabel: string;
+  sourceUrl: string;
+}
+
+export interface QuizRound {
+  roundId: string;
+  edition: string;
+  validForUtcDay: number;
+  questions: QuizQuestionPublic[];
+  maxPoints: number;
+}
+
+export interface QuizAttestationPayload {
+  wallet: string;
+  quizHash: string;
+  score: number;
+  points: number;
+  expiresAt: number;
+}
+
+export interface QuizAttestation {
+  payload: QuizAttestationPayload;
+  messageBase64: string;
+  signatureBase64: string;
+  attestorPublicKey: string;
+  results: Array<{ questionId: string; correct: boolean; correctIndex: number; explanation: string }>;
+}
+
+export interface RewardAttestationPayload {
+  wallet: string;
+  rewardHash: string;
+  kind: number;
+  itemIndex: number;
+  cost: number;
+  expiresAt: number;
+}
+
+export interface RewardAttestation {
+  payload: RewardAttestationPayload;
+  messageBase64: string;
+  signatureBase64: string;
+  attestorPublicKey: string;
+  reward: RewardItem;
+}
+
+export interface CommunityMessage {
+  id: string;
+  nickname: string;
+  walletHint?: string;
+  body: string;
+  team?: string;
+  createdAt: string;
+}

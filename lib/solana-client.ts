@@ -11,7 +11,7 @@ import {
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import { Buffer } from "buffer";
-import type { MomentAttestation } from "@/types/pulse";
+import type { FanProfile, MomentAttestation, QuizAttestation, RewardAttestation } from "@/types/pulse";
 
 export interface BrowserWallet {
   publicKey: PublicKey | null;
@@ -52,6 +52,12 @@ function u32(value: number): Uint8Array {
   return output;
 }
 
+function u16(value: number): Uint8Array {
+  const output = new Uint8Array(2);
+  new DataView(output.buffer).setUint16(0, value, true);
+  return output;
+}
+
 function concat(...arrays: Uint8Array[]): Uint8Array {
   const output = new Uint8Array(arrays.reduce((length, array) => length + array.length, 0));
   let offset = 0;
@@ -68,14 +74,111 @@ function programId(): PublicKey {
   return new PublicKey(configured);
 }
 
+function connection() {
+  return new Connection(
+    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com",
+    "confirmed",
+  );
+}
+
+function profileAddress(owner: PublicKey, program = programId()) {
+  return PublicKey.findProgramAddressSync([textEncoder.encode("fan_profile"), owner.toBytes()], program)[0];
+}
+
+async function createProfileInstruction(owner: PublicKey, profile: PublicKey, program: PublicKey) {
+  return new TransactionInstruction({
+    programId: program,
+    keys: [
+      { pubkey: profile, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ],
+    data: Buffer.from(await discriminator("create_fan_profile")),
+  });
+}
+
+async function signAndConfirm(wallet: BrowserWallet, transaction: Transaction, rpc = connection()) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const latest = await rpc.getLatestBlockhash("confirmed");
+  transaction.feePayer = wallet.publicKey;
+  transaction.recentBlockhash = latest.blockhash;
+  const result = await wallet.signAndSendTransaction(transaction);
+  await rpc.confirmTransaction({ signature: result.signature, ...latest }, "confirmed");
+  return result.signature;
+}
+
+function signedProofInstruction(attestation: Pick<MomentAttestation, "attestorPublicKey" | "messageBase64" | "signatureBase64">) {
+  return Ed25519Program.createInstructionWithPublicKey({
+    publicKey: bs58.decode(attestation.attestorPublicKey),
+    message: Buffer.from(attestation.messageBase64, "base64"),
+    signature: Buffer.from(attestation.signatureBase64, "base64"),
+  });
+}
+
+export async function fetchFanProfile(ownerInput: string | PublicKey): Promise<FanProfile | null> {
+  const owner = typeof ownerInput === "string" ? new PublicKey(ownerInput) : ownerInput;
+  const address = profileAddress(owner);
+  const account = await connection().getAccountInfo(address, "confirmed");
+  if (!account) return null;
+  const data = Buffer.from(account.data);
+  if (data.length < 119) throw new Error("Fan profile account has an unexpected layout");
+  const readU64 = (offset: number) => Number(data.readBigUInt64LE(offset));
+  const readU32 = (offset: number) => data.readUInt32LE(offset);
+  const readU16 = (offset: number) => data.readUInt16LE(offset);
+  const equipped = (offset: number) => {
+    const value = readU16(offset);
+    return value === 65_535 ? null : value;
+  };
+  const pointsEarned = readU64(40);
+  const pointsSpent = readU64(48);
+  return {
+    address: address.toBase58(),
+    owner: new PublicKey(data.subarray(8, 40)).toBase58(),
+    pointsEarned,
+    pointsSpent,
+    availablePoints: Math.max(0, pointsEarned - pointsSpent),
+    checkins: readU32(56),
+    quizClaims: readU32(60),
+    currentStreak: readU16(64),
+    bestStreak: readU16(66),
+    lastCheckinDay: Number(data.readBigInt64LE(68)),
+    inventory: [0, 1, 2, 3].flatMap((word) => {
+      const bits = data.readBigUInt64LE(76 + word * 8);
+      return Array.from({ length: 64 }, (_, bit) => word * 64 + bit).filter((_, bit) => (bits & (1n << BigInt(bit))) !== 0n);
+    }),
+    equippedBadge: equipped(108),
+    equippedFrame: equipped(110),
+    equippedCharacter: equipped(112),
+    claims: readU32(114),
+  };
+}
+
+export async function submitDailyCheckIn(wallet: BrowserWallet) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const owner = wallet.publicKey;
+  const program = programId();
+  const rpc = connection();
+  const profile = profileAddress(owner, program);
+  const transaction = new Transaction();
+  if (!(await rpc.getAccountInfo(profile, "confirmed"))) {
+    transaction.add(await createProfileInstruction(owner, profile, program));
+  }
+  transaction.add(new TransactionInstruction({
+    programId: program,
+    keys: [
+      { pubkey: profile, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ],
+    data: Buffer.from(await discriminator("daily_check_in")),
+  }));
+  return signAndConfirm(wallet, transaction, rpc);
+}
+
 export async function submitMomentClaim(wallet: BrowserWallet, attestation: MomentAttestation): Promise<string> {
   if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
   const owner = wallet.publicKey;
   const program = programId();
-  const connection = new Connection(
-    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com",
-    "confirmed",
-  );
+  const rpc = connection();
   const fixtureSeed = u64(attestation.payload.fixtureId);
   const momentHash = Uint8Array.from(Buffer.from(attestation.payload.momentHash, "hex"));
   const evidenceHash = Uint8Array.from(Buffer.from(attestation.payload.evidenceHash, "hex"));
@@ -84,13 +187,17 @@ export async function submitMomentClaim(wallet: BrowserWallet, attestation: Mome
     [textEncoder.encode("fan_pass"), owner.toBytes(), fixtureSeed],
     program,
   );
+  const fanProfile = profileAddress(owner, program);
   const [receipt] = PublicKey.findProgramAddressSync(
     [textEncoder.encode("receipt"), owner.toBytes(), momentHash],
     program,
   );
 
   const transaction = new Transaction();
-  const existingPass = await connection.getAccountInfo(fanPass, "confirmed");
+  if (!(await rpc.getAccountInfo(fanProfile, "confirmed"))) {
+    transaction.add(await createProfileInstruction(owner, fanProfile, program));
+  }
+  const existingPass = await rpc.getAccountInfo(fanPass, "confirmed");
   if (!existingPass) {
     transaction.add(
       new TransactionInstruction({
@@ -107,17 +214,14 @@ export async function submitMomentClaim(wallet: BrowserWallet, attestation: Mome
   }
 
   transaction.add(
-    Ed25519Program.createInstructionWithPublicKey({
-      publicKey: bs58.decode(attestation.attestorPublicKey),
-      message: Buffer.from(attestation.messageBase64, "base64"),
-      signature: Buffer.from(attestation.signatureBase64, "base64"),
-    }),
+    signedProofInstruction(attestation),
     new TransactionInstruction({
       programId: program,
       keys: [
-        { pubkey: config, isSigner: false, isWritable: false },
-        { pubkey: fanPass, isSigner: false, isWritable: true },
-        { pubkey: receipt, isSigner: false, isWritable: true },
+          { pubkey: config, isSigner: false, isWritable: false },
+          { pubkey: fanPass, isSigner: false, isWritable: true },
+          { pubkey: fanProfile, isSigner: false, isWritable: true },
+          { pubkey: receipt, isSigner: false, isWritable: true },
         { pubkey: owner, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
         { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
@@ -134,11 +238,102 @@ export async function submitMomentClaim(wallet: BrowserWallet, attestation: Mome
       ),
     }),
   );
+  return signAndConfirm(wallet, transaction, rpc);
+}
 
-  const latest = await connection.getLatestBlockhash("confirmed");
-  transaction.feePayer = owner;
-  transaction.recentBlockhash = latest.blockhash;
-  const result = await wallet.signAndSendTransaction(transaction);
-  await connection.confirmTransaction({ signature: result.signature, ...latest }, "confirmed");
-  return result.signature;
+export async function submitQuizClaim(wallet: BrowserWallet, attestation: QuizAttestation) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const owner = wallet.publicKey;
+  const program = programId();
+  const rpc = connection();
+  const profile = profileAddress(owner, program);
+  const quizHash = Uint8Array.from(Buffer.from(attestation.payload.quizHash, "hex"));
+  const [config] = PublicKey.findProgramAddressSync([textEncoder.encode("config")], program);
+  const [receipt] = PublicKey.findProgramAddressSync(
+    [textEncoder.encode("quiz_receipt"), owner.toBytes(), quizHash],
+    program,
+  );
+  const transaction = new Transaction();
+  if (!(await rpc.getAccountInfo(profile, "confirmed"))) {
+    transaction.add(await createProfileInstruction(owner, profile, program));
+  }
+  transaction.add(
+    signedProofInstruction(attestation),
+    new TransactionInstruction({
+      programId: program,
+      keys: [
+        { pubkey: config, isSigner: false, isWritable: false },
+        { pubkey: profile, isSigner: false, isWritable: true },
+        { pubkey: receipt, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: true, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
+      ],
+      data: Buffer.from(concat(
+        await discriminator("claim_quiz"),
+        quizHash,
+        Uint8Array.of(attestation.payload.score),
+        u32(attestation.payload.points),
+        i64(attestation.payload.expiresAt),
+      )),
+    }),
+  );
+  return signAndConfirm(wallet, transaction, rpc);
+}
+
+export async function submitRewardRedemption(wallet: BrowserWallet, attestation: RewardAttestation) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const owner = wallet.publicKey;
+  const program = programId();
+  const rpc = connection();
+  const profile = profileAddress(owner, program);
+  const rewardHash = Uint8Array.from(Buffer.from(attestation.payload.rewardHash, "hex"));
+  const [config] = PublicKey.findProgramAddressSync([textEncoder.encode("config")], program);
+  const [receipt] = PublicKey.findProgramAddressSync(
+    [textEncoder.encode("reward_receipt"), owner.toBytes(), rewardHash],
+    program,
+  );
+  const transaction = new Transaction();
+  if (!(await rpc.getAccountInfo(profile, "confirmed"))) {
+    transaction.add(await createProfileInstruction(owner, profile, program));
+  }
+  transaction.add(
+    signedProofInstruction(attestation),
+    new TransactionInstruction({
+      programId: program,
+      keys: [
+        { pubkey: config, isSigner: false, isWritable: false },
+        { pubkey: profile, isSigner: false, isWritable: true },
+        { pubkey: receipt, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: true, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+        { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
+      ],
+      data: Buffer.from(concat(
+        await discriminator("redeem_reward"),
+        rewardHash,
+        Uint8Array.of(attestation.payload.kind),
+        u16(attestation.payload.itemIndex),
+        u64(attestation.payload.cost),
+        i64(attestation.payload.expiresAt),
+      )),
+    }),
+  );
+  return signAndConfirm(wallet, transaction, rpc);
+}
+
+export async function submitEquipReward(wallet: BrowserWallet, kind: number, itemIndex: number) {
+  if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
+  const owner = wallet.publicKey;
+  const program = programId();
+  const profile = profileAddress(owner, program);
+  const transaction = new Transaction().add(new TransactionInstruction({
+    programId: program,
+    keys: [
+      { pubkey: profile, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ],
+    data: Buffer.from(concat(await discriminator("equip_reward"), Uint8Array.of(kind), u16(itemIndex))),
+  }));
+  return signAndConfirm(wallet, transaction);
 }

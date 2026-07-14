@@ -5,7 +5,8 @@
 - TxLINE activated API token and renewable guest JWT.
 - Attestor secret key.
 - Program upgrade authority and deployment keypair.
-- Integrity of Fan Pass points, badge bitmap and Moment Receipts.
+- Integrity of Fan Pass/Fan Profile points, streak, inventory, equipped cosmetics and all receipt PDAs.
+- Privacy and safety of the ephemeral fan chat.
 - Availability of the public fan experience during a live match.
 - TxLINE data licence and raw proof confidentiality.
 
@@ -18,6 +19,8 @@
 | TxLINE → normaliser | external JSON schema | type guards, numeric/string coercion, safe defaults, real sequence requirement |
 | App server → browser | moment + attestation | source label, canonical signed payload, no raw credential |
 | Browser → Solana | all instruction fields | Ed25519 precompile plus exact message reconstruction inside the program |
+| Browser → quiz/reward API | wallet, round answers, reward ID | Solana public-key validation, fixed daily round/catalog lookup, rate limit, no client-authored score/cost |
+| Browser → fan chat | nickname, team, message | strict length/schema, URL/wagering/secret filters, duplicate-spam suppression, bounded ring buffer |
 
 ## Attack paths and controls
 
@@ -36,6 +39,20 @@ The signed message includes the wallet public key. `FanPass.has_one(owner)` and 
 ### Replay a valid claim
 
 Receipt PDA seeds are `receipt + owner + momentHash`. The second `init` for the same moment fails atomically.
+
+Quiz and reward receipts use independent `quiz_receipt + owner + quizHash` and `reward_receipt + owner + rewardHash` seeds. Daily check-in additionally compares the Solana-clock UTC day with `last_checkin_day`.
+
+### Inflate streak or point balance
+
+The contract derives the UTC day from `Clock`, calculates the 10–22 point streak award itself and uses checked arithmetic. Quiz points and reward cost are signed by the configured attestor; redemption computes `earned - spent` on-chain before writing either field.
+
+### Redeem or equip a different catalog item
+
+The reward signature commits to catalog digest, kind, stable item index and exact cost. The contract rejects duplicate inventory bits and enforces the deployed catalog's kind/index ranges, so a cheap badge cannot be presented or equipped as a frame/character.
+
+### Abuse fan chat
+
+The route rejects links, betting/casino language, recovery phrases/private keys, repeated text and overlong content. It retains only 50 in-memory messages and exposes no fake users. Residual moderation risk remains because the hackathon deployment has no account reputation or human moderator queue.
 
 ### Use a valid signature from another attestor
 
@@ -70,3 +87,5 @@ Every payload carries `source`. The UI visibly distinguishes `TxLINE live`, `TxL
 5. A custom RPC domain must be added to the CSP `connect-src` list.
 6. Watch-room votes are local MVP state, not globally persistent or Sybil-resistant.
 7. `@solana/web3.js` 1.98.4 still declares Jayson’s older UUID range, so PulseProof pins the nested package to patched `uuid@11.1.1`. Jayson ID generation, a read-only devnet RPC call and the complete application suite pass with this override; `npm audit` reports zero known vulnerabilities.
+8. Fan chat is single-instance and ephemeral. A scaled deployment requires managed pub/sub, durable moderation/audit storage, abuse reporting and wallet-signature-based rate tiers.
+9. Fan points are intentionally non-transferable and have no cash value; product copy and smart-contract design must continue to avoid wagering, tokenisation or financial reward promises.

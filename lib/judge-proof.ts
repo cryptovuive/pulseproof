@@ -21,6 +21,18 @@ export type JudgeProofResult = {
     error: unknown;
     explorerUrl: string;
   };
+  progression: {
+    wallet: string;
+    fanProfile: string;
+    explorerUrl: string;
+    pointsEarned: number;
+    pointsSpent: number;
+    checkins: number;
+    quizClaims: number;
+    equippedBadge: number;
+    quizReceipt: { signature: string; confirmationStatus: string | null; error: unknown; explorerUrl: string };
+    rewardReceipt: { signature: string; confirmationStatus: string | null; error: unknown; explorerUrl: string };
+  };
 };
 
 export function assertHealthEvidence(value: unknown): asserts value is {
@@ -108,6 +120,17 @@ export function assertChainEvidence(value: unknown): asserts value is JudgeProof
   }
   if (!(["confirmed", "finalized"] as Array<string | null>).includes(body.receipt.confirmationStatus)) {
     throw new Error("The reference receipt has insufficient confirmation");
+  }
+  if (!body.progression || body.progression.pointsEarned < 1 || body.progression.pointsSpent < 1) {
+    throw new Error("The on-chain fan progression profile is incomplete");
+  }
+  if (body.progression.checkins < 1 || body.progression.quizClaims < 1 || body.progression.equippedBadge === 65_535) {
+    throw new Error("The on-chain check-in, quiz or equipped reward proof is missing");
+  }
+  for (const progressionReceipt of [body.progression.quizReceipt, body.progression.rewardReceipt]) {
+    if (progressionReceipt.error !== null || !["confirmed", "finalized"].includes(progressionReceipt.confirmationStatus ?? "")) {
+      throw new Error("A fan progression receipt is not confirmed");
+    }
   }
 }
 

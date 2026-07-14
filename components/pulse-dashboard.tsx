@@ -13,6 +13,7 @@ import {
   Download,
   Eye,
   EyeOff,
+  Gift,
   Goal,
   Radio,
   RotateCcw,
@@ -758,6 +759,7 @@ export function PulseDashboard() {
             {statusLabel}
           </div>
           <button className="tour-button" aria-label="Open quick product tour" onClick={() => moveTour(0)}><Compass size={15} /> Quick tour</button>
+          <a className="fan-zone-link" href="/fan-zone"><Gift size={15} /> Fan Zone</a>
           <a className="submission-link" href="/submission"><ShieldCheck size={15} /> Judge room</a>
           <button className="wallet-button" onClick={connectWallet}>
             <WalletCards size={16} />
