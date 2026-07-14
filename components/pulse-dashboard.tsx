@@ -414,7 +414,9 @@ export function PulseDashboard() {
         action();
       }, delay));
     };
-    const scroll = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Instant positioning keeps the reproducible capture free of intermediate
+    // compositor frames; normal user-driven navigation remains smooth elsewhere.
+    const scroll = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "auto", block: "center" });
 
     setDemoStep("01 · Public product loaded from live deployment");
     schedule(demoDelay + 3_000, "02 · Finished score protected before Catch-up", () => {

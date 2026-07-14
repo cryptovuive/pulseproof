@@ -12,6 +12,7 @@ describe("recordable judge walkthrough", () => {
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".capsule-share")?.click()');
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".offline-save")?.click()');
     expect(dashboard).toContain('document.querySelector<HTMLButtonElement>(".judge-lab button")?.click()');
+    expect(dashboard).toContain('scrollIntoView({ behavior: "auto", block: "center" })');
   });
 
   it("labels every action as a live walkthrough", () => {
