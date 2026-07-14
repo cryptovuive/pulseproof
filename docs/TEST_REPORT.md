@@ -25,7 +25,8 @@ Result: **114/114 passed** across twenty-four suites.
 - Duplicate-receipt model rejection.
 - Deterministic once-per-UTC-day streak awards, streak reset and capped day-seven bonus.
 - Quiz answer non-disclosure, 10,000 stable variant IDs, deterministic daily/practice selection, exact two/four-option schema, official FIFA source links, stale-round rejection and signed result verification.
-- Forty-two unique catalog items including six 3D shirt tributes, stable indexes, price bounds, seasonal close enforcement and six high-resolution WebP atlas contracts.
+- Forty-two unique catalog items including six mannequin-worn front/back shirt tributes, stable indexes, price bounds, seasonal close enforcement, six high-resolution atlas contracts and six unique model-image asset contracts.
+- Eighteen sourced mascot records with the official 2026 trio split by host nation and playing role; JPEG integrity and the removal of misleading emoji markers are enforced.
 - Reward attestation binds wallet, catalog digest, kind, item index and cost; unknown catalog identifiers fail closed.
 - Chat verifies wallet signatures and FanAlias, rejects tampering/replay, isolates fixture rooms, blocks links/wagering/secrets/spam and enforces a 50-message ring bound.
 - Fan progression model rejects quiz replay, overspending and duplicate reward redemption.

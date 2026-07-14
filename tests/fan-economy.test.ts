@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { REWARD_CATALOG, REWARD_KIND_CODE, rewardIsAvailable } from "@/lib/reward-catalog";
 import { getDailyQuizQuestions, getDailyQuizRound, getPracticeQuizRound, getQuizVariant, gradeDailyQuiz, QUIZ_BANK, QUIZ_CATALOG_SIZE } from "@/lib/quiz-bank";
-import { MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
+import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 
 describe("fan progression economy", () => {
   it("ships a unique 42-item non-financial cosmetic catalog", () => {
@@ -16,6 +16,14 @@ describe("fan progression economy", () => {
     expect(REWARD_CATALOG.filter((reward) => reward.availableUntil).length).toBeGreaterThanOrEqual(6);
     expect(REWARD_KIND_CODE).toEqual({ badge: 0, medal: 1, frame: 2, character: 3 });
     expect(REWARD_CATALOG.filter((reward) => reward.shirt)).toHaveLength(6);
+    const shirtModels = REWARD_CATALOG.flatMap((reward) => reward.shirt?.modelImage ?? []);
+    expect(new Set(shirtModels).size).toBe(6);
+    for (const model of shirtModels) {
+      const file = readFileSync(join(process.cwd(), "public", model));
+      expect(file.subarray(0, 4).toString()).toBe("RIFF");
+      expect(file.subarray(8, 12).toString()).toBe("WEBP");
+      expect(file.length).toBeGreaterThan(50_000);
+    }
   });
 
   it("time-gates seasonal rewards without changing their catalog price", () => {
@@ -68,9 +76,21 @@ describe("sourced World Cup quiz", () => {
   });
 
   it("keeps the mascot archive aligned to FIFA's official history", () => {
-    expect(WORLD_CUP_MASCOTS).toHaveLength(16);
+    expect(WORLD_CUP_MASCOTS).toHaveLength(18);
     expect(WORLD_CUP_MASCOTS[0]).toMatchObject({ edition: 1966, name: "World Cup Willie", form: "Lion" });
-    expect(WORLD_CUP_MASCOTS.at(-1)).toMatchObject({ edition: 2026, name: "Maple · Zayu · Clutch", form: "Moose · Jaguar · Bald eagle" });
+    expect(WORLD_CUP_MASCOTS.find((mascot) => mascot.name === "Pique")).toMatchObject({ form: "Giant chilli pepper" });
+    expect(WORLD_CUP_MASCOTS.find((mascot) => mascot.name === "La'eeb")?.detail).toContain("super-skilled player");
+    expect(WORLD_CUP_MASCOTS.filter((mascot) => mascot.edition === 2026)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "Maple", host: "Canada", form: "Moose", role: "Goalkeeper" }),
+      expect.objectContaining({ name: "Zayu", host: "Mexico", form: "Jaguar", role: "Striker" }),
+      expect.objectContaining({ name: "Clutch", host: "United States", form: "Bald eagle", role: "Midfielder" }),
+    ]));
+    expect(WORLD_CUP_MASCOTS.every((mascot) => !("marker" in mascot))).toBe(true);
+    for (const image of [MASCOT_2026_HERO.image, ...WORLD_CUP_MASCOTS.flatMap((mascot) => mascot.officialImage ?? [])]) {
+      const file = readFileSync(join(process.cwd(), "public", image));
+      expect(file.subarray(0, 2).toString("hex")).toBe("ffd8");
+      expect(file.length).toBeGreaterThan(50_000);
+    }
     expect([MASCOT_HISTORY_SOURCE, MASCOT_2026_SOURCE].every((url) => url.startsWith("https://www.fifa.com/"))).toBe(true);
   });
 

@@ -23,7 +23,7 @@
 2. **Không có video ≤5 phút:** phải quay rõ problem → live/replay flow → TxLINE backend → Solana claim.
 3. **Đưa API token vào frontend/repo:** tuyệt đối chỉ đặt `TXLINE_API_TOKEN` ở server environment.
 4. **Bắt judge tạo ví hoặc trả gas để hiểu sản phẩm:** trải nghiệm chính phải xem được không cần ví; phần claim có thể dùng ví devnet do đội chuẩn bị trong video.
-5. **Dùng logo/brand FIFA:** chỉ dùng tên quốc gia, initials và hình khối tự tạo; không dùng logo, cúp, mascot hoặc ngụ ý tài trợ.
+5. **Dùng logo/brand FIFA:** trải nghiệm trận đấu chỉ dùng tên quốc gia, initials và hình khối tự tạo. Riêng mục lưu trữ linh vật dùng ảnh báo chí chính thức cho bộ ba 2026 kèm nguồn trực tiếp, dòng © FIFA và tuyên bố không liên kết; không dùng linh vật tự chế hoặc ngụ ý tài trợ.
 6. **Dữ liệu:** không dump, bán, chia sẻ hoặc tạo API cạnh tranh từ raw TxLINE data. Chỉ biến đổi dữ liệu thành UI sản phẩm; bằng chứng chỉ trả digest.
 7. **Cá cược trái phép:** không stakes, odds-to-money, deposit, payout, token thưởng có giá trị, random prize hoặc lời hứa lợi nhuận.
 8. **AI ownership:** brief có câu “AI agents” nhưng T&C pháp lý yêu cầu người thật và cấm bài bị materially controlled bởi bot. Người tham gia phải tự review, phát triển thêm, hiểu toàn bộ code, lưu dev log và tự nộp.

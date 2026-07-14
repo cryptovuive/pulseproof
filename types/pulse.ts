@@ -153,6 +153,7 @@ export interface RewardItem {
     primary: string;
     secondary: string;
     accent: string;
+    modelImage: string;
     sourceLabel: string;
     sourceUrl: string;
   };

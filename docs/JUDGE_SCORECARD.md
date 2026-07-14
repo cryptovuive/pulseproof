@@ -34,7 +34,7 @@ Engineering/product readiness is approximately **97/100**. The product now adds 
 - Verified Catch-up Capsules with chained SHA-256 prefix commitment, bounded transport, Ed25519 signature, source re-check and fail-closed redemption.
 - Reproducible 2:24 1080p live-capture renderer with three real browser clips, English narration, chapter metadata, direct HWND isolation and a hard five-minute gate.
 - On-chain Fan Progression Economy: Solana-clock check-in streaks, signed quiz claims, signed catalog redemption, 256-slot inventory and equipped identity.
-- Forty-two non-transferable cosmetics across badges, medals, frames, characters and six simplified source-linked historical shirt tributes.
+- Forty-two non-transferable cosmetics across badges, medals, frames, characters and six mannequin-worn, source-linked historical shirt tributes, plus an official-media 2026 mascot feature and a text-only historical mascot index.
 - Daily/practice quiz engine with 10,000 deterministic variants over stable FIFA-linked facts, answer non-disclosure and replay-safe wallet receipts.
 - Real SSE fan chat with no seeded users, bounded history and strict link/wagering/secret moderation.
 - Automated coverage increased to 114 tests across 24 suites, plus public browser and devnet proof runners.
