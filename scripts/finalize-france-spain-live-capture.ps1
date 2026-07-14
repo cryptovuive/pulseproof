@@ -10,18 +10,19 @@ $runDir = Join-Path $ProjectRoot "submission-assets\live-match\$RunName"
 $stateFile = Join-Path $runDir 'capture-state.json'
 if (-not (Test-Path $stateFile)) { throw "Capture state is missing: $stateFile" }
 $state = Get-Content -Raw $stateFile | ConvertFrom-Json
-$segments = @(Get-ChildItem -LiteralPath (Join-Path $runDir 'video') -Filter '*.mp4' | Sort-Object Name)
+$segments = @(Get-ChildItem -LiteralPath $runDir -Recurse -Filter '*.mp4' | Sort-Object FullName)
 if (-not $segments.Count) { throw 'No live capture video segments were produced' }
 $video = @(foreach ($segment in $segments) {
   $duration = [double](& $ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $segment.FullName)
   if ($LASTEXITCODE -ne 0 -or $duration -le 0) { throw "Invalid video segment: $($segment.FullName)" }
   $hash = (Get-FileHash -Algorithm SHA256 $segment.FullName).Hash.ToLowerInvariant()
-  [pscustomobject]@{ file = $segment.Name; durationSeconds = [Math]::Round($duration, 3); bytes = $segment.Length; sha256 = $hash }
+  $relative = $segment.FullName.Substring($runDir.Length + 1)
+  [pscustomobject]@{ file = $relative; durationSeconds = [Math]::Round($duration, 3); bytes = $segment.Length; sha256 = $hash }
 })
-$eventsFile = Join-Path $runDir 'events.ndjson'
+$eventFiles = @(Get-ChildItem -LiteralPath $runDir -Recurse -Filter 'events.ndjson')
 $events = @()
-if (Test-Path $eventsFile) {
-  $events = @(Get-Content $eventsFile | ForEach-Object { try { $_ | ConvertFrom-Json } catch { $null } } | Where-Object { $_ -and $_.kind -eq 'event' })
+foreach ($eventsFile in $eventFiles) {
+  $events += @(Get-Content $eventsFile.FullName | ForEach-Object { try { $_ | ConvertFrom-Json } catch { $null } } | Where-Object { $_ -and $_.kind -eq 'event' })
 }
 $totalVideoSeconds = ($video | ForEach-Object { $_.durationSeconds } | Measure-Object -Sum).Sum
 $summary = @{
