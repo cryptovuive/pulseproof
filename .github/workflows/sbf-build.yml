@@ -1,0 +1,34 @@
+name: Reproducible SBF build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: solanafoundation/anchor:v0.32.1@sha256:facc4ebd0738ba7ebc1eb4ef000deab6b37e7747960d3f400c73c40c5421b5de
+    steps:
+      - uses: actions/checkout@v5
+      - name: Verify pinned toolchain
+        run: |
+          anchor --version
+          solana --version
+      - name: Build PulseProof SBF
+        run: anchor build
+      - name: Record artifact digest
+        run: sha256sum target/deploy/pulseproof.so | tee target/deploy/pulseproof.so.sha256
+      - name: Upload program artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulseproof-sbf-${{ github.sha }}
+          path: |
+            target/deploy/pulseproof.so
+            target/deploy/pulseproof.so.sha256
+            target/idl/pulseproof.json
+          if-no-files-found: error
+          retention-days: 1
