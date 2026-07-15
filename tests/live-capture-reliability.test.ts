@@ -88,4 +88,18 @@ describe("unattended live capture reliability", () => {
     expect(remote).toContain("capture-manifest.json");
     expect(remote).toContain("sha256");
   });
+
+  it("delivers the best verified capture atomically with a GitHub fallback", () => {
+    const publisher = read("scripts/publish-live-match-capture.ps1");
+    const delivery = read("scripts/register-live-match-delivery-task.ps1");
+    expect(publisher).toContain("C:\\Users\\ducth\\Downloads\\video");
+    expect(publisher).toContain("$destinationVideo.partial");
+    expect(publisher).toContain("Get-FileHash -Algorithm SHA256");
+    expect(publisher).toContain("gh run download");
+    expect(publisher).toContain("github-hosted-recorder");
+    expect(publisher).toContain("PulseProof-England-vs-Argentina-Live-2026-07-16");
+    expect(delivery).toContain("-WakeToRun -StartWhenAvailable");
+    expect(delivery).toContain("-RestartCount 6");
+    expect(delivery).toContain("-LogonType S4U");
+  });
 });

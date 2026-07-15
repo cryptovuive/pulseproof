@@ -23,7 +23,8 @@
     "attestor:create": "tsx scripts/create-attestor-secret.ts",
     "txline:verify": "tsx scripts/verify-txline-stream.ts",
     "capture:finalize": "powershell -ExecutionPolicy Bypass -File scripts/finalize-live-match-capture.ps1",
-    "capture:register": "powershell -ExecutionPolicy Bypass -File scripts/register-live-match-capture-task.ps1"
+    "capture:register": "powershell -ExecutionPolicy Bypass -File scripts/register-live-match-capture-task.ps1",
+    "capture:deliver": "powershell -ExecutionPolicy Bypass -File scripts/publish-live-match-capture.ps1"
   },
   "dependencies": {
     "@solana/web3.js": "1.98.4",
