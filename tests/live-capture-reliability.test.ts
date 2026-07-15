@@ -12,6 +12,7 @@ describe("unattended live capture reliability", () => {
     expect(recorder).toContain("segment_format_options");
     expect(recorder).toContain("expectedTeamsVisible");
     expect(recorder).toContain("Chrome DevTools command timed out");
+    expect(recorder).toContain('"--disable-setuid-sandbox"');
     expect(recorder).toContain("resultFile");
   });
 
@@ -79,6 +80,7 @@ describe("unattended live capture reliability", () => {
     expect(remote).toContain("2026-07-15T23:30:00.000Z");
     expect(remote).toContain("fixtureId = 18241006");
     expect(remote).toContain("attemptNumber <= 5");
+    expect(remote).toContain('noSandbox: process.platform === "linux"');
     expect(remote).toContain("capture-manifest.json");
     expect(remote).toContain("sha256");
   });
