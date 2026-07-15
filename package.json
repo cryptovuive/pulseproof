@@ -22,7 +22,7 @@
     "wallet:e2e:windows": "powershell -ExecutionPolicy Bypass -File scripts/run-wallet-e2e.ps1",
     "attestor:create": "tsx scripts/create-attestor-secret.ts",
     "txline:verify": "tsx scripts/verify-txline-stream.ts",
-    "capture:finalize": "powershell -ExecutionPolicy Bypass -File scripts/finalize-france-spain-live-capture.ps1",
+    "capture:finalize": "powershell -ExecutionPolicy Bypass -File scripts/finalize-live-match-capture.ps1",
     "capture:register": "powershell -ExecutionPolicy Bypass -File scripts/register-live-match-capture-task.ps1"
   },
   "dependencies": {
