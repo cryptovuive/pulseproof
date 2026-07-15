@@ -1,5 +1,6 @@
 export const HACKATHON_TERMS_URL = "https://txline.txodds.com/documentation/legal/hackathon-terms";
 export const HACKATHON_BRIEF_URL = "https://superteam.fun/earn/hackathon/world-cup";
+export const SUPERTEAM_TERMS_URL = "https://superteam.fun/earn/terms-of-use.pdf";
 
 // The public brief identifies 19 July 2026 as the final hackathon day. The
 // official Terms say the hackathon-only TxODDS data licence terminates when the

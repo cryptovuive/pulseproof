@@ -14,6 +14,7 @@ import {
 import {
   HACKATHON_BRIEF_URL,
   HACKATHON_TERMS_URL,
+  SUPERTEAM_TERMS_URL,
   txLineDataLicenseState,
 } from "@/lib/hackathon-compliance";
 import styles from "./page.module.css";
@@ -82,6 +83,7 @@ export default function CompliancePage() {
         <BookOpenCheck /><div><h2>Primary rules</h2><p>Where a promotional page and the legal Terms appear inconsistent about autonomous agents, PulseProof follows the stricter legal Terms and asks the organiser for written clarification.</p></div>
         <a href={HACKATHON_TERMS_URL} target="_blank" rel="noreferrer">Official Terms <ExternalLink /></a>
         <a href={HACKATHON_BRIEF_URL} target="_blank" rel="noreferrer">Official brief <ExternalLink /></a>
+        <a href={SUPERTEAM_TERMS_URL} target="_blank" rel="noreferrer">Superteam Terms <ExternalLink /></a>
       </section>
 
       <footer><span>No betting · No financial rewards · No affiliation with FIFA or any tournament organiser</span><Link href="/">Return to product</Link></footer>

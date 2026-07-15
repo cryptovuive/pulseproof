@@ -1,12 +1,13 @@
 # TxODDS Hackathon compliance matrix
 
-Checked against the [official Hackathon Terms](https://txline.txodds.com/documentation/legal/hackathon-terms) and [Superteam World Cup brief](https://superteam.fun/earn/hackathon/world-cup/) on 15 July 2026. This is an engineering compliance record, not legal advice. The Terms may change without notice, so the registered participant must re-check them immediately before submission.
+Checked against the [official Hackathon Terms](https://txline.txodds.com/documentation/legal/hackathon-terms), [Superteam World Cup brief](https://superteam.fun/earn/hackathon/world-cup/) and incorporated [Superteam Earn Terms of Use](https://superteam.fun/earn/terms-of-use.pdf) on 15 July 2026. This is an engineering compliance record, not legal advice. The Terms may change without notice, so the registered participant must re-check them immediately before submission.
 
 ## Submission gates
 
 | Rule area | Terms requirement | PulseProof control/evidence | Participant action still required |
 |---|---|---|---|
 | Eligibility | Natural person, at least 18, legally eligible, not an excluded TxODDS insider/family member | Cannot be proven by code | Confirm truthfully in the registered account and provide ID if requested |
+| Sanctions/jurisdiction | Superteam users must not be subject to listed economic sanctions or use the service where illegal | Cannot be proven by code | Check sanctions and local eligibility truthfully before registration/submission |
 | Team | One to three eligible people; designate a leader | Repository assumes one submitting participant | List every real contributor; do not list an AI tool as a teammate |
 | Registration | Accurate Superteam registration and deadlines | Public app/repository are ready | Register and submit personally before the deadline |
 | Originality | Original work created during the hackathon; pre-existing public components must be attributed | Git/PR history, reproducible tests, `THIRD_PARTY_NOTICES.md` | Preserve the complete development trail; do not backdate or fabricate evidence |
@@ -16,12 +17,17 @@ Checked against the [official Hackathon Terms](https://txline.txodds.com/documen
 | Track fit | Functional build/testnet using TxLINE as a primary input | Activated TxLINE server adapter, public transformed SSE, live fixture/scores, stat-validation digest, Solana proof | Demonstrate one real TxLINE path in the video/live review |
 | Gambling/law | Comply with applicable gambling and other laws | No odds action, wager, deposit, entry fee, prize pool, transferable reward or pay-to-win mechanic | Do not describe points as money, yield, investment or gambling winnings |
 | Privacy | Respect privacy and applicable data-protection law | No product account; local preferences; bounded in-memory chat; public alias/wallet hint explained; rate limits and secret filtering | Do not enter personal data or wallet secrets in chat; add a deletion/contact process before commercial launch |
+| Platform conduct | No impersonation, harmful/illegal content, disclosure of another user's identifiable information, security interference or bot-generated account collection | Signed aliases, link/secret/wager moderation, no fake users or account scraping | Keep Superteam profile accurate; never automate registration/submission or scrape participant accounts |
 | Third-party IP | Necessary rights/permissions and clear attribution; no FIFA rights are granted | Own PulseProof mark/cosmetics; country flags from MIT package; official mascot images removed; factual source links only; non-affiliation notice | Do not add FIFA logos, tournament marks, trophy art, player likenesses, team crests, kits or copied mascot images without written rights |
 | TxODDS IP | No ownership in TxODDS data/API/infrastructure | Product claims no ownership and keeps credentials server-only | Do not publish tokens, raw dumps or claim ownership of TxLINE |
 | Data licence | TxODDS data is hackathon-only, ends with the hackathon and may not be redistributed or used to build a competing feed | No raw dataset download; transformed product events only; access guard expires 19 July 2026 23:59:59 UTC; replay remains | Obtain written TxODDS permission before setting `TXLINE_WRITTEN_DATA_LICENSE_EXTENDED=true` |
 | Judge materials | Provide credentials, docs, test environment and demo resources at no judge expense | `/submission`, `/compliance`, README, test report, public devnet links | Verify all URLs after the final deploy |
 | Publicity/licence | Submission grants TxODDS broad perpetual hackathon-use rights; no confidentiality is promised | Repository and submission assets contain no intended secrets | Submit only material comfortable being public; rotate any leaked credential |
 | Prize/tax | At most one prize; wallet, fees, tax, identity and compliance are participant responsibilities | No product control can satisfy this | Supply a compatible prize wallet and obtain tax advice if selected |
+
+## Incorporated Superteam Terms
+
+The stricter hackathon age gate remains 18 even though the general platform terms discuss some minors with guardian consent. Superteam also places responsibility for device/network access, gas, third-party services, taxes and blockchain risk on the user; prohibits impersonation and unauthorised disclosure of another user's identifying information; may terminate accounts for conduct breaches; and uses Singapore law/jurisdiction for platform disputes. The TxODDS Hackathon Terms separately specify English law/courts for hackathon disputes. This engineering record does not resolve a conflict-of-law question; seek qualified legal advice if it matters.
 
 ## AI wording conflict
 
