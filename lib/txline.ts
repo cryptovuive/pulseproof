@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { assertTxLineDataLicenseActive, txLineDataLicenseState } from "@/lib/hackathon-compliance";
 import type { DataSource, Fixture, MatchPulse, MomentAttestation, MomentType, PulseMoment } from "@/types/pulse";
 
 const NETWORKS = {
@@ -28,6 +29,10 @@ export function hasTxLineCredentials(): boolean {
   return Boolean(process.env.TXLINE_API_TOKEN);
 }
 
+export function hasActiveTxLineAccess(now = new Date()): boolean {
+  return hasTxLineCredentials() && txLineDataLicenseState(now).active;
+}
+
 async function requestGuestJwt(): Promise<string> {
   const { apiOrigin } = getTxLineConfig();
   const response = await fetch(`${apiOrigin}/auth/guest/start`, {
@@ -51,6 +56,7 @@ async function getGuestJwt(forceRefresh = false): Promise<string> {
 }
 
 export async function txLineFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  assertTxLineDataLicenseActive();
   const { apiOrigin, apiToken } = getTxLineConfig();
   if (!apiToken) throw new Error("TXLINE_API_TOKEN is not configured");
   if (!path.startsWith("/") || path.includes("://")) throw new Error("Invalid TxLINE API path");

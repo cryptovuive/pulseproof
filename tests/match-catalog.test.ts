@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/txline", () => ({
   calculateMomentum: () => 50,
-  hasTxLineCredentials: () => true,
+  hasActiveTxLineAccess: () => true,
   getFixtures: async () => [{
     fixtureId: 7001,
     homeTeam: "Vietnam",

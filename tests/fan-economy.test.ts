@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { REWARD_CATALOG, REWARD_KIND_CODE, rewardIsAvailable } from "@/lib/reward-catalog";
 import { getDailyQuizQuestions, getDailyQuizRound, getPracticeQuizRound, getQuizVariant, gradeDailyQuiz, QUIZ_BANK, QUIZ_CATALOG_SIZE } from "@/lib/quiz-bank";
-import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
+import { MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 
 describe("fan progression economy", () => {
   it("shares one eager Phantom session across the live center and Fan Zone", () => {
@@ -49,12 +49,12 @@ describe("fan progression economy", () => {
     expect(program).not.toContain("(36..=47)");
   });
 
-  it("removes the retired shirt UI and keeps official mascots outside the claimable vault", () => {
+  it("removes the retired shirt UI and keeps mascot facts outside the claimable vault", () => {
     const component = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
     const styles = readFileSync(join(process.cwd(), "components", "fan-zone.module.css"), "utf8");
     expect(component).not.toMatch(/selectedShirt|shirtBack|shirt-vault|previewShirt/);
     expect(styles).not.toMatch(/shirtModal|shirtSprite|mannequin/);
-    expect(component).toContain("Official World Cup mascots remain a sourced archive above—not claimable");
+    expect(component).toContain("Mascot names remain a source-linked fact index above—not claimable");
   });
 
   it("time-gates seasonal rewards without changing their catalog price", () => {
@@ -127,11 +127,10 @@ describe("sourced World Cup quiz", () => {
     ]));
     expect(WORLD_CUP_MASCOTS.every((mascot) => !("marker" in mascot))).toBe(true);
     expect(JSON.stringify(WORLD_CUP_MASCOTS)).not.toMatch(/\p{Extended_Pictographic}/u);
-    for (const image of [MASCOT_2026_HERO.image, ...WORLD_CUP_MASCOTS.flatMap((mascot) => mascot.officialImage ?? [])]) {
-      const file = readFileSync(join(process.cwd(), "public", image));
-      expect(file.subarray(0, 2).toString("hex")).toBe("ffd8");
-      expect(file.length).toBeGreaterThan(50_000);
+    for (const image of ["clutch-official.jpg", "maple-official.jpg", "official-2026-group.jpg", "zayu-official.jpg"]) {
+      expect(existsSync(join(process.cwd(), "public", "mascots", image))).toBe(false);
     }
+    expect(JSON.stringify(WORLD_CUP_MASCOTS)).not.toContain("officialImage");
     expect([MASCOT_HISTORY_SOURCE, MASCOT_2026_SOURCE].every((url) => url.startsWith("https://www.fifa.com/"))).toBe(true);
   });
 

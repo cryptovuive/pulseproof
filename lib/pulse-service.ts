@@ -8,7 +8,7 @@ import {
   getDemoOverviews,
 } from "@/lib/demo-data";
 import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture } from "@/lib/schedule";
-import { calculateMomentum, getFixturePulse, getFixtures, hasTxLineCredentials } from "@/lib/txline";
+import { calculateMomentum, getFixturePulse, getFixtures, hasActiveTxLineAccess } from "@/lib/txline";
 import type { Fixture, MatchOverview, MatchPulse } from "@/types/pulse";
 
 export function demoReplayEnabled(): boolean {
@@ -46,7 +46,7 @@ export async function listAvailableFixtures(): Promise<{
   matches: MatchOverview[];
   source: "txline-live" | "demo-replay" | "hybrid";
 }> {
-  if (hasTxLineCredentials()) {
+  if (hasActiveTxLineAccess()) {
     try {
       const fixtures = (await getFixtures())
         .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
@@ -101,7 +101,7 @@ export async function listAvailableFixtures(): Promise<{
 }
 
 export async function loadPulse(fixtureId: number, options: { historical?: boolean; cursor?: number; forceDemo?: boolean } = {}) {
-  if (!options.forceDemo && hasTxLineCredentials()) {
+  if (!options.forceDemo && hasActiveTxLineAccess()) {
     try {
       const listed = (await getFixtures())
         .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))

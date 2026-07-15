@@ -41,7 +41,7 @@ type CheckState = {
 };
 
 const INITIAL_CHECKS: CheckState[] = [
-  { id: "health", label: "Production identity", detail: "Health, TxLINE network and active credentials", status: "idle" },
+  { id: "health", label: "Production identity", detail: "Health, TxLINE network, credentials and data licence", status: "idle" },
   { id: "catalog", label: "World Cup-only catalog", detail: "Unverified devnet competitions are excluded before rendering", status: "idle" },
   { id: "stream", label: "Public SSE transport", detail: "Connect to /api/scores/stream without polling", status: "idle" },
   { id: "replay", label: "Spoiler isolation", detail: "A two-event prefix cannot see any later match moment", status: "idle" },
@@ -129,7 +129,7 @@ export function JudgeLiveLab() {
     await execute("health", async () => {
       const body = await jsonResponse<unknown>("/api/health");
       assertHealthEvidence(body);
-      return { value: body, evidence: `${body.txline.network} · ${body.txline.programId.slice(0, 8)}… · credentials active` };
+      return { value: body, evidence: `${body.txline.network} · ${body.txline.programId.slice(0, 8)}… · credentials + ${body.txline.dataLicense.basis}` };
     });
 
     const catalog = await execute("catalog", async () => {

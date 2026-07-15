@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { txLineDataLicenseState } from "@/lib/hackathon-compliance";
 import { DEMO_MOMENTS_BY_FIXTURE } from "@/lib/demo-data";
 import { demoReplayEnabled } from "@/lib/pulse-service";
 import { extractScoreRecords, parseSseJson, readSseMessages } from "@/lib/sse";
@@ -52,6 +53,13 @@ export async function GET(request: NextRequest) {
 
   const forceReplay = request.nextUrl.searchParams.get("mode") === "replay";
   if (forceReplay && !demoReplayEnabled()) return new Response("Demo replay is disabled", { status: 403 });
+  const dataLicense = txLineDataLicenseState();
+  if (!forceReplay && !dataLicense.active) {
+    return new Response(
+      `Live TxLINE access ended with the hackathon data licence at ${dataLicense.expiresAt}. Use labelled replay mode or obtain written TxODDS permission.`,
+      { status: 451, headers: { "Cache-Control": "no-store", "X-PulseProof-Data-License": dataLicense.basis } },
+    );
+  }
 
   let closed = false;
   let replayTimer: ReturnType<typeof setInterval> | undefined;

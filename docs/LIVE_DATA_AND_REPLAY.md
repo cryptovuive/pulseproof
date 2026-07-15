@@ -10,7 +10,7 @@ PulseProof is now designed around one live match center rather than one hard-cod
 - `All`, `Live` and `Finished` filters let a fan find the useful match quickly.
 - Catch-up condenses the event log into signal moments and supports pause, scrub, `1x`, `2x`, `4x`, jump-to-latest and return-to-live.
 
-The included fallback contains three completed, externally cross-checked result timelines: Brazil 1–2 Norway, Portugal 0–1 Spain and France 2–0 Morocco. Their key moments cite published match reports, while their locally assigned sequence IDs remain `verified: false` and are never represented as TxLINE feed records.
+The included fallback contains four completed, externally cross-checked result timelines: Brazil 1–2 Norway, Portugal 0–1 Spain, France 2–0 Morocco and France 0–2 Spain. Their key moments cite published match reports, while their locally assigned sequence IDs remain `verified: false` and are never represented as TxLINE feed records.
 
 ## TxLINE endpoint mapping
 

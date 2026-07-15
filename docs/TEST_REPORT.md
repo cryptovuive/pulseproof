@@ -11,7 +11,7 @@ Command:
 npm test
 ```
 
-Result: **117/117 passed** across twenty-four suites.
+Result: **133/133 passed** across twenty-six suites.
 
 - TxLINE fixture and score-action schema normalisation.
 - Sparse TxLINE fixtures never receive fabricated kick-off/competition metadata.
@@ -172,7 +172,7 @@ npm audit --omit=dev
 - Deployed the original 285,632-byte PulseProof program to public devnet.
 - Initialized the config PDA with a fixed local/production attestor public key.
 - Created a Fan Pass and accepted an Ed25519 claim on devnet; receipt creation was confirmed and a duplicate claim was rejected.
-- `117/117` unit/integration/contract/submission tests, ESLint, TypeScript, production build, Cargo format and native Rust invariant tests pass. A digest-pinned Anchor 0.32.1 workflow built the deployed SBF so the catalog upgrade did not reuse a stale binary when the local WSL VM was unavailable.
+- `133/133` unit/integration/contract/submission tests, ESLint, TypeScript, production build, Cargo format and native Rust invariant tests pass. A digest-pinned Anchor 0.32.1 workflow built the deployed SBF so the catalog upgrade did not reuse a stale binary when the local WSL VM was unavailable.
 - GitHub Actions passed on the public `cryptovuive/pulseproof` repository.
 - Railway health returned `ok: true`, `credentialsConfigured: true`, TxLINE devnet program `6pW64...wyP2J` and demo replay enabled as an explicitly labelled fallback.
 - Public SSE returned `200 text/event-stream`, `ready`, an initial `pulse`, and a real heartbeat after 15 seconds without proxy buffering.
