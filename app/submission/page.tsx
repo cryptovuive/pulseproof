@@ -15,7 +15,6 @@ import {
   Link2,
   Radio,
   Route,
-  Scale,
   ShieldCheck,
   Sparkles,
   Trophy,
@@ -215,7 +214,6 @@ function SubmissionPortal() {
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Public repository</span><small>Architecture, threat model and test report</small></a>
       </section>
       <section className={styles.honesty}><ShieldCheck /><div><span>DEMO INTEGRITY</span><h2>Live is live. Replay is labelled replay.</h2><p>TxLINE coverage, public SSE and heartbeat evidence are live. Finished-match sequences in the consumer demo are externally cross-checked and explicitly not represented as TxLINE records.</p></div></section>
-      <section className={styles.complianceCallout}><Scale /><div><span>TERMS &amp; HUMAN AUTHORSHIP</span><h2>AI assistance disclosed. Human control must be demonstrated.</h2><p>Judges can evaluate PulseProof without a wallet, SOL, paid service or private credential. The public compliance record covers authorship, data-licence expiry, third-party IP, privacy and the live defence expected from the registered participant.</p></div><Link href="/compliance">Open compliance record <ExternalLink /></Link></section>
       <footer><Brand /><p>Built for the Consumer and Fan Experiences track.</p><a href={LIVE_APP}>Launch PulseProof <ExternalLink size={14} /></a></footer>
     </main>
   );
