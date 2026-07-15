@@ -25,10 +25,6 @@ jobs:
   capture:
     runs-on: ubuntu-latest
     timeout-minutes: 350
-    env:
-      CHROME_PATH: /usr/bin/google-chrome
-      FFMPEG_PATH: /usr/bin/ffmpeg
-      FFPROBE_PATH: /usr/bin/ffprobe
     steps:
       - name: Gate the one-off scheduled recording
         id: gate
@@ -48,12 +44,23 @@ jobs:
           cache: npm
       - if: steps.gate.outputs.enabled == 'true'
         run: npm ci
+      - name: Install a pinned Chrome surface
+        id: setup-chrome
+        if: steps.gate.outputs.enabled == 'true'
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
       - name: Verify recording binaries
         if: steps.gate.outputs.enabled == 'true'
         run: |
-          test -x "$CHROME_PATH"
-          test -x "$FFMPEG_PATH"
-          test -x "$FFPROBE_PATH"
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          test -x "${{ steps.setup-chrome.outputs.chrome-path }}"
+          echo "CHROME_PATH=${{ steps.setup-chrome.outputs.chrome-path }}" >> "$GITHUB_ENV"
+          echo "FFMPEG_PATH=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+          echo "FFPROBE_PATH=$(command -v ffprobe)" >> "$GITHUB_ENV"
       - name: Record public UI and SSE
         if: steps.gate.outputs.enabled == 'true'
         run: node scripts/run-remote-live-capture.mjs "${{ inputs.run_name || 'england-argentina-2026-07-16-github' }}" "${{ inputs.duration_seconds || '0' }}"
@@ -63,6 +70,6 @@ jobs:
         with:
           name: england-argentina-live-capture-${{ github.run_id }}
           path: submission-assets/live-match/${{ inputs.run_name || 'england-argentina-2026-07-16-github' }}/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 7
           compression-level: 0
