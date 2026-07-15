@@ -3,6 +3,8 @@ import type { QuizQuestionPublic, QuizRound } from "@/types/pulse";
 interface QuizQuestion extends QuizQuestionPublic {
   correctIndex: number;
   explanation: string;
+  sourceLabel: string;
+  sourceUrl: string;
 }
 
 const TITLES_SOURCE = "https://www.fifa.com/en/tournaments/mens/worldcup/articles/teams-most-wins-titles-trophies";
@@ -137,8 +139,6 @@ function publicQuestion(question: QuizQuestion): QuizQuestionPublic {
     difficulty: question.difficulty,
     prompt: question.prompt,
     options: question.options,
-    sourceLabel: question.sourceLabel,
-    sourceUrl: question.sourceUrl,
   };
 }
 

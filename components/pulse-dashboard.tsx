@@ -32,8 +32,8 @@ import {
 import bs58 from "bs58";
 import { Buffer } from "buffer";
 import nacl from "tweetnacl";
-import type { BrowserWallet } from "@/lib/solana-client";
 import { submitMomentClaim } from "@/lib/solana-client";
+import { useWalletSession } from "@/components/wallet-session-provider";
 import { getTeamBranding } from "@/lib/team-branding";
 import { TeamFlag } from "@/components/team-flag";
 import { MatchdayCommandCenter } from "@/components/matchday-command-center";
@@ -112,6 +112,7 @@ const competitionSourceLabel = (source: MatchPulse["fixture"]["competitionSource
 })[source];
 
 export function PulseDashboard() {
+  const { wallet, walletKey, connect, disconnect } = useWalletSession();
   const [pulses, setPulses] = useState<Record<number, MatchPulse>>({});
   const [matches, setMatches] = useState<MatchOverview[]>([]);
   const [selectedFixtureId, setSelectedFixtureId] = useState<number>(0);
@@ -135,8 +136,6 @@ export function PulseDashboard() {
   const [offlineMode, setOfflineMode] = useState(false);
   const [revealedScores, setRevealedScores] = useState<Set<number>>(() => new Set());
   const [nowMs, setNowMs] = useState(() => Date.now());
-  const [wallet, setWallet] = useState<BrowserWallet | null>(null);
-  const [walletKey, setWalletKey] = useState<string>("");
   const [claiming, setClaiming] = useState<string>("");
   const [claimed, setClaimed] = useState<Record<string, { proof: boolean; signature?: string }>>({});
   const [notice, setNotice] = useState<string>("");
@@ -599,24 +598,15 @@ export function PulseDashboard() {
 
   const connectWallet = async () => {
     if (wallet && walletKey) {
-      await wallet.disconnect();
-      setWallet(null);
-      setWalletKey("");
+      await disconnect();
       setNotice("Wallet disconnected. Your local match view remains available.");
       return;
     }
-    const provider = window.solana;
-    if (!provider?.isPhantom) {
-      setNotice("Phantom was not detected. Install it or open this demo in a wallet-enabled browser.");
-      return;
-    }
     try {
-      const result = await provider.connect();
-      setWallet(provider);
-      setWalletKey(result.publicKey.toBase58());
+      await connect();
       setNotice("Wallet connected. You can now seal a moment on Solana.");
-    } catch {
-      setNotice("Wallet connection was cancelled.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Wallet connection was cancelled.");
     }
   };
 

@@ -25,6 +25,7 @@ class FanProfileModel {
   streak = 0;
   inventory = new Set<number>();
   quizReceipts = new Set<string>();
+  epoch = 0;
 
   checkIn(day: number) {
     if (this.lastDay === day) throw new Error("already checked in");
@@ -34,9 +35,20 @@ class FanProfileModel {
   }
 
   claimQuiz(hash: string, points: number) {
-    if (this.quizReceipts.has(hash)) throw new Error("quiz receipt already exists");
-    this.quizReceipts.add(hash);
+    const receipt = `${this.epoch}:${hash}`;
+    if (this.quizReceipts.has(receipt)) throw new Error("quiz receipt already exists");
+    this.quizReceipts.add(receipt);
     this.earned += points;
+  }
+
+  resetForDevnetTesting(points: number) {
+    if (points < 0 || points > 1_000) throw new Error("invalid test grant");
+    this.epoch += 1;
+    this.earned = points;
+    this.spent = 0;
+    this.lastDay = -1;
+    this.streak = 0;
+    this.inventory.clear();
   }
 
   redeem(index: number, cost: number) {
@@ -87,5 +99,18 @@ describe("PulseProof contract state model", () => {
     expect(profile.inventory.has(13)).toBe(true);
     expect(profile.earned - profile.spent).toBe(0);
     expect(() => profile.redeem(13, 80)).toThrow("reward already owned");
+  });
+
+  it("resets devnet state into a fresh receipt epoch with a bounded test grant", () => {
+    const profile = new FanProfileModel();
+    profile.claimQuiz("daily-1", 70);
+    profile.redeem(13, 60);
+    profile.resetForDevnetTesting(1_000);
+    expect(profile.earned).toBe(1_000);
+    expect(profile.spent).toBe(0);
+    expect(profile.inventory.size).toBe(0);
+    expect(profile.lastDay).toBe(-1);
+    expect(() => profile.claimQuiz("daily-1", 70)).not.toThrow();
+    expect(() => profile.resetForDevnetTesting(1_001)).toThrow("invalid test grant");
   });
 });

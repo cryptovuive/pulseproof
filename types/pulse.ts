@@ -177,8 +177,6 @@ export interface QuizQuestionPublic {
   difficulty: "rookie" | "pro" | "legend";
   prompt: string;
   options: string[];
-  sourceLabel: string;
-  sourceUrl: string;
 }
 
 export interface QuizRound {

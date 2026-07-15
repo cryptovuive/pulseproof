@@ -23,7 +23,6 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import type { BrowserWallet } from "@/lib/solana-client";
 import {
   fetchFanProfile,
   fetchFanAlias,
@@ -44,6 +43,7 @@ import type {
 } from "@/types/pulse";
 import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 import styles from "./fan-zone.module.css";
+import { useWalletSession } from "@/components/wallet-session-provider";
 
 type RewardFilter = "all" | "badge" | "medal" | "frame" | "character" | "limited";
 type QuizSubmission = {
@@ -70,8 +70,7 @@ function RewardSprite({ reward, className = "" }: { reward?: RewardItem; classNa
 }
 
 export function FanZone() {
-  const [wallet, setWallet] = useState<BrowserWallet | null>(null);
-  const [walletKey, setWalletKey] = useState("");
+  const { wallet, walletKey, connect, disconnect } = useWalletSession();
   const [profile, setProfile] = useState<FanProfile | null>(null);
   const [alias, setAlias] = useState<FanAlias | null>(null);
   const [aliasDraft, setAliasDraft] = useState("");
@@ -94,6 +93,14 @@ export function FanZone() {
   }, [walletKey]);
 
   useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (active) void refreshProfile();
+    });
+    return () => { active = false; };
+  }, [refreshProfile]);
+
+  useEffect(() => {
     fetch("/api/quiz", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("Daily quiz is unavailable");
@@ -105,15 +112,11 @@ export function FanZone() {
   const connectWallet = async () => {
     try {
       if (wallet && walletKey) {
-        await wallet.disconnect();
-        setWallet(null); setWalletKey(""); setProfile(null); setAlias(null); setAliasDraft("");
+        await disconnect();
+        setProfile(null); setAlias(null); setAliasDraft("");
         return;
       }
-      const provider = window.solana;
-      if (!provider?.isPhantom) throw new Error("Phantom was not detected in this browser");
-      const connected = await provider.connect();
-      const key = connected.publicKey.toBase58();
-      setWallet(provider); setWalletKey(key);
+      const key = await connect();
       await refreshProfile(key);
       setNotice("Devnet wallet connected. Phantom will preview every fee before approval.");
     } catch (error) {
@@ -315,7 +318,6 @@ export function FanZone() {
                 className={answers[question.id] === optionIndex ? styles.selected : ""}
                 onClick={() => setAnswers((current) => ({ ...current, [question.id]: optionIndex }))}
               ><i>{String.fromCharCode(65 + optionIndex)}</i>{option}{result?.correctIndex === optionIndex && <Check size={14} />}</button>)}</div>
-              <a href={question.sourceUrl} target="_blank" rel="noreferrer"><ExternalLink size={11} />{question.sourceLabel}</a>
               {result && <p className={styles.explanation}>{result.explanation}</p>}
             </fieldset>;
           })}</div>

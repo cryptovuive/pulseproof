@@ -9,6 +9,7 @@ const CONFIG_SEED: &[u8] = b"config";
 const FAN_PASS_SEED: &[u8] = b"fan_pass";
 const FAN_PROFILE_SEED: &[u8] = b"fan_profile";
 const FAN_ALIAS_SEED: &[u8] = b"fan_alias";
+const FAN_EPOCH_SEED: &[u8] = b"fan_epoch";
 const RECEIPT_SEED: &[u8] = b"receipt";
 const QUIZ_RECEIPT_SEED: &[u8] = b"quiz_receipt";
 const REWARD_RECEIPT_SEED: &[u8] = b"reward_receipt";
@@ -18,6 +19,7 @@ const REWARD_ATTESTATION_PREFIX: &str = "PULSEPROOF_REWARD_V1";
 const ED25519_PROGRAM_ID: Pubkey = pubkey!("Ed25519SigVerify111111111111111111111111111");
 const UNEQUIPPED: u16 = u16::MAX;
 const REWARD_CATALOG_ITEM_COUNT: u16 = 36;
+const DEVNET_TEST_POINT_CAP: u64 = 1_000;
 
 #[program]
 pub mod pulseproof {
@@ -41,18 +43,7 @@ pub mod pulseproof {
     pub fn create_fan_profile(ctx: Context<CreateFanProfile>) -> Result<()> {
         let profile = &mut ctx.accounts.fan_profile;
         profile.owner = ctx.accounts.owner.key();
-        profile.points_earned = 0;
-        profile.points_spent = 0;
-        profile.checkins = 0;
-        profile.quiz_claims = 0;
-        profile.current_streak = 0;
-        profile.best_streak = 0;
-        profile.last_checkin_day = -1;
-        profile.inventory = [0; 4];
-        profile.equipped_badge = UNEQUIPPED;
-        profile.equipped_frame = UNEQUIPPED;
-        profile.equipped_character = UNEQUIPPED;
-        profile.claims = 0;
+        reset_profile_state(profile, 0);
         profile.bump = ctx.bumps.fan_profile;
         emit!(FanProfileCreated {
             owner: profile.owner
@@ -150,6 +141,11 @@ pub mod pulseproof {
         badge: u8,
         expires_at: i64,
     ) -> Result<()> {
+        initialize_fan_epoch(
+            &mut ctx.accounts.fan_epoch,
+            ctx.accounts.owner.key(),
+            ctx.bumps.fan_epoch,
+        )?;
         require!(badge < 64, PulseProofError::InvalidBadge);
         require!(points > 0 && points <= 100, PulseProofError::InvalidPoints);
         let clock = Clock::get()?;
@@ -227,6 +223,11 @@ pub mod pulseproof {
         points: u32,
         expires_at: i64,
     ) -> Result<()> {
+        initialize_fan_epoch(
+            &mut ctx.accounts.fan_epoch,
+            ctx.accounts.owner.key(),
+            ctx.bumps.fan_epoch,
+        )?;
         require!(score > 0 && score <= 5, PulseProofError::InvalidQuizScore);
         require!(points > 0 && points <= 100, PulseProofError::InvalidPoints);
         let clock = Clock::get()?;
@@ -286,6 +287,11 @@ pub mod pulseproof {
         cost: u64,
         expires_at: i64,
     ) -> Result<()> {
+        initialize_fan_epoch(
+            &mut ctx.accounts.fan_epoch,
+            ctx.accounts.owner.key(),
+            ctx.bumps.fan_epoch,
+        )?;
         require!(kind < 4, PulseProofError::InvalidRewardKind);
         require!(
             item_index < REWARD_CATALOG_ITEM_COUNT,
@@ -385,6 +391,50 @@ pub mod pulseproof {
             kind,
             item_index
         });
+        Ok(())
+    }
+
+    pub fn reset_devnet_test_profile(
+        ctx: Context<ResetDevnetTestProfile>,
+        _owner: Pubkey,
+        test_points: u64,
+    ) -> Result<()> {
+        require!(
+            test_points <= DEVNET_TEST_POINT_CAP,
+            PulseProofError::InvalidTestPointGrant
+        );
+        let profile = &mut ctx.accounts.fan_profile;
+        reset_profile_state(profile, test_points);
+
+        let fan_epoch = &mut ctx.accounts.fan_epoch;
+        if fan_epoch.owner == Pubkey::default() {
+            fan_epoch.owner = profile.owner;
+            fan_epoch.epoch = 1;
+        } else {
+            require_keys_eq!(
+                fan_epoch.owner,
+                profile.owner,
+                PulseProofError::Unauthorized
+            );
+            fan_epoch.epoch = fan_epoch
+                .epoch
+                .checked_add(1)
+                .ok_or(PulseProofError::ClaimsOverflow)?;
+        }
+        fan_epoch.bump = ctx.bumps.fan_epoch;
+
+        emit!(DevnetTestProfileReset {
+            owner: profile.owner,
+            epoch: fan_epoch.epoch,
+            test_points,
+        });
+        Ok(())
+    }
+
+    pub fn close_devnet_test_alias(
+        _ctx: Context<CloseDevnetTestAlias>,
+        _owner: Pubkey,
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -496,10 +546,19 @@ pub struct ClaimMoment<'info> {
     )]
     pub fan_profile: Account<'info, FanProfile>,
     #[account(
+        init_if_needed,
+        payer = owner,
+        space = 8 + FanEpoch::INIT_SPACE,
+        seeds = [FAN_EPOCH_SEED, owner.key().as_ref()],
+        bump,
+        constraint = fan_epoch.owner == Pubkey::default() || fan_epoch.owner == owner.key() @ PulseProofError::Unauthorized,
+    )]
+    pub fan_epoch: Account<'info, FanEpoch>,
+    #[account(
         init,
         payer = owner,
         space = 8 + MomentReceipt::INIT_SPACE,
-        seeds = [RECEIPT_SEED, owner.key().as_ref(), &moment_hash],
+        seeds = [RECEIPT_SEED, owner.key().as_ref(), &fan_epoch.epoch.to_le_bytes(), &moment_hash],
         bump,
     )]
     pub receipt: Account<'info, MomentReceipt>,
@@ -524,10 +583,19 @@ pub struct ClaimQuiz<'info> {
     )]
     pub fan_profile: Account<'info, FanProfile>,
     #[account(
+        init_if_needed,
+        payer = owner,
+        space = 8 + FanEpoch::INIT_SPACE,
+        seeds = [FAN_EPOCH_SEED, owner.key().as_ref()],
+        bump,
+        constraint = fan_epoch.owner == Pubkey::default() || fan_epoch.owner == owner.key() @ PulseProofError::Unauthorized,
+    )]
+    pub fan_epoch: Account<'info, FanEpoch>,
+    #[account(
         init,
         payer = owner,
         space = 8 + QuizReceipt::INIT_SPACE,
-        seeds = [QUIZ_RECEIPT_SEED, owner.key().as_ref(), &quiz_hash],
+        seeds = [QUIZ_RECEIPT_SEED, owner.key().as_ref(), &fan_epoch.epoch.to_le_bytes(), &quiz_hash],
         bump,
     )]
     pub quiz_receipt: Account<'info, QuizReceipt>,
@@ -552,10 +620,19 @@ pub struct RedeemReward<'info> {
     )]
     pub fan_profile: Account<'info, FanProfile>,
     #[account(
+        init_if_needed,
+        payer = owner,
+        space = 8 + FanEpoch::INIT_SPACE,
+        seeds = [FAN_EPOCH_SEED, owner.key().as_ref()],
+        bump,
+        constraint = fan_epoch.owner == Pubkey::default() || fan_epoch.owner == owner.key() @ PulseProofError::Unauthorized,
+    )]
+    pub fan_epoch: Account<'info, FanEpoch>,
+    #[account(
         init,
         payer = owner,
         space = 8 + RewardReceipt::INIT_SPACE,
-        seeds = [REWARD_RECEIPT_SEED, owner.key().as_ref(), &reward_hash],
+        seeds = [REWARD_RECEIPT_SEED, owner.key().as_ref(), &fan_epoch.epoch.to_le_bytes(), &reward_hash],
         bump,
     )]
     pub reward_receipt: Account<'info, RewardReceipt>,
@@ -577,6 +654,57 @@ pub struct EquipReward<'info> {
     )]
     pub fan_profile: Account<'info, FanProfile>,
     pub owner: Signer<'info>,
+}
+
+#[derive(Accounts)]
+#[instruction(owner: Pubkey)]
+pub struct ResetDevnetTestProfile<'info> {
+    #[account(
+        seeds = [CONFIG_SEED],
+        bump = config.bump,
+        has_one = authority @ PulseProofError::Unauthorized,
+    )]
+    pub config: Account<'info, PulseConfig>,
+    #[account(
+        mut,
+        seeds = [FAN_PROFILE_SEED, owner.as_ref()],
+        bump = fan_profile.bump,
+        constraint = fan_profile.owner == owner @ PulseProofError::Unauthorized,
+    )]
+    pub fan_profile: Account<'info, FanProfile>,
+    #[account(
+        init_if_needed,
+        payer = authority,
+        space = 8 + FanEpoch::INIT_SPACE,
+        seeds = [FAN_EPOCH_SEED, owner.as_ref()],
+        bump,
+        constraint = fan_epoch.owner == Pubkey::default() || fan_epoch.owner == owner @ PulseProofError::Unauthorized,
+    )]
+    pub fan_epoch: Account<'info, FanEpoch>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(owner: Pubkey)]
+pub struct CloseDevnetTestAlias<'info> {
+    #[account(
+        seeds = [CONFIG_SEED],
+        bump = config.bump,
+        has_one = authority @ PulseProofError::Unauthorized,
+    )]
+    pub config: Account<'info, PulseConfig>,
+    #[account(
+        mut,
+        close = authority,
+        seeds = [FAN_ALIAS_SEED, owner.as_ref()],
+        bump = fan_alias.bump,
+        constraint = fan_alias.owner == owner @ PulseProofError::Unauthorized,
+    )]
+    pub fan_alias: Account<'info, FanAlias>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
 }
 
 #[account]
@@ -625,6 +753,14 @@ pub struct FanAlias {
     #[max_len(48)]
     pub display_name: String,
     pub updated_at: i64,
+    pub bump: u8,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct FanEpoch {
+    pub owner: Pubkey,
+    pub epoch: u64,
     pub bump: u8,
 }
 
@@ -726,6 +862,39 @@ pub struct RewardEquipped {
     pub owner: Pubkey,
     pub kind: u8,
     pub item_index: u16,
+}
+
+#[event]
+pub struct DevnetTestProfileReset {
+    pub owner: Pubkey,
+    pub epoch: u64,
+    pub test_points: u64,
+}
+
+fn reset_profile_state(profile: &mut FanProfile, points: u64) {
+    profile.points_earned = points;
+    profile.points_spent = 0;
+    profile.checkins = 0;
+    profile.quiz_claims = 0;
+    profile.current_streak = 0;
+    profile.best_streak = 0;
+    profile.last_checkin_day = -1;
+    profile.inventory = [0; 4];
+    profile.equipped_badge = UNEQUIPPED;
+    profile.equipped_frame = UNEQUIPPED;
+    profile.equipped_character = UNEQUIPPED;
+    profile.claims = 0;
+}
+
+fn initialize_fan_epoch(fan_epoch: &mut Account<FanEpoch>, owner: Pubkey, bump: u8) -> Result<()> {
+    if fan_epoch.owner == Pubkey::default() {
+        fan_epoch.owner = owner;
+        fan_epoch.epoch = 0;
+        fan_epoch.bump = bump;
+    } else {
+        require_keys_eq!(fan_epoch.owner, owner, PulseProofError::Unauthorized);
+    }
+    Ok(())
 }
 
 fn validate_expiry(now: i64, expires_at: i64) -> Result<()> {
@@ -886,6 +1055,8 @@ pub enum PulseProofError {
     RewardKindMismatch,
     #[msg("Display name must be 2-24 safe characters and at most 48 UTF-8 bytes")]
     InvalidDisplayName,
+    #[msg("Devnet test point grants must be between 0 and 1000")]
+    InvalidTestPointGrant,
 }
 
 #[cfg(test)]
@@ -907,5 +1078,43 @@ mod tests {
         for item_index in REWARD_CATALOG_ITEM_COUNT..=u16::MAX {
             assert!(!(0..4).any(|kind| catalog_kind_matches(kind, item_index)));
         }
+    }
+
+    #[test]
+    fn devnet_reset_clears_progression_and_applies_bounded_test_points() {
+        let owner = Pubkey::new_unique();
+        let mut profile = FanProfile {
+            owner,
+            points_earned: 999,
+            points_spent: 700,
+            checkins: 9,
+            quiz_claims: 4,
+            current_streak: 6,
+            best_streak: 7,
+            last_checkin_day: 123,
+            inventory: [u64::MAX; 4],
+            equipped_badge: 7,
+            equipped_frame: 24,
+            equipped_character: 30,
+            claims: 13,
+            bump: 250,
+        };
+
+        reset_profile_state(&mut profile, DEVNET_TEST_POINT_CAP);
+
+        assert_eq!(profile.owner, owner);
+        assert_eq!(profile.bump, 250);
+        assert_eq!(profile.points_earned, 1_000);
+        assert_eq!(profile.points_spent, 0);
+        assert_eq!(profile.checkins, 0);
+        assert_eq!(profile.quiz_claims, 0);
+        assert_eq!(profile.current_streak, 0);
+        assert_eq!(profile.best_streak, 0);
+        assert_eq!(profile.last_checkin_day, -1);
+        assert_eq!(profile.inventory, [0; 4]);
+        assert_eq!(profile.equipped_badge, UNEQUIPPED);
+        assert_eq!(profile.equipped_frame, UNEQUIPPED);
+        assert_eq!(profile.equipped_character, UNEQUIPPED);
+        assert_eq!(profile.claims, 0);
     }
 }

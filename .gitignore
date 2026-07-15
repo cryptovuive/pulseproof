@@ -16,6 +16,7 @@ submission-assets/video/segments/
 submission-assets/video/live-audio/
 submission-assets/video/live-captures/
 submission-assets/video/live-segments/
+submission-assets/live-match/
 submission-assets/video/*-mid*.png
 submission-assets/video/focus-test*
 submission-assets/video/hwnd-test*
