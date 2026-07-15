@@ -8,7 +8,10 @@ describe("unattended live capture reliability", () => {
     const recorder = read("scripts/headless-live-page-recorder.mjs");
     expect(recorder).toContain('"--headless=new"');
     expect(recorder).toContain('"Page.startScreencast"');
-    expect(recorder).toContain('"segment", "-segment_time", "900"');
+    expect(recorder).toContain('"segment", "-segment_time", "300"');
+    expect(recorder).toContain("segment_format_options");
+    expect(recorder).toContain("expectedTeamsVisible");
+    expect(recorder).toContain("Chrome DevTools command timed out");
     expect(recorder).toContain("resultFile");
   });
 
@@ -18,6 +21,10 @@ describe("unattended live capture reliability", () => {
     expect(worker).toContain("scores/stream?fixtureIds=$FixtureId");
     expect(worker).toContain("SetThreadExecutionState");
     expect(worker).toContain("attempts\\$attemptId");
+    expect(worker).toContain("dataLicense.active");
+    expect(worker).toContain("Recorder liveness file is stale");
+    expect(worker).toContain("video output stopped growing");
+    expect(worker).toContain("Start-EventLogger");
   });
 
   it("uses an OS-local absolute trigger with wake, retry, and watchdog semantics", () => {
@@ -30,6 +37,26 @@ describe("unattended live capture reliability", () => {
     expect(scheduler).toContain("ensure-live-match-capture.ps1");
     expect(scheduler).toContain("$RunName-preflight");
     expect(scheduler).toContain("-DurationSeconds 10");
+    expect(scheduler).toContain("finalize-live-match-capture.ps1");
+    expect(scheduler).toContain("[int]$CaptureWindowMinutes = 270");
+    expect(scheduler).toContain("[int]$WatchdogIntervalMinutes = 1");
+  });
+
+  it("restarts a process that is alive but no longer publishing liveness", () => {
+    const watchdog = read("scripts/ensure-live-match-capture.ps1");
+    expect(watchdog).toContain("$stateAge -le 75");
+    expect(watchdog).toContain("Stop-Process -Id $processId");
+    expect(watchdog).toContain("Start-Sleep -Seconds 2");
+  });
+
+  it("assembles and hashes a complete recording only after duration validation", () => {
+    const finalizer = read("scripts/finalize-live-match-capture.ps1");
+    expect(finalizer).toContain("MinimumVideoSeconds = 7200");
+    expect(finalizer).toContain("concat-segments.txt");
+    expect(finalizer).toContain("Set-Content -Encoding ascii");
+    expect(finalizer).toContain("Get-FileHash -Algorithm SHA256");
+    expect(finalizer).toContain("coverageGapSeconds");
+    expect(finalizer).toContain("uninterrupted");
   });
 
   it("never overwrites an earlier failed attempt", () => {

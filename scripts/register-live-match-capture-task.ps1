@@ -7,8 +7,8 @@ param(
   [string]$KickoffUtc,
   [string]$RunName,
   [int]$LeadMinutes = 15,
-  [int]$CaptureWindowMinutes = 240,
-  [int]$WatchdogIntervalMinutes = 3,
+  [int]$CaptureWindowMinutes = 270,
+  [int]$WatchdogIntervalMinutes = 1,
   [int]$PreflightMinutes = 75,
   [string]$TaskPrefix = 'PulseProof-Live'
 )
@@ -22,7 +22,7 @@ if ($startLocal -le (Get-Date).AddSeconds(20)) { throw "Scheduled start must be 
 
 $ensure = Join-Path $ProjectRoot 'scripts\ensure-live-match-capture.ps1'
 $worker = Join-Path $ProjectRoot 'scripts\capture-live-match-worker.ps1'
-$finalize = Join-Path $ProjectRoot 'scripts\finalize-france-spain-live-capture.ps1'
+$finalize = Join-Path $ProjectRoot 'scripts\finalize-live-match-capture.ps1'
 $captureTask = "$TaskPrefix-$RunName-Capture"
 $auditTask = "$TaskPrefix-$RunName-Audit"
 $preflightTask = "$TaskPrefix-$RunName-Preflight"
