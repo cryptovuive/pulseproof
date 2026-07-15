@@ -1052,7 +1052,7 @@ export function PulseDashboard() {
       )}
 
       {notice && <button className="toast" aria-live="polite" onClick={() => setNotice("")}><span>{notice}</span><span aria-hidden="true">×</span></button>}
-      <footer><span>PulseProof · Built for TxODDS World Cup Hackathon</span><span>No betting · No financial rewards · Data shown under hackathon access terms</span></footer>
+      <footer><span>PulseProof · Built for TxODDS World Cup Hackathon</span><a href="/compliance">Rules · authorship · privacy</a><span>No betting · No financial rewards · Data shown under hackathon access terms</span></footer>
     </main>
   );
 }

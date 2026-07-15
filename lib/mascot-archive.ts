@@ -9,17 +9,10 @@ export interface MascotArchiveEntry {
   detail: string;
   category: MascotCategory;
   role?: string;
-  officialImage?: string;
 }
 
 export const MASCOT_HISTORY_SOURCE = "https://www.fifa.com/en/tournaments/mens/worldcup/articles/mascots-history";
 export const MASCOT_2026_SOURCE = "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/mascots";
-
-export const MASCOT_2026_HERO = {
-  image: "/mascots/official-2026-group.jpg",
-  alt: "Official FIFA World Cup 2026 mascots Clutch, Zayu and Maple",
-  sourceUrl: MASCOT_2026_SOURCE,
-};
 
 export const WORLD_CUP_MASCOTS: MascotArchiveEntry[] = [
   { id: "willie-1966", edition: 1966, host: "England", name: "World Cup Willie", form: "Lion", category: "animal", detail: "The first FIFA World Cup mascot: a lion wearing a Union Jack shirt." },
@@ -37,7 +30,7 @@ export const WORLD_CUP_MASCOTS: MascotArchiveEntry[] = [
   { id: "fuleco-2014", edition: 2014, host: "Brazil", name: "Fuleco", form: "Three-banded armadillo", category: "animal", detail: "A Brazilian three-banded armadillo; the name combines the Portuguese words for football and ecology." },
   { id: "zabivaka-2018", edition: 2018, host: "Russia", name: "Zabivaka", form: "Wolf", category: "animal", detail: "A goggle-wearing wolf whose Russian name means the one who scores." },
   { id: "laeeb-2022", edition: 2022, host: "Qatar", name: "La'eeb", form: "Character from the mascot-verse", category: "fantasy", detail: "La'eeb means super-skilled player in Arabic and comes from an indescribable parallel mascot-verse." },
-  { id: "maple-2026", edition: 2026, host: "Canada", name: "Maple", form: "Moose", category: "animal", role: "Goalkeeper", officialImage: "/mascots/maple-official.jpg", detail: "A creative, resilient goalkeeper who loves street art, music and connecting with people." },
-  { id: "zayu-2026", edition: 2026, host: "Mexico", name: "Zayu", form: "Jaguar", category: "animal", role: "Striker", officialImage: "/mascots/zayu-official.jpg", detail: "A striker from the jungles of southern Mexico who embodies unity, strength and joy." },
-  { id: "clutch-2026", edition: 2026, host: "United States", name: "Clutch", form: "Bald eagle", category: "animal", role: "Midfielder", officialImage: "/mascots/clutch-official.jpg", detail: "An adventurous midfielder who leads by action and brings people together on and off the pitch." },
+  { id: "maple-2026", edition: 2026, host: "Canada", name: "Maple", form: "Moose", category: "animal", role: "Goalkeeper", detail: "A creative, resilient goalkeeper who loves street art, music and connecting with people." },
+  { id: "zayu-2026", edition: 2026, host: "Mexico", name: "Zayu", form: "Jaguar", category: "animal", role: "Striker", detail: "A striker from the jungles of southern Mexico who embodies unity, strength and joy." },
+  { id: "clutch-2026", edition: 2026, host: "United States", name: "Clutch", form: "Bald eagle", category: "animal", role: "Midfielder", detail: "An adventurous midfielder who leads by action and brings people together on and off the pitch." },
 ];

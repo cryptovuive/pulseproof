@@ -9,6 +9,7 @@ PulseProof is a live football second screen that turns TxLINE score events into 
 - Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
 - CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
 - Judge room: [https://pulseproof-production-06fa.up.railway.app/submission](https://pulseproof-production-06fa.up.railway.app/submission)
+- Rules and authorship record: [https://pulseproof-production-06fa.up.railway.app/compliance](https://pulseproof-production-06fa.up.railway.app/compliance)
 - Fan Zone: [https://pulseproof-production-06fa.up.railway.app/fan-zone](https://pulseproof-production-06fa.up.railway.app/fan-zone)
 - 2:24 live product demo: [https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4)
 
@@ -44,19 +45,19 @@ The project deliberately avoids wagering: there are no deposits, entry fees, tra
 - Verified Catch-up Capsules: share an exact spoiler-safe event prefix as an Ed25519-signed link; redemption re-checks the source and returns zero future-event payloads.
 - Upcoming Match Hub prefers complete TxLINE fixture metadata and otherwise uses a source-linked, integrity-checked schedule, with local timezone, countdown, saved reminders and `.ics` calendar export.
 - Judge Verification Lab that proves an evidence-bound Ed25519 attestation without requiring Phantom, SOL or a transaction.
-- Three completed World Cup 2026 replays with source-linked scores, scorer/assist details, cards and stoppage-time labels; local sequence IDs remain explicitly non-TxLINE.
+- Four completed World Cup 2026 replays with source-linked scores, scorer/assist details, cards, substitutions, VAR and stoppage-time labels; local sequence IDs remain explicitly non-TxLINE.
 - Consumer timeline removes technical coverage records, exposes honest empty states and produces a deterministic Match Brief only from on-pitch source events.
 - Phantom wallet connection and raw Solana transaction builder.
 - Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
 - On-chain Fan Profile PDA with deterministic daily check-in, UTC streak bonus, global earned/spent points, 256-slot non-transferable inventory and equipped badge/frame/character state.
 - Daily five-question reward quiz plus ten-question unlimited practice sets drawn from a deterministic 10,000-variant catalog. Every variant preserves a server-side answer, two/four choices and its supporting FIFA source; practice cannot mint points.
 - Cosmetic vault with 36 non-transferable rewards: badges, medals, avatar frames and original PulseProof profile characters.
-- FIFA-sourced mascot archive: official, attributed media for Maple, Zayu and Clutch plus a neutral text-only history index from 1966–2022, so the app never presents invented emoji or imitation artwork as an official mascot.
+- Source-linked mascot fact index using neutral text seals only. Official mascot artwork, generated lookalikes, FIFA logos and claimable mascot rewards are excluded.
 - Fixture-scoped fan chat over SSE with real presence, no seeded/fake users and a bounded 50-message room window. Posting requires a fresh Phantom signature and reads the public display name from a wallet-owned Fan Alias PDA; spam, links, wagering terms, wallet secrets and signature replay are rejected.
 - Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
 - Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
 - Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- One hundred seventeen automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
+- One hundred thirty-three automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
 
 ## Quick start
 
@@ -128,16 +129,19 @@ The configured API token remains authoritative for every TxLINE fixture ID and e
 - `docs/JUDGE_SCORECARD.md` — honest score, remaining blockers and >90-point submission path.
 - `docs/DATA_INTEGRITY.md` — source priority, freshness, eliminated-team guards and no-fabrication rules.
 - `docs/PRODUCT_GROWTH_RESEARCH.md` — global product patterns, implemented retention loop, accuracy gates and ecosystem roadmap.
+- `docs/HACKATHON_COMPLIANCE.md` — clause-by-clause submission, data, IP, privacy and judge-access matrix.
+- `docs/HUMAN_AUTHORSHIP_EVIDENCE.md` — honest AI disclosure and the participant's required live-defence protocol.
+- `THIRD_PARTY_NOTICES.md` — direct runtime packages, licences and media boundaries.
 
 ## Important submission caveat
 
-The listing says AI agents may participate, but the official TxODDS terms say entries must be created and submitted by natural persons and may disqualify work materially controlled by an autonomous agent. The human participant must therefore review, understand, test, materially customise and own this project, keep a development log, and personally submit it. Do not submit the scaffold unchanged or represent work you cannot explain.
+TxODDS promotional material says autonomous AI agents may participate, but the official TxODDS Terms say entries must be created, developed and submitted by natural persons and may disqualify work materially controlled by an autonomous agent. PulseProof discloses AI-assisted research, drafting, implementation and test support. The human participant must review, understand, test, materially direct and personally submit the final project. Do not claim that no AI was used or represent work you cannot explain. Obtain written clarification from the organiser before submission.
 
 ## Data and brand compliance
 
 - Raw TxLINE data is not persisted or republished as a dataset. Live responses are transformed into product UI and the proof endpoint stores/returns only a digest.
 - Cross-checked fallback results cite their source; locally assigned replay sequence IDs remain `verified=false` and are never represented as TxLINE data.
-- No FIFA/tournament logo, official trophy, kit art, trademarked crest or sponsorship claim is used.
-- Confirm post-hackathon data rights with TxODDS before keeping the live integration online; the hackathon data licence is time-limited.
+- No FIFA/tournament logo, official trophy, mascot artwork, kit art, player likeness, trademarked crest or sponsorship claim is used.
+- Live TxLINE calls fail closed after 19 July 2026 23:59:59 UTC unless `TXLINE_WRITTEN_DATA_LICENSE_EXTENDED=true` is backed by written TxODDS permission. Labelled published-report replay remains available.
 
 This project is not affiliated with or endorsed by FIFA or any tournament organiser.

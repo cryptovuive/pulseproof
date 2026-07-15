@@ -42,7 +42,7 @@ There are no wagers, deposits, entry fees, transferable rewards or prize pools.
 - Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
 - Thirty-six original cosmetics span badges, medals, frames and profile characters; the sourced quiz engine exposes two/four choices and never sends answer keys before grading.
 - Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
-- Lint, TypeScript, production build, 117 unit/integration/contract/submission tests, native Rust invariants, a reproducible SBF build and real public-devnet adversarial tests pass.
+- Lint, TypeScript, production build, 133 unit/integration/contract/submission tests, native Rust invariants, a reproducible SBF build and real public-devnet adversarial tests pass.
 
 ## Commercial path
 
@@ -53,6 +53,7 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 - Live app: `https://pulseproof-production-06fa.up.railway.app`
 - Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
 - Fan Zone: `https://pulseproof-production-06fa.up.railway.app/fan-zone`
+- Compliance and human-authorship record: `https://pulseproof-production-06fa.up.railway.app/compliance`
 - Demo video (2:24): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
 - English captions: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.vtt`
 - 1080p thumbnail: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo-thumbnail.png`
@@ -66,6 +67,20 @@ The fan experience remains free. Fan clubs, publishers and sponsors pay for bran
 - Quiz claim: `https://explorer.solana.com/tx/2dSD6oJMsZNAMSfCTYSkBXuMowc9hSC4dtp5rfwjJz8uYKGR7QJ6Wfy7jwFYYWewxsKA11XYqkX3t4pEPMqpAzxo?cluster=devnet`
 - Reward redemption: `https://explorer.solana.com/tx/5y1ZXtGdmKRMfaSYpW321F9qBzaJQp3ttphfARVC2q9BXEM44dPBZHyUBpQbxN3n8dR9Xf28s8MbXPv2GnK5QpjA?cluster=devnet`
 - Health endpoint: `https://pulseproof-production-06fa.up.railway.app/api/health`
+
+## Human authorship and AI assistance
+
+PulseProof is AI-assisted; it is not presented as entirely hand-typed. AI tools supported research organisation, code drafting, implementation and testing. The registered natural-person participant defined and repeatedly refined the product requirements, controls the repository/deployment/TxLINE subscription/devnet wallet, must personally review and understand the final code, and will submit the entry. Before submission, the participant must be able to reproduce the build, explain the full TxLINE-to-Solana path and make a requested change live.
+
+Complete `docs/HUMAN_AUTHORSHIP_EVIDENCE.md` before making that capability claim to a judge. The official Terms' stricter natural-person/material-control language takes precedence over promotional wording about autonomous agents unless TxODDS provides written clarification.
+
+## Judge access and legal boundaries
+
+- No wallet, SOL, paid account, token purchase or private credential is required to review the live product, replay, Judge Lab, CI or Explorer evidence.
+- TxLINE credentials remain server-only and no raw TxLINE dataset is offered for download.
+- Live TxLINE access automatically fails closed after the hackathon data-licence window unless written TxODDS permission is recorded.
+- No FIFA logo, tournament logo, trophy art, official mascot artwork, team crest, player likeness or kit artwork is bundled.
+- PulseProof is not affiliated with or endorsed by FIFA or a tournament organiser.
 
 ## TxLINE feedback — edit after real use
 

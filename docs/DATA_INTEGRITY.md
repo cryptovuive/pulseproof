@@ -54,7 +54,7 @@ TxLINE devnet fixtures are normalized first, exact-pair enriched only against th
 
 ## Mascots
 
-The 2026 mascot feature uses downloaded official FIFA media with a direct source link, visible copyright attribution and a non-affiliation notice. Earlier editions use only a neutral year/category seal and FIFA-sourced text—no emoji, generated lookalike or invented character artwork. Official mascots are an informational archive and are never sold, claimed or represented as user-owned rewards.
+The mascot feature uses only neutral year/category text seals and links to the factual source. Downloaded official FIFA media was removed because attribution alone does not establish a redistribution licence. The product includes no emoji substitute, generated lookalike or invented mascot artwork. Mascots remain an informational fact index and are never sold, claimed or represented as user-owned rewards.
 
 - Quiz facts are separate from live TxLINE match data and are never labelled TxLINE-verified.
 - Every public question carries its supporting `fifa.com` or `inside.fifa.com` article URL and a human-readable source label.

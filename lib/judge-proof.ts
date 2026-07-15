@@ -39,12 +39,17 @@ export type JudgeProofResult = {
 
 export function assertHealthEvidence(value: unknown): asserts value is {
   ok: true;
-  txline: { network: string; programId: string; credentialsConfigured: boolean };
+  txline: { network: string; programId: string; credentialsConfigured: boolean; dataLicense: { active: boolean; basis: string; expiresAt: string } };
 } {
   const body = value as { ok?: unknown; txline?: Record<string, unknown> };
   if (body?.ok !== true) throw new Error("Production health did not return ok=true");
   if (body.txline?.network !== "devnet") throw new Error("TxLINE is not configured for devnet");
   if (body.txline?.credentialsConfigured !== true) throw new Error("TxLINE credentials are not active");
+  const dataLicense = body.txline?.dataLicense as Record<string, unknown> | undefined;
+  if (dataLicense?.active !== true) throw new Error("TxLINE hackathon data licence is not active");
+  if (typeof dataLicense.expiresAt !== "string" || !Number.isFinite(Date.parse(dataLicense.expiresAt))) {
+    throw new Error("TxLINE data-licence expiry is missing");
+  }
   if (typeof body.txline?.programId !== "string" || body.txline.programId.length < 32) {
     throw new Error("TxLINE program identity is missing");
   }

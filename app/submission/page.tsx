@@ -15,6 +15,7 @@ import {
   Link2,
   Radio,
   Route,
+  Scale,
   ShieldCheck,
   Sparkles,
   Trophy,
@@ -162,7 +163,7 @@ function CaptureSlide({ slide }: { slide: number }) {
   if (slide === 8) return (
     <CaptureFrame slide={slide} eyebrow="Evidence a judge can reproduce" title="Not a mockup. A deployed, tested system.">
       <div className={styles.metrics}>
-        <article><strong>110 / 110</strong><span>automated tests</span><small>24 suites</small></article>
+        <article><strong>133 / 133</strong><span>automated tests</span><small>26 suites</small></article>
         <article><strong>0</strong><span>known npm vulnerabilities</span><small>audit clean</small></article>
         <article><strong>200</strong><span>public health + SSE</span><small>Railway production</small></article>
         <article><strong>DEVNET</strong><span>program + receipt</span><small>Explorer visible</small></article>
@@ -210,10 +211,11 @@ function SubmissionPortal() {
       <section className={styles.verifyGrid}>
         <a href={`${LIVE_APP}/api/health`} target="_blank" rel="noreferrer"><Wifi /><span>Production health</span><small>TxLINE devnet credentials configured</small></a>
         <a href={EXPLORER} target="_blank" rel="noreferrer"><BadgeCheck /><span>Explorer receipt</span><small>Confirmed public devnet transaction</small></a>
-        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>117 tests · lint · web build · native contract tests</small></a>
+        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>133 tests · lint · web build · native contract tests</small></a>
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Public repository</span><small>Architecture, threat model and test report</small></a>
       </section>
       <section className={styles.honesty}><ShieldCheck /><div><span>DEMO INTEGRITY</span><h2>Live is live. Replay is labelled replay.</h2><p>TxLINE coverage, public SSE and heartbeat evidence are live. Finished-match sequences in the consumer demo are externally cross-checked and explicitly not represented as TxLINE records.</p></div></section>
+      <section className={styles.complianceCallout}><Scale /><div><span>TERMS &amp; HUMAN AUTHORSHIP</span><h2>AI assistance disclosed. Human control must be demonstrated.</h2><p>Judges can evaluate PulseProof without a wallet, SOL, paid service or private credential. The public compliance record covers authorship, data-licence expiry, third-party IP, privacy and the live defence expected from the registered participant.</p></div><Link href="/compliance">Open compliance record <ExternalLink /></Link></section>
       <footer><Brand /><p>Built for the Consumer and Fan Experiences track.</p><a href={LIVE_APP}>Launch PulseProof <ExternalLink size={14} /></a></footer>
     </main>
   );

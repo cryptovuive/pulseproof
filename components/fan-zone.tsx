@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -41,7 +40,7 @@ import type {
   RewardAttestation,
   RewardItem,
 } from "@/types/pulse";
-import { MASCOT_2026_HERO, MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
+import { MASCOT_2026_SOURCE, MASCOT_HISTORY_SOURCE, WORLD_CUP_MASCOTS } from "@/lib/mascot-archive";
 import styles from "./fan-zone.module.css";
 import { useWalletSession } from "@/components/wallet-session-provider";
 
@@ -332,16 +331,16 @@ export function FanZone() {
     </section>
 
     <section className={styles.mascotArchive}>
-      <div className={styles.sectionHead}><div><span>04 · FIFA-SOURCED MASCOT ARCHIVE</span><h2>The real 2026 trio, plus every mascot era</h2><p>The 2026 visuals below are official FIFA media. Historical entries use a neutral text index—never invented emoji or imitation character art.</p></div><Sparkles /></div>
+      <div className={styles.sectionHead}><div><span>04 · SOURCE-LINKED MASCOT INDEX</span><h2>The real 2026 trio, plus every mascot era</h2><p>Factual names and roles link to the organiser&apos;s source. PulseProof deliberately uses neutral text seals—no copied official artwork, generated lookalikes or claim of affiliation.</p></div><Sparkles /></div>
       <div className={styles.mascotHero}>
-        <div className={styles.mascotHeroVisual}><Image src={MASCOT_2026_HERO.image} alt={MASCOT_2026_HERO.alt} width={1265} height={711} priority /></div>
-        <div className={styles.mascotHeroCopy}><span>OFFICIAL FIFA WORLD CUP 2026 MASCOTS</span><h3>Clutch · Zayu · Maple</h3><p>Not substitutes and not AI reconstructions: the official bald eagle, jaguar and moose revealed for the United States, Mexico and Canada.</p><div className={styles.mascotRoles}><b>CLUTCH <small>USA · MIDFIELDER</small></b><b>ZAYU <small>MEXICO · STRIKER</small></b><b>MAPLE <small>CANADA · GOALKEEPER</small></b></div><a href={MASCOT_2026_HERO.sourceUrl} target="_blank" rel="noreferrer">Verify on FIFA <ExternalLink size={12} /></a><small className={styles.rightsNote}>Official media © FIFA. Shown for factual identification with source attribution; PulseProof does not claim ownership or affiliation.</small></div>
+        <div className={styles.mascotHeroVisual} aria-label="Neutral World Cup 2026 mascot index"><span>2026</span><b>FACTUAL ARCHIVE</b><small>NO OFFICIAL ARTWORK STORED</small></div>
+        <div className={styles.mascotHeroCopy}><span>2026 MASCOT FACT INDEX</span><h3>Clutch · Zayu · Maple</h3><p>The bald eagle, jaguar and moose announced for the United States, Mexico and Canada are identified here in text only.</p><div className={styles.mascotRoles}><b>CLUTCH <small>USA · MIDFIELDER</small></b><b>ZAYU <small>MEXICO · STRIKER</small></b><b>MAPLE <small>CANADA · GOALKEEPER</small></b></div><a href={MASCOT_2026_SOURCE} target="_blank" rel="noreferrer">Verify at the official source <ExternalLink size={12} /></a><small className={styles.rightsNote}>Names are used only for factual identification. No mascot image, FIFA logo or endorsement claim is included.</small></div>
       </div>
-      <div className={styles.mascotRail}>{WORLD_CUP_MASCOTS.map((mascot) => <article key={mascot.id} className={mascot.officialImage ? styles.mascotOfficial : ""}>{mascot.officialImage ? <div className={styles.mascotPhoto}><Image src={mascot.officialImage} alt={`Official FIFA image of ${mascot.name}, ${mascot.form} mascot for ${mascot.host}`} width={720} height={405} /></div> : <div className={styles.mascotSeal} aria-label={`${mascot.category} archive entry`}><span>{mascot.edition}</span><b>{mascot.category}</b></div>}<small>{mascot.edition} · {mascot.host}</small><h3>{mascot.name}</h3><p><strong>{mascot.form}{mascot.role ? ` · ${mascot.role}` : ""}</strong>{mascot.detail}</p><a href={mascot.edition === 2026 ? MASCOT_2026_SOURCE : MASCOT_HISTORY_SOURCE} target="_blank" rel="noreferrer">Official FIFA source <ExternalLink size={11} /></a></article>)}</div>
+      <div className={styles.mascotRail}>{WORLD_CUP_MASCOTS.map((mascot) => <article key={mascot.id}><div className={styles.mascotSeal} aria-label={`${mascot.category} archive entry`}><span>{mascot.edition}</span><b>{mascot.category}</b></div><small>{mascot.edition} · {mascot.host}</small><h3>{mascot.name}</h3><p><strong>{mascot.form}{mascot.role ? ` · ${mascot.role}` : ""}</strong>{mascot.detail}</p><a href={mascot.edition === 2026 ? MASCOT_2026_SOURCE : MASCOT_HISTORY_SOURCE} target="_blank" rel="noreferrer">Official factual source <ExternalLink size={11} /></a></article>)}</div>
     </section>
 
     <section className={styles.store}>
-      <div className={styles.sectionHead}><div><span>05 · COSMETIC REWARD VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Badges, medals, avatar frames and original PulseProof characters only. Official World Cup mascots remain a sourced archive above—not claimable or falsely presented as owned collectibles.</p></div><Gift /></div>
+      <div className={styles.sectionHead}><div><span>05 · COSMETIC REWARD VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Badges, medals, avatar frames and original PulseProof characters only. Mascot names remain a source-linked fact index above—not claimable or falsely presented as owned collectibles.</p></div><Gift /></div>
       <div className={styles.filters}>{(["all","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
       <div className={styles.rewardGrid}>{filteredRewards.map((reward) => {
         const isOwned = owned.has(reward.index);
@@ -356,6 +355,6 @@ export function FanZone() {
     </section>
 
     {(notice || lastSignature) && <div className={styles.notice} role="status"><span>{notice || "Latest transaction finalized on Solana devnet."}</span>{lastSignature && <a href={`https://explorer.solana.com/tx/${lastSignature}?cluster=devnet`} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a>}<button type="button" aria-label="Dismiss notification" onClick={() => { setNotice(""); setLastSignature(""); }}><X size={13} /></button></div>}
-    <footer><span>PULSEPROOF FAN ZONE · TXLINE CONSUMER EXPERIENCE</span><span>NON-TRANSFERABLE · NO FINANCIAL REWARDS · DEVNET</span></footer>
+    <footer><span>PULSEPROOF FAN ZONE · TXLINE CONSUMER EXPERIENCE</span><Link href="/compliance">RULES · AUTHORSHIP · PRIVACY</Link><span>NON-TRANSFERABLE · NO FINANCIAL REWARDS · DEVNET</span></footer>
   </main>;
 }

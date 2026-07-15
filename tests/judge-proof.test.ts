@@ -54,9 +54,10 @@ describe("judge live proof validators", () => {
   it("requires active TxLINE devnet identity", () => {
     expect(() => assertHealthEvidence({
       ok: true,
-      txline: { network: "devnet", programId: "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J", credentialsConfigured: true },
+      txline: { network: "devnet", programId: "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J", credentialsConfigured: true, dataLicense: { active: true, basis: "hackathon-window", expiresAt: "2026-07-19T23:59:59.999Z" } },
     })).not.toThrow();
     expect(() => assertHealthEvidence({ ok: true, txline: { network: "devnet", credentialsConfigured: false } })).toThrow(/credentials/i);
+    expect(() => assertHealthEvidence({ ok: true, txline: { network: "devnet", programId: "6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J", credentialsConfigured: true, dataLicense: { active: false, basis: "expired", expiresAt: "2026-07-19T23:59:59.999Z" } } })).toThrow(/licence/i);
   });
 
   it("requires live and replay sources to be explicitly separated", () => {
