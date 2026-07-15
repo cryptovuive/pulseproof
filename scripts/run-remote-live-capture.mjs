@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
 import { mkdir, open, readFile, readdir, rename, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, join, relative, resolve } from "node:path";
 
 const [runName = "england-argentina-2026-07-16-github", overrideText = "0"] = process.argv.slice(2);
 const origin = "https://pulseproof-production-06fa.up.railway.app";
@@ -160,7 +160,9 @@ const manifest = {
   totalSegmentSeconds: validSegments.reduce((sum, segment) => sum + segment.durationSeconds, 0),
   sseEventCount: parsedEvents.filter((event) => event.kind === "event").length,
   assembledVideo: { file: basename(fullVideo), bytes: (await stat(fullVideo)).size, sha256: await sha256(fullVideo) },
-  video: validSegments.map(({ path: _path, ...segment }) => segment),
+  video: validSegments.map(({ file, durationSeconds, bytes, codec, width, height, sha256: hash }) => ({
+    file, durationSeconds, bytes, codec, width, height, sha256: hash,
+  })),
 };
 await atomicJson(join(runDir, "capture-manifest.json"), manifest);
 await atomicJson(join(runDir, "capture-state.json"), {
