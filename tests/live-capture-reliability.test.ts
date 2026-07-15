@@ -11,6 +11,8 @@ describe("unattended live capture reliability", () => {
     expect(recorder).toContain('"segment", "-segment_time", "300"');
     expect(recorder).toContain("segment_format_options");
     expect(recorder).toContain("expectedTeamsVisible");
+    expect(recorder).toContain("expectedStylesReady");
+    expect(recorder).toContain("Product stylesheet did not become ready");
     expect(recorder).toContain("Chrome DevTools command timed out");
     expect(recorder).toContain('"--disable-setuid-sandbox"');
     expect(recorder).toContain("resultFile");
