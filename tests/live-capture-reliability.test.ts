@@ -73,6 +73,8 @@ describe("unattended live capture reliability", () => {
     expect(workflow).toContain('cron: "35 18 15 7 *"');
     expect(workflow).toContain("timeout-minutes: 350");
     expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("browser-actions/setup-chrome@v1");
+    expect(workflow).toContain("command -v ffmpeg");
     expect(workflow).toContain("compression-level: 0");
     expect(remote).toContain("2026-07-15T23:30:00.000Z");
     expect(remote).toContain("fixtureId = 18241006");
