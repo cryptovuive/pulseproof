@@ -66,4 +66,18 @@ describe("unattended live capture reliability", () => {
     expect(worker).toContain("yyyyMMdd-HHmmssfff");
     expect(worker).toContain("attempts\\$attemptId");
   });
+
+  it("keeps an off-machine scheduled recorder with a manual rehearsal mode", () => {
+    const workflow = read(".github/workflows/england-argentina-live-capture.yml");
+    const remote = read("scripts/run-remote-live-capture.mjs");
+    expect(workflow).toContain('cron: "35 18 15 7 *"');
+    expect(workflow).toContain("timeout-minutes: 350");
+    expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("compression-level: 0");
+    expect(remote).toContain("2026-07-15T23:30:00.000Z");
+    expect(remote).toContain("fixtureId = 18241006");
+    expect(remote).toContain("attemptNumber <= 5");
+    expect(remote).toContain("capture-manifest.json");
+    expect(remote).toContain("sha256");
+  });
 });
