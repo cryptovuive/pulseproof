@@ -18,7 +18,7 @@ const atomicWrite = async (file, value) => {
   await rename(`${file}.tmp`, file);
 };
 const port = 9300 + Math.floor(Math.random() * 500);
-const chrome = spawn(config.chromePath, [
+const chromeArguments = [
   "--headless=new",
   `--remote-debugging-port=${port}`,
   `--user-data-dir=${config.profilePath}`,
@@ -30,7 +30,9 @@ const chrome = spawn(config.chromePath, [
   "--disable-renderer-backgrounding",
   "--window-size=1920,1080",
   config.pageUrl,
-], { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
+];
+if (config.noSandbox === true) chromeArguments.splice(1, 0, "--no-sandbox", "--disable-setuid-sandbox");
+const chrome = spawn(config.chromePath, chromeArguments, { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
 chrome.stderr.on("data", (chunk) => process.stderr.write(chunk));
 
 const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
