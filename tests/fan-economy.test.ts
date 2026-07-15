@@ -20,6 +20,16 @@ describe("fan progression economy", () => {
     expect(fanZone).not.toContain("useState<BrowserWallet");
   });
 
+  it("submits wallet actions with a fast preflight and a bounded priority fee", () => {
+    const client = readFileSync(join(process.cwd(), "lib", "solana-client.ts"), "utf8");
+    expect(client).toContain("ComputeBudgetProgram.setComputeUnitLimit");
+    expect(client).toContain("ComputeBudgetProgram.setComputeUnitPrice");
+    expect(client).toContain('getLatestBlockhash("processed")');
+    expect(client).toContain('preflightCommitment: "processed"');
+    expect(client).toContain('confirmTransaction({ signature: result.signature, ...latest }, "confirmed")');
+    expect(client).toContain("if (confirmation.value.err)");
+  });
+
   it("ships a unique 36-item non-financial cosmetic catalog", () => {
     expect(REWARD_CATALOG).toHaveLength(36);
     expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(36);

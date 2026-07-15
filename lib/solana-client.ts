@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ComputeBudgetProgram,
   Connection,
   Ed25519Program,
   PublicKey,
@@ -22,7 +23,10 @@ export interface BrowserWallet {
   on?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
   off?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
   signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
-  signAndSendTransaction(transaction: Transaction): Promise<{ signature: string }>;
+  signAndSendTransaction(
+    transaction: Transaction,
+    options?: { preflightCommitment?: "processed" | "confirmed" | "finalized"; maxRetries?: number },
+  ): Promise<{ signature: string }>;
 }
 
 declare global {
@@ -32,6 +36,8 @@ declare global {
 }
 
 const textEncoder = new TextEncoder();
+const COMPUTE_UNIT_LIMIT = 400_000;
+const PRIORITY_FEE_MICRO_LAMPORTS = 10_000;
 
 async function discriminator(name: string): Promise<Uint8Array> {
   const digest = await crypto.subtle.digest("SHA-256", textEncoder.encode(`global:${name}`));
@@ -115,11 +121,24 @@ async function createProfileInstruction(owner: PublicKey, profile: PublicKey, pr
 
 async function signAndConfirm(wallet: BrowserWallet, transaction: Transaction, rpc = connection()) {
   if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
-  const latest = await rpc.getLatestBlockhash("confirmed");
+  // Fetching a processed blockhash and running preflight at processed avoids
+  // waiting an extra confirmation round before Phantom can submit. We still
+  // resolve the action only after the network reports a confirmed result.
+  const latest = await rpc.getLatestBlockhash("processed");
+  transaction.instructions.unshift(
+    ComputeBudgetProgram.setComputeUnitLimit({ units: COMPUTE_UNIT_LIMIT }),
+    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_FEE_MICRO_LAMPORTS }),
+  );
   transaction.feePayer = wallet.publicKey;
   transaction.recentBlockhash = latest.blockhash;
-  const result = await wallet.signAndSendTransaction(transaction);
-  await rpc.confirmTransaction({ signature: result.signature, ...latest }, "confirmed");
+  const result = await wallet.signAndSendTransaction(transaction, {
+    preflightCommitment: "processed",
+    maxRetries: 5,
+  });
+  const confirmation = await rpc.confirmTransaction({ signature: result.signature, ...latest }, "confirmed");
+  if (confirmation.value.err) {
+    throw new Error(`Solana transaction failed: ${JSON.stringify(confirmation.value.err)}`);
+  }
   return result.signature;
 }
 
