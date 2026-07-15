@@ -101,6 +101,7 @@ const iconFor = (moment: PulseMoment) => {
   if (moment.type === "kickoff") return <CirclePlay size={16} />;
   if (moment.type === "card") return <span className={`card-icon ${moment.cardColor ?? "yellow"}`} />;
   if (moment.type === "var") return <span className="var-icon">VAR</span>;
+  if (moment.type === "substitution") return <RotateCcw size={15} />;
   return <Zap size={15} />;
 };
 
@@ -536,6 +537,18 @@ export function PulseDashboard() {
     }
   };
 
+  const activateCatchUp = (full: MatchPulse) => {
+    const signals = sportingMoments(full.moments);
+    if (!signals.length) throw new Error("No on-pitch moments are available for catch-up yet");
+    const replay = { ...full, moments: signals };
+    setCatchUp(replay);
+    setCatchUpIndex(1);
+    setCatchUpPlaying(true);
+    setRelayCapsule(null);
+    setRelayUrl("");
+    setNotice(`Catch-up loaded: ${signals.length} on-pitch moments. The same scoreboard, momentum and timeline renderer used for live coverage is replaying this source-linked event sequence.`);
+  };
+
   const startCatchUp = async () => {
     if (!livePulse) return;
     try {
@@ -546,17 +559,26 @@ export function PulseDashboard() {
         if (!response.ok) throw new Error("Historical match log is not available yet");
         full = (await response.json()) as MatchPulse;
       }
-      const signals = sportingMoments(full.moments);
-      if (!signals.length) throw new Error("No on-pitch moments are available for catch-up yet");
-      const replay = { ...full, moments: signals };
-      setCatchUp(replay);
-      setCatchUpIndex(1);
-      setCatchUpPlaying(true);
-      setRelayCapsule(null);
-      setRelayUrl("");
-      setNotice(`Catch-up loaded: ${signals.length} on-pitch moments. Metadata updates are hidden.`);
+      activateCatchUp(full);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not load catch-up");
+    }
+  };
+
+  const openReplayFixture = async (fixtureId: number) => {
+    selectMatch(fixtureId);
+    try {
+      let full = pulsesRef.current[fixtureId];
+      if (!full) {
+        const response = await fetch(`/api/matches/${fixtureId}?mode=replay`, { cache: "no-store" });
+        if (!response.ok) throw new Error("The verified replay is temporarily unavailable");
+        full = (await response.json()) as MatchPulse;
+        setPulses((current) => ({ ...current, [fixtureId]: full }));
+      }
+      activateCatchUp(full);
+      window.setTimeout(() => document.getElementById("catch-up")?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Could not open this replay");
     }
   };
 
@@ -831,6 +853,7 @@ export function PulseDashboard() {
         onAlertPreferencesChange={setAlertPreferences}
         onEnableBrowserNotifications={() => void enableBrowserNotifications()}
         onClearAlerts={() => setAlertInbox([])}
+        onReplayFixture={(fixtureId) => void openReplayFixture(fixtureId)}
       />
 
       <UpcomingMatchHub followedTeams={preferences.followedTeams} />
@@ -840,7 +863,7 @@ export function PulseDashboard() {
           <article className={`catchup-card panel ${catchUp ? "active" : ""}`} id="catch-up">
             <div className="catchup-intro">
               <span className="catchup-icon"><RotateCcw size={19} /></span>
-              <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay only the signal events—goals, pressure swings, cards and VAR—without watching the full broadcast.</p></div>
+              <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay the sourced event sequence through the exact live scoreboard, momentum and timeline view—goals, cards, substitutions and VAR included.</p></div>
               <div className="catchup-actions">
                 {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); setRelayCapsule(null); setRelayUrl(""); }}><Radio size={14} /> {offlineMode ? "Return to saved recap" : "Return live"}</button>}
                 {catchUp && !offlineMode && <button className="capsule-share" disabled={capsuleCreating} onClick={() => void shareCatchUpCapsule()}><Share2 size={14} /> {capsuleCreating ? "Signing…" : "Share safe relay"}</button>}

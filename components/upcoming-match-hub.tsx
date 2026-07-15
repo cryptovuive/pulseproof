@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bell, BellRing, CalendarPlus, Clock3, Radio } from "lucide-react";
 import { TeamFlag } from "@/components/team-flag";
-import { buildFixtureCalendar, formatKickoffCountdown } from "@/lib/schedule";
+import { buildFixtureCalendar, formatKickoffCountdown, scheduleParticipantLabel } from "@/lib/schedule";
 import { fixtureHasFollowedTeam } from "@/lib/fan-preferences";
 import { getTeamBranding } from "@/lib/team-branding";
 import type { ScheduleEntry } from "@/types/pulse";
@@ -126,6 +126,8 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
         {!loading && shown.map((entry, index) => {
           const home = getTeamBranding(entry.fixture.homeTeam);
           const away = getTeamBranding(entry.fixture.awayTeam);
+          const homeLabel = scheduleParticipantLabel(entry, "home");
+          const awayLabel = scheduleParticipantLabel(entry, "away");
           const kickoff = kickoffParts(entry.fixture.startTime);
           const saved = reminders.includes(entry.fixture.fixtureId);
           return (
@@ -136,13 +138,13 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
                 <small>{kickoff.time} · source {kickoff.utc}</small>
               </div>
               <div className="upcoming-teams">
-                <span><span className="schedule-flag"><TeamFlag flagKey={home.flagKey} /></span><b>{home.code}</b><strong>{entry.fixture.homeTeam}</strong></span>
+                <span><span className="schedule-flag"><TeamFlag flagKey={home.flagKey} /></span><b>{home.code}</b><strong>{homeLabel}</strong></span>
                 <i>vs</i>
-                <span><span className="schedule-flag"><TeamFlag flagKey={away.flagKey} /></span><b>{away.code}</b><strong>{entry.fixture.awayTeam}</strong></span>
+                <span><span className="schedule-flag"><TeamFlag flagKey={away.flagKey} /></span><b>{away.code}</b><strong>{awayLabel}</strong></span>
               </div>
               <div className="upcoming-countdown"><span>Kick-off in</span><strong>{now ? formatKickoffCountdown(entry.fixture.startTime, now) : "—"}</strong></div>
               <div className="fixture-provenance">
-                <span>{entry.coverage === "participants-pending" ? "Teams intentionally TBD" : entry.coverage === "txline-confirmed" ? "TxLINE fixture" : "Participants confirmed"}</span>
+                <span>{entry.coverage === "participants-pending" ? "Confirmed qualifier shown · other slot pending" : entry.coverage === "txline-confirmed" ? "TxLINE fixture" : "Participants confirmed"}</span>
                 {entry.provenance.sourceUrl ? <a href={entry.provenance.sourceUrl} target="_blank" rel="noreferrer">{entry.provenance.provider}</a> : <b>{entry.provenance.provider}</b>}
               </div>
               <div className="upcoming-actions">
@@ -154,7 +156,7 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
         })}
         {!loading && !shown.length && <div className="schedule-empty">{filter === "reminders" ? "No saved matches yet. Choose Remind me on a fixture." : filter === "following" ? "No upcoming fixture currently includes a followed team." : "No future covered fixtures are currently published."}</div>}
       </div>
-      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Teams are never inferred; verify the linked sources or activate TxLINE before relying on it." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Final and third-place participants stay TBD until the semi-finals finish. An activated TxLINE token replaces this fallback with the current fixture snapshot.`}</p>}
+      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Confirmed qualifiers remain result-backed; unresolved slots are never inferred." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Spain is confirmed in the final and France in the third-place match; the England–Argentina winner and loser slots remain explicitly pending.`}</p>}
     </section>
   );
 }
