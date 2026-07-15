@@ -100,7 +100,7 @@ try {
   });
   const inspectPage = async () => {
     const result = await send("Runtime.evaluate", {
-      expression: "({readyState:document.readyState,url:location.href,title:document.title,text:(document.body?.innerText||'').slice(0,120000)})",
+      expression: "(()=>{const center=document.getElementById('match-center');const flags=[...document.querySelectorAll('.match-flag svg')].slice(0,8);return {readyState:document.readyState,url:location.href,title:document.title,text:(document.body?.innerText||'').slice(0,120000),styleSheetCount:document.styleSheets.length,matchCenterRadius:center?getComputedStyle(center).borderTopLeftRadius:null,flagWidths:flags.map(flag=>Math.round(flag.getBoundingClientRect().width))}})()",
       returnByValue: true,
     });
     return result.result?.value ?? {};
@@ -109,19 +109,28 @@ try {
     const text = String(state.text ?? "").toLowerCase();
     return [config.expectedHome, config.expectedAway].filter(Boolean).every((team) => text.includes(String(team).toLowerCase()));
   };
+  const expectedStylesReady = (state) => Number(state.styleSheetCount) > 0
+    && state.matchCenterRadius !== "0px"
+    && Array.isArray(state.flagWidths)
+    && state.flagWidths.length > 0
+    && state.flagWidths.every((width) => width > 0 && width <= 80);
 
   await send("Page.enable");
   await send("Runtime.enable");
+  await send("Network.enable");
+  await send("Network.setCacheDisabled", { cacheDisabled: true });
   await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
   await send("Page.navigate", { url: config.pageUrl });
   let pageState = {};
   for (let attempt = 0; attempt < 60; attempt += 1) {
     await sleep(500);
     pageState = await inspectPage();
-    if (pageState.readyState === "complete" && expectedTeamsVisible(pageState)) break;
+    if (pageState.readyState === "complete" && expectedTeamsVisible(pageState) && expectedStylesReady(pageState)) break;
+    if (attempt === 20 || attempt === 40) await send("Page.reload", { ignoreCache: true });
   }
   if (pageState.readyState !== "complete") throw new Error(`Product page did not finish loading: ${pageState.readyState ?? "unknown"}`);
   if (!expectedTeamsVisible(pageState)) throw new Error(`Product page does not show ${config.expectedHome} and ${config.expectedAway}`);
+  if (!expectedStylesReady(pageState)) throw new Error(`Product stylesheet did not become ready: ${JSON.stringify({ styleSheetCount: pageState.styleSheetCount, matchCenterRadius: pageState.matchCenterRadius, flagWidths: pageState.flagWidths })}`);
   await send("Runtime.evaluate", { expression: "document.getElementById('match-center')?.scrollIntoView({block:'start'});true" });
   await send("Page.startScreencast", { format: "jpeg", quality: 84, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
   const firstScreenshot = await send("Page.captureScreenshot", { format: "jpeg", quality: 84, fromSurface: true });
@@ -153,11 +162,12 @@ try {
     if (tick - lastPageProbe >= 5_000) {
       pageState = await inspectPage();
       if (!expectedTeamsVisible(pageState)) throw new Error(`Product page lost fixture identity ${config.expectedHome} vs ${config.expectedAway}`);
+      if (!expectedStylesReady(pageState)) throw new Error("Product stylesheet became unavailable during capture");
       const screenshot = await send("Page.captureScreenshot", { format: "jpeg", quality: 84, fromSurface: true });
       latestFrame = Buffer.from(screenshot.data, "base64");
       await atomicWrite(config.healthFile, {
         status: "recording", checkedAt: new Date().toISOString(), frame, pageUrl: pageState.url,
-        readyState: pageState.readyState, expectedTeamsVisible: true,
+        readyState: pageState.readyState, expectedTeamsVisible: true, expectedStylesReady: true,
       });
       lastPageProbe = tick;
     }
