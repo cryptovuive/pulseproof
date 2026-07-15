@@ -45,6 +45,10 @@ Use only a fixture already verified against the public API and an authoritative 
 
 Both recorders use separate Chrome profiles, worker processes, video directories, SSE logs, watchdogs and final manifests. One capture can therefore fail without destroying the other copy.
 
+## Off-machine recorder
+
+`.github/workflows/england-argentina-live-capture.yml` starts a third recorder on a GitHub-hosted Linux runner 25 minutes before kickoff. It re-validates the public fixture, records the same public UI and SSE until the fixed deadline, retries browser failures up to five times, assembles an MP4, hashes every valid segment and uploads the evidence as a seven-day workflow artifact. A short `workflow_dispatch` rehearsal must pass before relying on the scheduled run.
+
 ## Physical limits
 
 Wake timers can recover from sleep and `StartWhenAvailable` can recover a late start after boot. No local software can record while the computer is fully powered off, without electricity, or without network access. For the strongest guarantee, leave the computer powered, connected to the internet, and preferably on AC power.

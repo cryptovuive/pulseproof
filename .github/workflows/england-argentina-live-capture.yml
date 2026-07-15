@@ -1,0 +1,68 @@
+name: England Argentina live capture
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_seconds:
+        description: Rehearsal duration; zero records until the fixed post-match deadline
+        required: false
+        default: "0"
+      run_name:
+        description: Artifact directory name
+        required: false
+        default: england-argentina-2026-07-16-github
+  schedule:
+    - cron: "35 18 15 7 *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: england-argentina-live-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      CHROME_PATH: /usr/bin/google-chrome
+      FFMPEG_PATH: /usr/bin/ffmpeg
+      FFPROBE_PATH: /usr/bin/ffprobe
+    steps:
+      - name: Gate the one-off scheduled recording
+        id: gate
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%F)" == "2026-07-15" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.gate.outputs.enabled == 'true'
+        uses: actions/checkout@v4
+      - if: steps.gate.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.gate.outputs.enabled == 'true'
+        run: npm ci
+      - name: Verify recording binaries
+        if: steps.gate.outputs.enabled == 'true'
+        run: |
+          test -x "$CHROME_PATH"
+          test -x "$FFMPEG_PATH"
+          test -x "$FFPROBE_PATH"
+      - name: Record public UI and SSE
+        if: steps.gate.outputs.enabled == 'true'
+        run: node scripts/run-remote-live-capture.mjs "${{ inputs.run_name || 'england-argentina-2026-07-16-github' }}" "${{ inputs.duration_seconds || '0' }}"
+      - name: Upload recoverable match evidence
+        if: always() && steps.gate.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: england-argentina-live-capture-${{ github.run_id }}
+          path: submission-assets/live-match/${{ inputs.run_name || 'england-argentina-2026-07-16-github' }}/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
