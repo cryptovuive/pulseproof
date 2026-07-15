@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const result = await listUpcomingSchedule();
-    const verifiedAt = result.entries.reduce((latest, entry) => entry.provenance.verifiedAt > latest ? entry.provenance.verifiedAt : latest, "");
+    const verifiedAt = [...result.entries, ...result.tournamentEntries].reduce((latest, entry) => entry.provenance.verifiedAt > latest ? entry.provenance.verifiedAt : latest, "");
     const ageSeconds = verifiedAt ? Math.max(0, Math.floor((Date.now() - Date.parse(verifiedAt)) / 1_000)) : null;
     return NextResponse.json({
       ...result,

@@ -35,8 +35,8 @@ describe("fan preferences and My Matches", () => {
 
   it("builds My Matches from either followed participant", () => {
     const matches = getDemoOverviews();
-    expect(filterMatches(matches, "mine", ["Spain"]).map((match) => match.fixture.fixtureId)).toEqual([18198205]);
-    expect(filterMatches(matches, "finished", [])).toHaveLength(3);
+    expect(filterMatches(matches, "mine", ["Spain"]).map((match) => match.fixture.fixtureId)).toEqual([101, 18198205]);
+    expect(filterMatches(matches, "finished", [])).toHaveLength(4);
     expect(filterMatches(matches, "live", [])).toHaveLength(0);
     expect(fixtureHasFollowedTeam("France", "Spain", ["Spain"])).toBe(true);
     expect(fixtureHasFollowedTeam("France", "Morocco", ["Spain"])).toBe(false);

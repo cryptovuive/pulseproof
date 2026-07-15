@@ -43,8 +43,8 @@ describe("match catalog", () => {
     const catalog = await listAvailableFixtures();
     expect(catalog.source).toBe("demo-replay");
     expect(catalog.matches.filter((match) => match.source === "txline-live")).toHaveLength(0);
-    expect(catalog.matches.filter((match) => match.source === "demo-replay" && match.phase === "FT")).toHaveLength(3);
-    expect(catalog.matches.filter((match) => match.fixture.competition === "FIFA World Cup 2026")).toHaveLength(3);
+    expect(catalog.matches.filter((match) => match.source === "demo-replay" && match.phase === "FT")).toHaveLength(4);
+    expect(catalog.matches.filter((match) => match.fixture.competition === "FIFA World Cup 2026")).toHaveLength(4);
     expect(catalog.matches.some((match) => match.fixture.homeTeam === "Vietnam")).toBe(false);
   });
 });

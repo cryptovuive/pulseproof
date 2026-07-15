@@ -7,6 +7,7 @@ export type MomentType =
   | "corner"
   | "card"
   | "var"
+  | "substitution"
   | "halftime"
   | "final"
   | "moment";
@@ -81,6 +82,17 @@ export interface ScheduleEntry {
     provider: string;
     sourceUrl?: string;
     verifiedAt: string;
+  };
+  result?: {
+    phase: "FT";
+    score: [number, number];
+    winnerTeam: string;
+    loserTeam: string;
+    replayFixtureId: number;
+  };
+  participantPaths?: {
+    home?: { kind: "winner" | "loser"; fixtureId: number; label: string };
+    away?: { kind: "winner" | "loser"; fixtureId: number; label: string };
   };
 }
 

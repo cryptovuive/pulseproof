@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, getDemoOverviews } from "@/lib/demo-data";
+import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, FRANCE_SPAIN_MOMENTS, getDemoOverviews } from "@/lib/demo-data";
 import { buildDemoPulse } from "@/lib/pulse-service";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
 
 describe("multi-match demo and catch-up", () => {
   it("provides a distinct replay timeline for every listed fixture", () => {
-    expect(DEMO_FIXTURES).toHaveLength(3);
+    expect(DEMO_FIXTURES).toHaveLength(4);
     for (const fixture of DEMO_FIXTURES) {
       expect(fixture.competition).toBe("FIFA World Cup 2026");
       const pulse = buildDemoPulse(fixture.fixtureId);
@@ -22,10 +22,37 @@ describe("multi-match demo and catch-up", () => {
       expect(overview.minute).toBe(last?.minute);
     }
     expect(Object.fromEntries(getDemoOverviews().map((overview) => [overview.fixture.fixtureId, overview.score]))).toEqual({
+      101: [0, 2],
       18187298: [1, 2],
       18198205: [0, 1],
       18209181: [2, 0],
     });
+  });
+
+  it("replays France–Spain progressively through the same match-state model", () => {
+    const full = buildDemoPulse(101);
+    expect(full).toMatchObject({ phase: "FT", score: [0, 2] });
+    expect(full.moments).toEqual(FRANCE_SPAIN_MOMENTS);
+
+    const afterPenalty = pulseAtMoment(full, 3);
+    expect(afterPenalty).toMatchObject({ phase: "CATCH-UP", minute: 22, score: [0, 1], replayCursor: 3 });
+    const afterSecondGoal = pulseAtMoment(full, 7);
+    expect(afterSecondGoal).toMatchObject({ phase: "CATCH-UP", minute: 58, score: [0, 2], replayCursor: 7 });
+    const afterVar = pulseAtMoment(full, 8);
+    expect(afterVar).toMatchObject({ phase: "CATCH-UP", minute: 61, score: [0, 2], replayCursor: 8 });
+    expect(afterVar.moments.at(-1)).toMatchObject({ type: "var", participant: "Lamine Yamal", varOutcome: "Goal disallowed — offside" });
+    expect(pulseAtMoment(full, full.moments.length)).toMatchObject({ phase: "FT", score: [0, 2] });
+  });
+
+  it("keeps sourced scorers, cards and substitutions in the France–Spain replay", () => {
+    const full = buildDemoPulse(101);
+    expect(full.moments.filter((moment) => moment.type === "goal").map((moment) => [moment.minute, moment.participant])).toEqual([
+      [22, "Mikel Oyarzabal"],
+      [58, "Pedro Porro"],
+    ]);
+    expect(full.moments.filter((moment) => moment.type === "card")).toHaveLength(3);
+    expect(full.moments.filter((moment) => moment.type === "substitution")).toHaveLength(3);
+    expect(summarizeCatchUp(full.moments)).toMatchObject({ goals: 2, cards: 3, reviews: 1 });
   });
 
   it("reconstructs score, minute and momentum at an exact catch-up position", () => {

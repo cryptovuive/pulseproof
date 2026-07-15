@@ -36,7 +36,24 @@ export const PORTUGAL_SPAIN_FIXTURE: Fixture = {
   gameState: 1,
 };
 
+export const FRANCE_SPAIN_FIXTURE: Fixture = {
+  fixtureId: 101,
+  homeTeam: "France",
+  awayTeam: "Spain",
+  startTime: "2026-07-14T19:00:00.000Z",
+  competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://www.skysports.com/football/france-vs-spain/549866",
+  stage: "Semi-final · Match 101 · Dallas Stadium",
+  gameState: 1,
+};
+
 export const DEMO_DATA_SOURCES: Record<number, { provider: string; url: string; checkedAt: string }> = {
+  [FRANCE_SPAIN_FIXTURE.fixtureId]: {
+    provider: "RFEF result + Sky Sports event report",
+    url: "https://www.skysports.com/football/france-vs-spain/549866",
+    checkedAt: "2026-07-15T05:00:00.000Z",
+  },
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: {
     provider: "FIFA full-time match report",
     url: "https://fdp.fifa.org/assetspublic/ce281/r12541/pdf/FullTimeMatchReport-English.pdf",
@@ -96,15 +113,32 @@ export const PORTUGAL_SPAIN_MOMENTS = createMoments(PORTUGAL_SPAIN_FIXTURE, [
   { id: "por-esp-final", seq: 338, minute: 98, minuteLabel: "90+8", type: "final", team: "neutral", title: "Spain advance 1–0", description: "Full-time confirms Portugal's elimination and Spain's quarter-final place.", points: 20, badge: 7, score: [0, 1], txlineAction: "game_finalised" },
 ]);
 
-export const DEMO_FIXTURES = [DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
+export const FRANCE_SPAIN_MOMENTS = createMoments(FRANCE_SPAIN_FIXTURE, [
+  { id: "fra-esp-kickoff", seq: 1, minute: 0, type: "kickoff", team: "neutral", title: "Semi-final underway", description: "France and Spain begin the first World Cup semi-final in Dallas.", points: 5, badge: 0, score: [0, 0], txlineAction: "game_started" },
+  { id: "fra-esp-rabiot-yellow-9", seq: 34, minute: 9, type: "card", team: "home", title: "Rabiot is booked", description: "Adrien Rabiot receives the opening yellow card of the semi-final.", participant: "Adrien Rabiot", cardColor: "yellow", points: 5, badge: 3, score: [0, 0], txlineAction: "yellow_card" },
+  { id: "fra-esp-oyarzabal-penalty-22", seq: 78, minute: 22, type: "goal", team: "away", title: "Oyarzabal converts the penalty", description: "Mikel Oyarzabal scores from the spot after Lucas Digne fouls Lamine Yamal.", participant: "Mikel Oyarzabal", points: 12, badge: 2, score: [0, 1], txlineAction: "penalty_goal" },
+  { id: "fra-esp-saliba-sub-30", seq: 107, minute: 30, type: "substitution", team: "home", title: "France make an injury change", description: "Maxence Lacroix replaces the injured William Saliba.", participant: "Maxence Lacroix", points: 3, badge: 1, score: [0, 1], txlineAction: "substitution" },
+  { id: "fra-esp-cucurella-yellow-31", seq: 111, minute: 31, type: "card", team: "away", title: "Cucurella is booked", description: "Marc Cucurella receives Spain's first yellow card.", participant: "Marc Cucurella", cardColor: "yellow", points: 5, badge: 3, score: [0, 1], txlineAction: "yellow_card" },
+  { id: "fra-esp-halftime", seq: 160, minute: 45, type: "halftime", team: "neutral", title: "Spain lead at half-time", description: "Oyarzabal's penalty separates the teams at the interval.", points: 8, badge: 4, score: [0, 1], txlineAction: "halftime_finalised" },
+  { id: "fra-esp-porro-goal-58", seq: 208, minute: 58, type: "goal", team: "away", title: "Porro doubles Spain's lead", description: "Pedro Porro exchanges passes with Dani Olmo and finishes Spain's second goal.", participant: "Pedro Porro", assist: "Dani Olmo", points: 12, badge: 2, score: [0, 2], txlineAction: "goal" },
+  { id: "fra-esp-yamal-offside-61", seq: 219, minute: 61, type: "var", team: "away", title: "Yamal goal ruled out", description: "Lamine Yamal finds the net, but the goal is disallowed for a narrow offside.", participant: "Lamine Yamal", varOutcome: "Goal disallowed — offside", points: 6, badge: 1, score: [0, 2], txlineAction: "var_goal_disallowed" },
+  { id: "fra-esp-france-double-sub-72", seq: 260, minute: 72, type: "substitution", team: "home", title: "France change both flanks", description: "Rayan Cherki and Theo Hernandez replace Michael Olise and Lucas Digne.", participant: "Rayan Cherki · Theo Hernandez", points: 3, badge: 1, score: [0, 2], txlineAction: "substitution" },
+  { id: "fra-esp-oyarzabal-sub-74", seq: 269, minute: 74, type: "substitution", team: "away", title: "Spain replace their opening scorer", description: "Ferran Torres comes on for Mikel Oyarzabal.", participant: "Ferran Torres", points: 3, badge: 1, score: [0, 2], txlineAction: "substitution" },
+  { id: "fra-esp-mbappe-yellow-86", seq: 312, minute: 86, type: "card", team: "home", title: "Mbappé is booked", description: "Kylian Mbappé receives a late yellow card.", participant: "Kylian Mbappé", cardColor: "yellow", points: 5, badge: 3, score: [0, 2], txlineAction: "yellow_card" },
+  { id: "fra-esp-final", seq: 341, minute: 90, type: "final", team: "neutral", title: "Spain reach the World Cup final", description: "Full-time: France 0–2 Spain. Spain advance to face the winner of England against Argentina.", points: 20, badge: 7, score: [0, 2], txlineAction: "game_finalised" },
+]);
+
+export const DEMO_FIXTURES = [FRANCE_SPAIN_FIXTURE, DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
 
 export const DEMO_MOMENTS_BY_FIXTURE: Record<number, PulseMoment[]> = {
+  [FRANCE_SPAIN_FIXTURE.fixtureId]: FRANCE_SPAIN_MOMENTS,
   [DEMO_FIXTURE.fixtureId]: DEMO_MOMENTS,
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: BRAZIL_NORWAY_MOMENTS,
   [PORTUGAL_SPAIN_FIXTURE.fixtureId]: PORTUGAL_SPAIN_MOMENTS,
 };
 
 export const DEMO_DEFAULT_PHASE: Record<number, string> = {
+  [FRANCE_SPAIN_FIXTURE.fixtureId]: "FT",
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: "FT",
   [PORTUGAL_SPAIN_FIXTURE.fixtureId]: "FT",
   [DEMO_FIXTURE.fixtureId]: "FT",

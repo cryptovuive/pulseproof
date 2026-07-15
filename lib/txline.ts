@@ -138,6 +138,7 @@ function momentType(action: string): MomentType {
   if (value.includes("corner")) return "corner";
   if (value.includes("card") || value.includes("yellow") || value.includes("red")) return "card";
   if (value.includes("var")) return "var";
+  if (value.includes("substitution") || value.includes("substitute")) return "substitution";
   if (value.includes("halftime")) return "halftime";
   if (value.includes("game_finalised") || value.includes("final")) return "final";
   return "moment";
@@ -151,6 +152,7 @@ function momentCopy(type: MomentType, teamName: string) {
     corner: ["Pressure in the final third", `${teamName} win an attacking corner.`, 4, 1],
     card: ["Discipline shifts the match", `${teamName} receive a card.`, 5, 3],
     var: ["VAR review", "A major moment is being checked.", 8, 5],
+    substitution: ["Substitution", `${teamName} make a personnel change.`, 3, 1],
     halftime: ["Half-time pulse", "A natural pause to read how the match has changed.", 8, 4],
     final: ["Full-time memory", "The final TxLINE record seals this match.", 20, 7],
     // Comments and coverage metadata are useful provenance, but are not sporting
@@ -295,7 +297,7 @@ export async function getStatValidationEvidence(
 }
 
 export function calculateMomentum(moments: PulseMoment[]): number {
-  const weights: Record<MomentType, number> = { kickoff: 0, goal: 4, shot: 2, corner: 1, card: -1, var: 0, halftime: 0, final: 0, moment: 0 };
+  const weights: Record<MomentType, number> = { kickoff: 0, goal: 4, shot: 2, corner: 1, card: -1, var: 0, substitution: 0, halftime: 0, final: 0, moment: 0 };
   const recent = moments.slice(-8);
   const balance = recent.reduce((sum, moment) => sum + weights[moment.type] * (moment.team === "home" ? 1 : moment.team === "away" ? -1 : 0), 0);
   return Math.max(12, Math.min(88, 50 + balance * 4));

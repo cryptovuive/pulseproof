@@ -18,12 +18,13 @@ export function buildTournamentJourney(
   const semifinals = worldCup.filter((entry) => entry.fixture.stage.toLowerCase().includes("semi-final"));
   const final = worldCup.find((entry) => /^final\b/i.test(entry.fixture.stage));
   const thirdPlace = worldCup.find((entry) => entry.fixture.stage.toLowerCase().includes("third place"));
-  const followed = worldCup.find((entry) => fixtureHasFollowedTeam(
+  const upcoming = worldCup.filter((entry) => !entry.result);
+  const followed = upcoming.find((entry) => fixtureHasFollowedTeam(
     entry.fixture.homeTeam,
     entry.fixture.awayTeam,
     followedTeams,
   ));
-  const nextForFan = followed ?? worldCup[0];
+  const nextForFan = followed ?? upcoming[0];
   return {
     semifinals,
     ...(final ? { final } : {}),

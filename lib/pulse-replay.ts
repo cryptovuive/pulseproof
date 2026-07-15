@@ -19,6 +19,7 @@ export function pulseAtMoment(base: MatchPulse, momentCount: number, phase = "CA
     corner: 1,
     card: -1,
     var: 0,
+    substitution: 0,
     halftime: 0,
     final: 0,
     moment: 0,
