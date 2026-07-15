@@ -120,6 +120,7 @@ try {
   await send("Network.enable");
   await send("Network.setCacheDisabled", { cacheDisabled: true });
   await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+  if (config.timezoneId) await send("Emulation.setTimezoneOverride", { timezoneId: config.timezoneId });
   await send("Page.navigate", { url: config.pageUrl });
   let pageState = {};
   for (let attempt = 0; attempt < 60; attempt += 1) {

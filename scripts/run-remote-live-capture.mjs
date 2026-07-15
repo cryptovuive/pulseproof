@@ -72,6 +72,7 @@ for (let attemptNumber = 1; attemptNumber <= 5 && Date.now() < requestedStopAt -
     chromePath, ffmpegPath, profilePath: join(tmpdir(), `pulseproof-github-${attemptId}`), resultFile,
     healthFile: join(attemptDir, "recorder-health.json"), expectedHome, expectedAway,
     noSandbox: process.platform === "linux",
+    timezoneId: "Asia/Bangkok",
   };
   await atomicJson(configFile, config);
   const stopAtIso = new Date(Date.now() + remainingSeconds * 1000).toISOString();

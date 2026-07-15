@@ -97,7 +97,7 @@ try {
     pageUrl = "$PublicOrigin/?fixture=$FixtureId&liveCapture=1"
     videoPattern = $segmentPattern; durationSeconds = $DurationSeconds; frameRate = 5
     chromePath = $chrome; ffmpegPath = $ffmpeg; profilePath = $profilePath; resultFile = $recorderResult
-    healthFile = $recorderHealth; expectedHome = $ExpectedHome; expectedAway = $ExpectedAway
+    healthFile = $recorderHealth; expectedHome = $ExpectedHome; expectedAway = $ExpectedAway; timezoneId = 'Asia/Bangkok'
   } | ConvertTo-Json -Depth 4 | Set-Content -Encoding utf8 $recorderConfig
   $recorderScript = Join-Path $ProjectRoot 'scripts\headless-live-page-recorder.mjs'
   $recorderProcess = Start-Process -FilePath $node -ArgumentList @($recorderScript, $recorderConfig) -RedirectStandardOutput $recorderOutput -RedirectStandardError $workerLog -WindowStyle Hidden -PassThru
