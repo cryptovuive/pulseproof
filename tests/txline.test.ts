@@ -60,6 +60,46 @@ describe("TxLINE normalisation", () => {
     expect(calculateMomentum(moments)).toBeLessThanOrEqual(88);
   });
 
+  it("maps the real soccer clock, participant side and lineup player IDs", () => {
+    const liveFixture = normalizeFixture({
+      FixtureId: 18241006,
+      Participant1: "England",
+      Participant2: "Argentina",
+      Participant1IsHome: true,
+    });
+    normalizeScoreRecord({
+      FixtureId: 18241006,
+      Action: "lineups",
+      Seq: 9,
+      Lineups: [{ lineups: [{ fixturePlayerId: 840808, player: { normativeId: 948167, preferredName: "Martinez, Lautaro Javier" } }] }],
+    }, liveFixture);
+    const winner = normalizeScoreRecord({
+      FixtureId: 18241006,
+      Participant1IsHome: true,
+      Participant: 2,
+      Action: "goal",
+      Seq: 872,
+      Clock: { Seconds: 5488 },
+      Data: { PlayerId: 948167 },
+      Stats: { 1: 1, 2: 2 },
+    }, liveFixture);
+    expect(winner).toMatchObject({
+      type: "goal",
+      team: "away",
+      minute: 91,
+      minuteLabel: "90+2",
+      participant: "Lautaro Javier Martinez",
+      score: [1, 2],
+    });
+  });
+
+  it("does not misclassify goal kicks or discarded actions as goals or cards", () => {
+    expect(normalizeScoreRecord({ Action: "goal_kick", Seq: 2 }, fixture).type).toBe("moment");
+    expect(normalizeScoreRecord({ Action: "action_discarded", Seq: 3 }, fixture).type).toBe("moment");
+    expect(normalizeScoreRecord({ Action: "game_finalised", Seq: 4, Stats: { 1: 1, 2: 2 } }, fixture))
+      .toMatchObject({ type: "final", score: [1, 2] });
+  });
+
   it("does not call metadata-only coverage a live match or award it points", () => {
     const metadata = normalizeScoreRecord({ Seq: 1, Action: "coverage_update" }, fixture);
     expect(metadata).toMatchObject({ type: "moment", points: 0, badge: 0 });

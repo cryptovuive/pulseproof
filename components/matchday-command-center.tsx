@@ -92,20 +92,23 @@ export function MatchdayCommandCenter({
 
   useEffect(() => {
     let active = true;
-    void fetch("/api/schedule", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Tournament path is temporarily unavailable");
-        return response.json() as Promise<{ entries: ScheduleEntry[]; tournamentEntries: ScheduleEntry[]; source: "txline-fixtures" | "verified-schedule" }>;
-      })
-      .then((body) => {
-        if (!active) return;
-        setEntries(body.tournamentEntries ?? body.entries);
-        setScheduleSource(body.source);
-      })
-      .catch((error: unknown) => {
-        if (active) setScheduleError(error instanceof Error ? error.message : "Tournament path is temporarily unavailable");
-      });
-    return () => { active = false; };
+    const refresh = () => void fetch("/api/schedule", { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Tournament path is temporarily unavailable");
+          return response.json() as Promise<{ entries: ScheduleEntry[]; tournamentEntries: ScheduleEntry[]; source: "txline-fixtures" | "verified-schedule" }>;
+        })
+        .then((body) => {
+          if (!active) return;
+          setEntries(body.tournamentEntries ?? body.entries);
+          setScheduleSource(body.source);
+          setScheduleError("");
+        })
+        .catch((error: unknown) => {
+          if (active) setScheduleError(error instanceof Error ? error.message : "Tournament path is temporarily unavailable");
+        });
+    refresh();
+    const timer = window.setInterval(refresh, 30_000);
+    return () => { active = false; window.clearInterval(timer); };
   }, []);
 
   const journey = useMemo(() => buildTournamentJourney(entries, followedTeams), [entries, followedTeams]);

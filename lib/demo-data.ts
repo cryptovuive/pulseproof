@@ -48,7 +48,24 @@ export const FRANCE_SPAIN_FIXTURE: Fixture = {
   gameState: 1,
 };
 
+export const ENGLAND_ARGENTINA_FIXTURE: Fixture = {
+  fixtureId: 18241006,
+  homeTeam: "England",
+  awayTeam: "Argentina",
+  startTime: "2026-07-15T19:00:00.000Z",
+  competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://apnews.com/article/world-cup-england-argentina-score-2ae6a218ae88248db6565ffd13f60d38",
+  stage: "Semi-final · Match 102 · Atlanta Stadium",
+  gameState: 1,
+};
+
 export const DEMO_DATA_SOURCES: Record<number, { provider: string; url: string; checkedAt: string }> = {
+  [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: {
+    provider: "TxLINE final snapshot + AP match report",
+    url: "https://apnews.com/article/world-cup-england-argentina-score-2ae6a218ae88248db6565ffd13f60d38",
+    checkedAt: "2026-07-16T00:25:00.000Z",
+  },
   [FRANCE_SPAIN_FIXTURE.fixtureId]: {
     provider: "RFEF result + Sky Sports event report",
     url: "https://www.skysports.com/football/france-vs-spain/549866",
@@ -128,9 +145,19 @@ export const FRANCE_SPAIN_MOMENTS = createMoments(FRANCE_SPAIN_FIXTURE, [
   { id: "fra-esp-final", seq: 341, minute: 90, type: "final", team: "neutral", title: "Spain reach the World Cup final", description: "Full-time: France 0–2 Spain. Spain advance to face the winner of England against Argentina.", points: 20, badge: 7, score: [0, 2], txlineAction: "game_finalised" },
 ]);
 
-export const DEMO_FIXTURES = [FRANCE_SPAIN_FIXTURE, DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
+export const ENGLAND_ARGENTINA_MOMENTS = createMoments(ENGLAND_ARGENTINA_FIXTURE, [
+  { id: "eng-arg-kickoff", seq: 1, minute: 0, type: "kickoff", team: "neutral", title: "Semi-final underway", description: "England and Argentina begin the second World Cup semi-final in Atlanta.", points: 5, badge: 0, score: [0, 0], txlineAction: "game_started" },
+  { id: "eng-arg-halftime", seq: 425, minute: 45, type: "halftime", team: "neutral", title: "Level at half-time", description: "The semi-final remains goalless at the interval.", points: 8, badge: 4, score: [0, 0], txlineAction: "halftime_finalised" },
+  { id: "eng-arg-gordon-55", seq: 548, minute: 55, type: "goal", team: "home", title: "Gordon puts England ahead", description: "Anthony Gordon scores the opening goal for England in the 55th minute.", participant: "Anthony Gordon", points: 12, badge: 2, score: [1, 0], txlineAction: "goal" },
+  { id: "eng-arg-fernandez-85", seq: 831, minute: 85, type: "goal", team: "away", title: "Fernández equalises late", description: "Enzo Fernández scores from outside the box after Lionel Messi finds him.", participant: "Enzo Fernández", assist: "Lionel Messi", points: 12, badge: 2, score: [1, 1], txlineAction: "goal" },
+  { id: "eng-arg-martinez-92", seq: 872, minute: 92, minuteLabel: "90+2", type: "goal", team: "away", title: "Martínez completes the comeback", description: "Lautaro Martínez heads in Lionel Messi's cross in second-half stoppage time.", participant: "Lautaro Martínez", assist: "Lionel Messi", points: 15, badge: 6, score: [1, 2], txlineAction: "goal" },
+  { id: "eng-arg-final", seq: 962, minute: 92, minuteLabel: "90+2", type: "final", team: "neutral", title: "Argentina reach the World Cup final", description: "Full-time: England 1–2 Argentina. Argentina advance to face Spain; England move to the third-place match against France.", points: 20, badge: 7, score: [1, 2], txlineAction: "game_finalised" },
+]);
+
+export const DEMO_FIXTURES = [ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_FIXTURE, DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
 
 export const DEMO_MOMENTS_BY_FIXTURE: Record<number, PulseMoment[]> = {
+  [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: ENGLAND_ARGENTINA_MOMENTS,
   [FRANCE_SPAIN_FIXTURE.fixtureId]: FRANCE_SPAIN_MOMENTS,
   [DEMO_FIXTURE.fixtureId]: DEMO_MOMENTS,
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: BRAZIL_NORWAY_MOMENTS,
@@ -138,6 +165,7 @@ export const DEMO_MOMENTS_BY_FIXTURE: Record<number, PulseMoment[]> = {
 };
 
 export const DEMO_DEFAULT_PHASE: Record<number, string> = {
+  [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: "FT",
   [FRANCE_SPAIN_FIXTURE.fixtureId]: "FT",
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: "FT",
   [PORTUGAL_SPAIN_FIXTURE.fixtureId]: "FT",

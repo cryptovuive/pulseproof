@@ -1,12 +1,12 @@
 import type { Fixture, ScheduleEntry } from "@/types/pulse";
 
-const FIFA_SCHEDULE_URL = "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/match-schedule-fixtures-results-teams-stadiums/";
-const AP_ENGLAND_URL = "https://apnews.com/article/world-cup-norway-england-score-f246f138c3a8563cb5a0e3f4037e930a";
+const AP_ENGLAND_URL = "https://apnews.com/article/world-cup-england-argentina-score-2ae6a218ae88248db6565ffd13f60d38";
+const AP_FINAL_URL = "https://apnews.com/article/argentina-messi-spain-yamal-world-cup-final-55077ce5c4728c4207a39cc4aa8a41a1";
 const FRANCE_SPAIN_REPORT_URL = "https://www.skysports.com/football/france-vs-spain/549866";
-const VERIFIED_AT = "2026-07-15T05:00:00.000Z";
+const VERIFIED_AT = "2026-07-16T00:25:00.000Z";
 
 export const ELIMINATED_TEAMS_AS_OF_VERIFICATION = new Set([
-  "Brazil", "Norway", "Switzerland", "Morocco", "Portugal", "Belgium", "France",
+  "Brazil", "Norway", "Switzerland", "Morocco", "Portugal", "Belgium", "France", "England",
 ]);
 
 export function isWorldCup2026Fixture(fixture: Fixture): boolean {
@@ -22,6 +22,7 @@ const VERIFIED_TOURNAMENT_FIXTURES: Array<{
   coverage: ScheduleEntry["coverage"];
   provider: string;
   sourceUrl: string;
+  txlineFixtureId?: number;
   result?: ScheduleEntry["result"];
   participantPaths?: ScheduleEntry["participantPaths"];
 }> = [
@@ -33,32 +34,48 @@ const VERIFIED_TOURNAMENT_FIXTURES: Array<{
     result: { phase: "FT", score: [0, 2], winnerTeam: "Spain", loserTeam: "France", replayFixtureId: 101 },
   },
   {
-    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_ENGLAND_URL, stage: "Semi-final · Atlanta Stadium", gameState: 0 },
+    fixture: { fixtureId: 102, homeTeam: "England", awayTeam: "Argentina", startTime: "2026-07-15T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "published-report", competitionSourceUrl: AP_ENGLAND_URL, stage: "Semi-final · Match 102 · Atlanta Stadium", gameState: 1 },
     coverage: "externally-confirmed",
-    provider: "FIFA schedule + AP quarter-final confirmation",
+    provider: "TxLINE final snapshot + AP match report",
     sourceUrl: AP_ENGLAND_URL,
+    txlineFixtureId: 18241006,
+    result: { phase: "FT", score: [1, 2], winnerTeam: "Argentina", loserTeam: "England", replayFixtureId: 18241006 },
   },
   {
-    fixture: { fixtureId: 103, homeTeam: "France", awayTeam: "TBD", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: FIFA_SCHEDULE_URL, stage: "Third place · Miami Stadium", gameState: 0 },
-    coverage: "participants-pending",
-    provider: "FIFA match schedule",
-    sourceUrl: FIFA_SCHEDULE_URL,
+    fixture: { fixtureId: 103, homeTeam: "France", awayTeam: "England", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_FINAL_URL, stage: "Third place · Match 103 · Miami Stadium", gameState: 0 },
+    coverage: "externally-confirmed",
+    provider: "FIFA schedule + both published semi-final results",
+    sourceUrl: AP_FINAL_URL,
+    txlineFixtureId: 18257865,
     participantPaths: {
       home: { kind: "loser", fixtureId: 101, label: "France" },
-      away: { kind: "loser", fixtureId: 102, label: "Loser ENG–ARG" },
+      away: { kind: "loser", fixtureId: 102, label: "England" },
     },
   },
   {
-    fixture: { fixtureId: 104, homeTeam: "Spain", awayTeam: "TBD", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: FIFA_SCHEDULE_URL, stage: "Final · New York New Jersey Stadium", gameState: 0 },
-    coverage: "participants-pending",
-    provider: "FIFA match schedule",
-    sourceUrl: FIFA_SCHEDULE_URL,
+    fixture: { fixtureId: 104, homeTeam: "Spain", awayTeam: "Argentina", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_FINAL_URL, stage: "Final · Match 104 · New York New Jersey Stadium", gameState: 0 },
+    coverage: "externally-confirmed",
+    provider: "FIFA schedule + both published semi-final results",
+    sourceUrl: AP_FINAL_URL,
+    txlineFixtureId: 18257739,
     participantPaths: {
       home: { kind: "winner", fixtureId: 101, label: "Spain" },
-      away: { kind: "winner", fixtureId: 102, label: "Winner ENG–ARG" },
+      away: { kind: "winner", fixtureId: 102, label: "Argentina" },
     },
   },
 ];
+
+function toScheduleEntry(entry: typeof VERIFIED_TOURNAMENT_FIXTURES[number]): ScheduleEntry {
+  return {
+    fixture: { ...entry.fixture },
+    coverage: entry.coverage,
+    source: "verified-schedule",
+    ...(entry.txlineFixtureId ? { txlineFixtureId: entry.txlineFixtureId } : {}),
+    provenance: { provider: entry.provider, sourceUrl: entry.sourceUrl, verifiedAt: VERIFIED_AT },
+    ...(entry.result ? { result: { ...entry.result } } : {}),
+    ...(entry.participantPaths ? { participantPaths: entry.participantPaths } : {}),
+  };
+}
 
 export function enrichFixtureFromVerifiedSchedule(fixture: Fixture, now = new Date()): Fixture {
   if (fixture.competitionSource !== "unavailable") return fixture;
@@ -82,25 +99,17 @@ export function verifiedSchedule(now = new Date()): ScheduleEntry[] {
   const current = now.getTime();
   return VERIFIED_TOURNAMENT_FIXTURES
     .filter(({ fixture }) => Date.parse(fixture.startTime) > current)
-    .map(({ fixture, coverage, provider, sourceUrl, result, participantPaths }) => ({
-      fixture,
-      coverage,
-      source: "verified-schedule" as const,
-      provenance: { provider, sourceUrl, verifiedAt: VERIFIED_AT },
-      ...(result ? { result } : {}),
-      ...(participantPaths ? { participantPaths } : {}),
-    }));
+    .map(toScheduleEntry);
 }
 
 export function verifiedTournamentPath(): ScheduleEntry[] {
-  return VERIFIED_TOURNAMENT_FIXTURES.map(({ fixture, coverage, provider, sourceUrl, result, participantPaths }) => ({
-    fixture,
-    coverage,
-    source: "verified-schedule" as const,
-    provenance: { provider, sourceUrl, verifiedAt: VERIFIED_AT },
-    ...(result ? { result } : {}),
-    ...(participantPaths ? { participantPaths } : {}),
-  }));
+  return VERIFIED_TOURNAMENT_FIXTURES.map(toScheduleEntry);
+}
+
+export function verifiedTxLineFixtures(): Fixture[] {
+  return VERIFIED_TOURNAMENT_FIXTURES
+    .filter((entry): entry is typeof entry & { txlineFixtureId: number } => Number.isSafeInteger(entry.txlineFixtureId) && Number(entry.txlineFixtureId) > 0)
+    .map((entry) => ({ ...entry.fixture, fixtureId: entry.txlineFixtureId }));
 }
 
 export function scheduleParticipantLabel(entry: ScheduleEntry, side: "home" | "away"): string {
@@ -116,21 +125,22 @@ export function scheduleIntegrityIssues(entries: ScheduleEntry[]): string[] {
     ids.add(entry.fixture.fixtureId);
     if (!Number.isFinite(Date.parse(entry.fixture.startTime))) issues.push(`invalid start time for ${entry.fixture.fixtureId}`);
     if (!Number.isFinite(Date.parse(entry.provenance.verifiedAt))) issues.push(`missing verification time for ${entry.fixture.fixtureId}`);
-    if (entry.coverage === "externally-confirmed" && !entry.result) {
+    if (entry.coverage === "externally-confirmed" && !entry.result && !entry.fixture.stage.startsWith("Third place")) {
       for (const team of [entry.fixture.homeTeam, entry.fixture.awayTeam]) {
         if (ELIMINATED_TEAMS_AS_OF_VERIFICATION.has(team)) issues.push(`eliminated team ${team} appears in confirmed future fixture ${entry.fixture.fixtureId}`);
         if (team === "TBD") issues.push(`TBD participant marked confirmed for fixture ${entry.fixture.fixtureId}`);
       }
     }
     if (entry.result) {
-      const { score, winnerTeam, loserTeam, replayFixtureId } = entry.result;
+      const { score, shootoutScore, winnerTeam, loserTeam, replayFixtureId } = entry.result;
       const teams = [entry.fixture.homeTeam, entry.fixture.awayTeam];
       if (!teams.includes(winnerTeam) || !teams.includes(loserTeam) || winnerTeam === loserTeam) {
         issues.push(`result participants do not match fixture ${entry.fixture.fixtureId}`);
       }
       const winnerIndex = teams.indexOf(winnerTeam);
       const loserIndex = teams.indexOf(loserTeam);
-      if (winnerIndex < 0 || loserIndex < 0 || score[winnerIndex] <= score[loserIndex]) {
+      const decidingScore = score[0] === score[1] && shootoutScore ? shootoutScore : score;
+      if (winnerIndex < 0 || loserIndex < 0 || decidingScore[winnerIndex] <= decidingScore[loserIndex]) {
         issues.push(`winner does not match score for fixture ${entry.fixture.fixtureId}`);
       }
       if (!Number.isSafeInteger(replayFixtureId) || replayFixtureId <= 0) issues.push(`missing replay fixture for ${entry.fixture.fixtureId}`);
@@ -138,17 +148,17 @@ export function scheduleIntegrityIssues(entries: ScheduleEntry[]): string[] {
     if (entry.coverage === "participants-pending") {
       if (entry.fixture.homeTeam !== "TBD" && !entry.participantPaths?.home) issues.push(`pending fixture ${entry.fixture.fixtureId} contains unsupported home participant`);
       if (entry.fixture.awayTeam !== "TBD" && !entry.participantPaths?.away) issues.push(`pending fixture ${entry.fixture.fixtureId} contains unsupported away participant`);
-      for (const side of ["home", "away"] as const) {
-        const path = entry.participantPaths?.[side];
-        if (!path) continue;
-        const source = entries.find((candidate) => candidate.fixture.fixtureId === path.fixtureId);
-        const actual = side === "home" ? entry.fixture.homeTeam : entry.fixture.awayTeam;
-        if (source?.result) {
-          const expected = path.kind === "winner" ? source.result.winnerTeam : source.result.loserTeam;
-          if (actual !== expected) issues.push(`fixture ${entry.fixture.fixtureId} ${side} participant does not follow result ${path.fixtureId}`);
-        } else if (actual !== "TBD") {
-          issues.push(`fixture ${entry.fixture.fixtureId} ${side} participant was inferred before result ${path.fixtureId}`);
-        }
+    }
+    for (const side of ["home", "away"] as const) {
+      const path = entry.participantPaths?.[side];
+      if (!path) continue;
+      const source = entries.find((candidate) => candidate.fixture.fixtureId === path.fixtureId);
+      const actual = side === "home" ? entry.fixture.homeTeam : entry.fixture.awayTeam;
+      if (source?.result) {
+        const expected = path.kind === "winner" ? source.result.winnerTeam : source.result.loserTeam;
+        if (actual !== expected) issues.push(`fixture ${entry.fixture.fixtureId} ${side} participant does not follow result ${path.fixtureId}`);
+      } else if (actual !== "TBD") {
+        issues.push(`fixture ${entry.fixture.fixtureId} ${side} participant was inferred before result ${path.fixtureId}`);
       }
     }
   }

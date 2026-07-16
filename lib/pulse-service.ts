@@ -7,7 +7,7 @@ import {
   getDemoMomentsForFixture,
   getDemoOverviews,
 } from "@/lib/demo-data";
-import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture } from "@/lib/schedule";
+import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture, verifiedTxLineFixtures } from "@/lib/schedule";
 import { calculateMomentum, getFixturePulse, getFixtures, hasActiveTxLineAccess } from "@/lib/txline";
 import type { Fixture, MatchOverview, MatchPulse } from "@/types/pulse";
 
@@ -48,9 +48,12 @@ export async function listAvailableFixtures(): Promise<{
 }> {
   if (hasActiveTxLineAccess()) {
     try {
-      const fixtures = (await getFixtures())
+      const currentFixtures = (await getFixtures())
         .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
         .filter(isWorldCup2026Fixture);
+      const fixtureMap = new Map(verifiedTxLineFixtures().map((fixture) => [fixture.fixtureId, fixture]));
+      for (const fixture of currentFixtures) fixtureMap.set(fixture.fixtureId, fixture);
+      const fixtures = [...fixtureMap.values()];
       const candidates = [...fixtures]
         .sort((a, b) => {
           const aTime = Date.parse(a.startTime);
@@ -71,11 +74,14 @@ export async function listAvailableFixtures(): Promise<{
             phase: result.value.phase,
             minute: result.value.minute,
             score: result.value.score,
+            ...(result.value.shootoutScore ? { shootoutScore: result.value.shootoutScore } : {}),
             scoreKnown: result.value.moments.some((moment) => Boolean(moment.score)),
             updatedAt: result.value.updatedAt,
             momentCount: result.value.moments.length,
           };
         }
+        const published = getDemoOverviews().find((match) => match.fixture.fixtureId === fixture.fixtureId);
+        if (published) return published;
         return { fixture, source: "txline-live", phase: "WAITING", minute: 0, score: [0, 0], scoreKnown: false, updatedAt: fixture.startTime, momentCount: 0 };
       });
       matches.sort((a, b) => {
@@ -103,9 +109,12 @@ export async function listAvailableFixtures(): Promise<{
 export async function loadPulse(fixtureId: number, options: { historical?: boolean; cursor?: number; forceDemo?: boolean } = {}) {
   if (!options.forceDemo && hasActiveTxLineAccess()) {
     try {
-      const listed = (await getFixtures())
+      const current = (await getFixtures())
         .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
         .filter(isWorldCup2026Fixture);
+      const registry = new Map(verifiedTxLineFixtures().map((fixture) => [fixture.fixtureId, fixture]));
+      for (const fixture of current) registry.set(fixture.fixtureId, fixture);
+      const listed = [...registry.values()];
       const fixture = listed.find((item) => item.fixtureId === fixtureId);
       if (!fixture) throw new Error(`TxLINE fixture ${fixtureId} is not available to this subscription`);
       return await getFixturePulse(fixture, options.historical);

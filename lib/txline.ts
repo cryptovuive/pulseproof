@@ -18,6 +18,7 @@ type AnyRecord = Record<string, unknown>;
 
 let jwtCache: { value: string; expiresAt: number } | undefined;
 let jwtInFlight: Promise<string> | undefined;
+const playerDirectories = new Map<number, Map<number, string>>();
 
 export function getTxLineConfig() {
   const network = (process.env.TXLINE_NETWORK ?? "devnet") as Network;
@@ -117,6 +118,35 @@ function nestedRecord(record: AnyRecord, ...keys: string[]): AnyRecord {
   return {};
 }
 
+function recordArray(value: unknown): AnyRecord[] {
+  return Array.isArray(value)
+    ? value.filter((entry): entry is AnyRecord => Boolean(entry) && typeof entry === "object" && !Array.isArray(entry))
+    : [];
+}
+
+function displayPlayerName(value: string): string {
+  const [family, given] = value.split(",").map((part) => part.trim());
+  return family && given ? `${given} ${family}` : value;
+}
+
+function hydratePlayerDirectory(raw: AnyRecord, fixtureId: number): Map<number, string> {
+  const directory = playerDirectories.get(fixtureId) ?? new Map<number, string>();
+  for (const team of recordArray(raw.Lineups ?? raw.lineups)) {
+    for (const lineup of recordArray(team.lineups ?? team.Lineups)) {
+      const player = nestedRecord(lineup, "player", "Player");
+      const name = stringValue(player, "preferredName", "PreferredName", "name", "Name");
+      if (!name) continue;
+      const displayName = displayPlayerName(name);
+      const normativeId = numberValue(player, "normativeId", "NormativeId", "id", "Id");
+      const fixturePlayerId = numberValue(lineup, "fixturePlayerId", "FixturePlayerId");
+      if (normativeId !== undefined) directory.set(normativeId, displayName);
+      if (fixturePlayerId !== undefined) directory.set(fixturePlayerId, displayName);
+    }
+  }
+  playerDirectories.set(fixtureId, directory);
+  return directory;
+}
+
 export function normalizeFixture(raw: AnyRecord): Fixture {
   const participant1 = String(raw.Participant1 ?? raw.participant1 ?? "Team 1");
   const participant2 = String(raw.Participant2 ?? raw.participant2 ?? "Team 2");
@@ -138,15 +168,15 @@ export function normalizeFixture(raw: AnyRecord): Fixture {
 
 function momentType(action: string): MomentType {
   const value = action.toLowerCase();
-  if (value.includes("game_started") || value.includes("kickoff")) return "kickoff";
-  if (value.includes("goal")) return "goal";
-  if (value.includes("shot")) return "shot";
-  if (value.includes("corner")) return "corner";
-  if (value.includes("card") || value.includes("yellow") || value.includes("red")) return "card";
-  if (value.includes("var")) return "var";
-  if (value.includes("substitution") || value.includes("substitute")) return "substitution";
-  if (value.includes("halftime")) return "halftime";
-  if (value.includes("game_finalised") || value.includes("final")) return "final";
+  if (value === "game_started" || value === "kickoff") return "kickoff";
+  if (value === "goal" || (value.endsWith("_goal") && value !== "goal_kick")) return "goal";
+  if (value === "shot" || value.startsWith("shot_")) return "shot";
+  if (value === "corner" || value === "corner_kick") return "corner";
+  if (["yellow_card", "red_card", "second_yellow_card"].includes(value)) return "card";
+  if (value === "var" || value === "var_end") return "var";
+  if (value === "substitution" || value === "substitute") return "substitution";
+  if (value === "halftime" || value === "halftime_finalised") return "halftime";
+  if (value === "game_finalised" || value === "final") return "final";
   return "moment";
 }
 
@@ -170,16 +200,38 @@ function momentCopy(type: MomentType, teamName: string) {
 
 function scoreFrom(raw: AnyRecord): [number, number] | undefined {
   const stats = nestedRecord(raw, "Stats", "stats");
-  const home = numberValue(raw, "HomeScore", "homeScore", "Participant1Score", "participant1Score") ?? numberValue(stats, "1");
-  const away = numberValue(raw, "AwayScore", "awayScore", "Participant2Score", "participant2Score") ?? numberValue(stats, "2");
+  const score = nestedRecord(raw, "Score", "score");
+  const participant1Total = nestedRecord(nestedRecord(score, "Participant1", "participant1"), "Total", "total");
+  const participant2Total = nestedRecord(nestedRecord(score, "Participant2", "participant2"), "Total", "total");
+  const home = numberValue(raw, "HomeScore", "homeScore", "Participant1Score", "participant1Score")
+    ?? numberValue(stats, "1")
+    ?? numberValue(participant1Total, "Goals", "goals");
+  const away = numberValue(raw, "AwayScore", "awayScore", "Participant2Score", "participant2Score")
+    ?? numberValue(stats, "2")
+    ?? numberValue(participant2Total, "Goals", "goals");
   return home === undefined || away === undefined ? undefined : [home, away];
+}
+
+function shootoutScoreFrom(raw: AnyRecord): [number, number] | undefined {
+  const stats = nestedRecord(raw, "Stats", "stats");
+  const home = numberValue(stats, "6001");
+  const away = numberValue(stats, "6002");
+  if (home === undefined || away === undefined || (home === 0 && away === 0)) return undefined;
+  return [home, away];
 }
 
 function minuteFrom(raw: AnyRecord, data: AnyRecord): { minute: number; minuteLabel?: string } {
   const candidate = raw.Minute ?? raw.minute ?? raw.MatchTime ?? raw.matchTime
     ?? data.Minute ?? data.minute ?? data.MatchTime ?? data.matchTime;
   if (typeof candidate === "number" && Number.isFinite(candidate)) return { minute: candidate };
-  if (typeof candidate !== "string") return { minute: 0 };
+  if (typeof candidate !== "string") {
+    const clock = nestedRecord(raw, "Clock", "clock");
+    const dataClock = nestedRecord(data, "Clock", "clock");
+    const seconds = numberValue(clock, "Seconds", "seconds") ?? numberValue(dataClock, "Seconds", "seconds");
+    if (seconds === undefined) return { minute: 0 };
+    const minute = Math.max(0, Math.floor(seconds / 60));
+    return minute >= 90 ? { minute, minuteLabel: `90+${minute - 89}` } : { minute };
+  }
   const value = candidate.trim().replace(/[’']/g, "");
   const match = /^(\d+)(?:\+(\d+))?$/.exec(value);
   if (!match) return { minute: 0 };
@@ -192,16 +244,31 @@ export function normalizeScoreRecord(raw: AnyRecord, fixture: Fixture): PulseMom
   const data = nestedRecord(raw, "Data", "data");
   const action = stringValue(raw, "Action", "action") ?? "score_update";
   const type = momentType(action);
-  const participant = stringValue(raw, "Participant", "participant") ?? stringValue(data, "Participant", "participant") ?? "";
-  const team = participant === fixture.homeTeam ? "home" : participant === fixture.awayTeam ? "away" : "neutral";
-  const teamName = participant || (team === "home" ? fixture.homeTeam : team === "away" ? fixture.awayTeam : "The match");
+  const directory = hydratePlayerDirectory(raw, fixture.fixtureId);
+  const participantName = stringValue(raw, "Participant", "participant") ?? stringValue(data, "Participant", "participant") ?? "";
+  const participantNumber = numberValue(raw, "Participant", "participant") ?? numberValue(data, "Participant", "participant");
+  const participant1IsHome = raw.Participant1IsHome ?? raw.participant1IsHome ?? true;
+  const team = participantName === fixture.homeTeam
+    || (participantNumber === 1 && participant1IsHome !== false)
+    || (participantNumber === 2 && participant1IsHome === false)
+    ? "home"
+    : participantName === fixture.awayTeam
+      || (participantNumber === 2 && participant1IsHome !== false)
+      || (participantNumber === 1 && participant1IsHome === false)
+      ? "away"
+      : "neutral";
+  const teamName = participantName || (team === "home" ? fixture.homeTeam : team === "away" ? fixture.awayTeam : "The match");
   const [title, description, points, badge] = momentCopy(type, teamName);
   const seq = numberValue(raw, "Seq", "seq") ?? 1;
   const timestamp = numberValue(raw, "Ts", "ts", "Timestamp", "timestamp") ?? Date.now();
   const occurredAt = new Date(timestamp < 10_000_000_000 ? timestamp * 1000 : timestamp).toISOString();
   const matchMinute = minuteFrom(raw, data);
-  const actor = stringValue(data, "PlayerName", "playerName", "Player", "player", "Scorer", "scorer");
-  const assist = stringValue(data, "Assist", "assist", "Assistant", "assistant");
+  const actorId = numberValue(data, "PlayerId", "playerId", "PlayerInId", "playerInId", "ScorerId", "scorerId");
+  const assistId = numberValue(data, "AssistPlayerId", "assistPlayerId", "AssistantId", "assistantId");
+  const actor = stringValue(data, "PlayerName", "playerName", "Player", "player", "Scorer", "scorer")
+    ?? (actorId === undefined ? undefined : directory.get(actorId));
+  const assist = stringValue(data, "Assist", "assist", "Assistant", "assistant")
+    ?? (assistId === undefined ? undefined : directory.get(assistId));
   const lowerAction = action.toLowerCase();
   const cardColor = type === "card"
     ? lowerAction.includes("red") || lowerAction.includes("second_yellow") ? "red" as const : "yellow" as const
@@ -246,18 +313,30 @@ export async function getFixtures(): Promise<Fixture[]> {
 export async function getFixturePulse(fixture: Fixture, historical = false): Promise<MatchPulse> {
   const path = historical ? `/scores/historical/${fixture.fixtureId}` : `/scores/snapshot/${fixture.fixtureId}`;
   const response = await txLineFetch(path);
-  const raw = (await response.json()) as AnyRecord[];
-  const moments = raw.map((entry) => normalizeScoreRecord(entry, fixture));
+  const body = await response.text();
+  if (!body.trim()) throw new Error(historical
+    ? `TxLINE historical replay for fixture ${fixture.fixtureId} is not available yet`
+    : `TxLINE score snapshot for fixture ${fixture.fixtureId} is empty`);
+  let parsed: unknown;
+  try { parsed = JSON.parse(body); } catch { throw new Error(`TxLINE ${historical ? "historical replay" : "score snapshot"} returned invalid JSON`); }
+  if (!Array.isArray(parsed)) throw new Error(`TxLINE ${historical ? "historical replay" : "score snapshot"} returned an invalid record set`);
+  const raw = parsed.filter((entry): entry is AnyRecord => Boolean(entry) && typeof entry === "object" && !Array.isArray(entry));
+  for (const entry of raw) hydratePlayerDirectory(entry, fixture.fixtureId);
+  const moments = raw
+    .map((entry) => normalizeScoreRecord(entry, fixture))
+    .sort((a, b) => a.seq - b.seq || Date.parse(a.occurredAt) - Date.parse(b.occurredAt));
   const last = moments.at(-1);
   const score = [...moments].reverse().find((moment) => moment.score)?.score ?? [0, 0];
+  const shootoutScore = [...raw].reverse().map(shootoutScoreFrom).find(Boolean);
   const phase = inferMatchPhase(moments);
   const { network } = getTxLineConfig();
   return {
     fixture,
     source: (historical ? "txline-historical" : "txline-live") as DataSource,
     phase,
-    minute: last?.minute ?? 0,
+    minute: moments.reduce((maximum, moment) => Math.max(maximum, moment.minute), 0),
     score,
+    ...(shootoutScore ? { shootoutScore } : {}),
     momentum: calculateMomentum(moments),
     updatedAt: last?.occurredAt ?? fixture.startTime,
     moments,

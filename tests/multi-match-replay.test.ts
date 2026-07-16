@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, FRANCE_SPAIN_MOMENTS, getDemoOverviews } from "@/lib/demo-data";
+import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_MOMENTS, getDemoOverviews } from "@/lib/demo-data";
 import { buildDemoPulse } from "@/lib/pulse-service";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
 
 describe("multi-match demo and catch-up", () => {
   it("provides a distinct replay timeline for every listed fixture", () => {
-    expect(DEMO_FIXTURES).toHaveLength(4);
+    expect(DEMO_FIXTURES).toHaveLength(5);
     for (const fixture of DEMO_FIXTURES) {
       expect(fixture.competition).toBe("FIFA World Cup 2026");
       const pulse = buildDemoPulse(fixture.fixtureId);
@@ -26,6 +26,7 @@ describe("multi-match demo and catch-up", () => {
       18187298: [1, 2],
       18198205: [0, 1],
       18209181: [2, 0],
+      18241006: [1, 2],
     });
   });
 
@@ -53,6 +54,17 @@ describe("multi-match demo and catch-up", () => {
     expect(full.moments.filter((moment) => moment.type === "card")).toHaveLength(3);
     expect(full.moments.filter((moment) => moment.type === "substitution")).toHaveLength(3);
     expect(summarizeCatchUp(full.moments)).toMatchObject({ goals: 2, cards: 3, reviews: 1 });
+  });
+
+  it("replays England–Argentina with the published 1–2 comeback sequence", () => {
+    const full = buildDemoPulse(ENGLAND_ARGENTINA_FIXTURE.fixtureId);
+    expect(full).toMatchObject({ phase: "FT", score: [1, 2] });
+    expect(full.moments.filter((moment) => moment.type === "goal").map((moment) => [moment.minuteLabel ?? moment.minute, moment.participant, moment.score])).toEqual([
+      [55, "Anthony Gordon", [1, 0]],
+      [85, "Enzo Fernández", [1, 1]],
+      ["90+2", "Lautaro Martínez", [1, 2]],
+    ]);
+    expect(full.moments.at(-1)).toMatchObject({ type: "final", score: [1, 2] });
   });
 
   it("reconstructs score, minute and momentum at an exact catch-up position", () => {

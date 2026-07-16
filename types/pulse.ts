@@ -52,6 +52,7 @@ export interface MatchPulse {
   phase: string;
   minute: number;
   score: [number, number];
+  shootoutScore?: [number, number];
   momentum: number;
   updatedAt: string;
   moments: PulseMoment[];
@@ -69,6 +70,7 @@ export interface MatchOverview {
   phase: string;
   minute: number;
   score: [number, number];
+  shootoutScore?: [number, number];
   scoreKnown: boolean;
   updatedAt: string;
   momentCount: number;
@@ -78,6 +80,7 @@ export interface ScheduleEntry {
   fixture: Fixture;
   source: "txline-fixtures" | "verified-schedule";
   coverage: "txline-confirmed" | "externally-confirmed" | "participants-pending";
+  txlineFixtureId?: number;
   provenance: {
     provider: string;
     sourceUrl?: string;
@@ -86,6 +89,7 @@ export interface ScheduleEntry {
   result?: {
     phase: "FT";
     score: [number, number];
+    shootoutScore?: [number, number];
     winnerTeam: string;
     loserTeam: string;
     replayFixtureId: number;

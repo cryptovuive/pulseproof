@@ -12,7 +12,7 @@ import {
   scoreRecordFixtureId,
 } from "@/lib/txline";
 import type { Fixture, MatchPulse, PulseMoment } from "@/types/pulse";
-import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture } from "@/lib/schedule";
+import { enrichFixtureFromVerifiedSchedule, isWorldCup2026Fixture, verifiedTxLineFixtures } from "@/lib/schedule";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -119,61 +119,95 @@ export async function GET(request: NextRequest) {
       }
 
       const runLiveBridge = async () => {
-        const fixtureList = (await getFixtures())
+        const currentFixtures = (await getFixtures())
           .map((fixture) => enrichFixtureFromVerifiedSchedule(fixture))
           .filter(isWorldCup2026Fixture);
-        const fixtureMap = new Map(fixtureList.map((fixture) => [fixture.fixtureId, fixture]));
+        const fixtureMap = new Map(verifiedTxLineFixtures().map((fixture) => [fixture.fixtureId, fixture]));
+        for (const fixture of currentFixtures) fixtureMap.set(fixture.fixtureId, fixture);
         const missing = fixtureIds.filter((id) => !fixtureMap.has(id));
         if (missing.length) throw new Error(`TxLINE fixtures unavailable: ${missing.join(", ")}`);
         const lastSeq = new Map<number, number>();
         const recentMoments = new Map<number, PulseMoment[]>();
+        const phases = new Map<number, string>();
 
-        const snapshots = await Promise.allSettled(
-          fixtureIds.map((id) => getFixturePulse(fixtureMap.get(id) as Fixture)),
-        );
-        snapshots.forEach((result, index) => {
-          if (result.status !== "fulfilled") return;
-          const fixtureId = fixtureIds[index];
-          const moments = result.value.moments;
-          recentMoments.set(fixtureId, moments.slice(-8));
-          lastSeq.set(fixtureId, moments.at(-1)?.seq ?? -1);
-          emit("pulse", pulseUpdate(result.value));
-        });
-
-        while (!closed) {
+        let refreshInFlight = false;
+        const refreshSnapshots = async (initialize = false) => {
+          if (refreshInFlight || closed) return;
+          refreshInFlight = true;
           try {
-            const response = await openScoresStream(upstreamAbort.signal);
-            for await (const message of readSseMessages(response)) {
-              if (closed) break;
-              const payload = parseSseJson(message);
-              for (const record of extractScoreRecords(payload)) {
-                const fixtureId = scoreRecordFixtureId(record);
-                if (!fixtureId || !fixtureIds.includes(fixtureId)) continue;
-                const fixture = fixtureMap.get(fixtureId);
-                if (!fixture) continue;
-                const moment = normalizeScoreRecord(record, fixture);
-                if (moment.seq <= (lastSeq.get(fixtureId) ?? -1)) continue;
-                lastSeq.set(fixtureId, moment.seq);
-                const moments = [...(recentMoments.get(fixtureId) ?? []), moment].slice(-8);
-                recentMoments.set(fixtureId, moments);
-                emit("moment", moment);
-                emit("pulse", {
-                  fixtureId,
-                  minute: moment.minute,
-                  score: moment.score,
-                  phase: moment.type === "final" ? "FT" : moment.type === "halftime" ? "HT" : "LIVE",
-                  momentum: calculateMomentum(moments),
-                  source: "txline-live",
-                  updatedAt: moment.occurredAt,
-                });
-              }
-            }
-            if (!closed) emit("warning", { message: "TxLINE stream ended; reconnecting" });
-          } catch (error) {
-            if (closed || upstreamAbort.signal.aborted) break;
-            emit("warning", { message: error instanceof Error ? error.message : "TxLINE stream interrupted" });
+            const snapshots = await Promise.allSettled(
+              fixtureIds.map((id) => getFixturePulse(fixtureMap.get(id) as Fixture)),
+            );
+            snapshots.forEach((result, index) => {
+              if (result.status !== "fulfilled") return;
+              const fixtureId = fixtureIds[index];
+              const moments = result.value.moments;
+              recentMoments.set(fixtureId, moments.slice(-8));
+              if (initialize) lastSeq.set(fixtureId, moments.at(-1)?.seq ?? -1);
+              phases.set(fixtureId, result.value.phase);
+              emit("pulse", pulseUpdate(result.value));
+            });
+          } finally {
+            refreshInFlight = false;
           }
-          if (!closed) await new Promise((resolve) => setTimeout(resolve, 1_500));
+        };
+
+        await refreshSnapshots(true);
+        // The provider may drop the last SSE frame or remove a completed fixture
+        // from its active catalogue. Snapshot reconciliation makes final scores
+        // self-healing without advancing lastSeq, so a late SSE event is retained.
+        const snapshotTimer = setInterval(() => void refreshSnapshots(), 30_000);
+
+        try {
+          while (!closed) {
+            try {
+              const response = await openScoresStream(upstreamAbort.signal);
+              for await (const message of readSseMessages(response)) {
+                if (closed) break;
+                const payload = parseSseJson(message);
+                for (const record of extractScoreRecords(payload)) {
+                  const fixtureId = scoreRecordFixtureId(record);
+                  if (!fixtureId || !fixtureIds.includes(fixtureId)) continue;
+                  const fixture = fixtureMap.get(fixtureId);
+                  if (!fixture) continue;
+                  const moment = normalizeScoreRecord(record, fixture);
+                  if (moment.seq <= (lastSeq.get(fixtureId) ?? -1)) continue;
+                  lastSeq.set(fixtureId, moment.seq);
+                  const moments = [...(recentMoments.get(fixtureId) ?? []), moment].slice(-8);
+                  recentMoments.set(fixtureId, moments);
+                  const previousPhase = phases.get(fixtureId) ?? "COVERED";
+                  const phase = moment.type === "final"
+                    ? "FT"
+                    : moment.type === "halftime"
+                      ? "HT"
+                      : moment.type === "kickoff" || previousPhase === "LIVE"
+                        ? "LIVE"
+                        : previousPhase;
+                  phases.set(fixtureId, phase);
+                  emit("moment", moment);
+                  emit("pulse", {
+                    fixtureId,
+                    minute: moment.minute,
+                    score: moment.score,
+                    phase,
+                    momentum: calculateMomentum(moments),
+                    source: "txline-live",
+                    updatedAt: moment.occurredAt,
+                  });
+                }
+              }
+              if (!closed) emit("warning", { message: "TxLINE stream ended; reconnecting" });
+            } catch (error) {
+              if (closed || upstreamAbort.signal.aborted) break;
+              emit("warning", { message: error instanceof Error ? error.message : "TxLINE stream interrupted" });
+            }
+            if (!closed) {
+              await refreshSnapshots();
+              await new Promise((resolve) => setTimeout(resolve, 1_500));
+            }
+          }
+        } finally {
+          clearInterval(snapshotTimer);
         }
       };
 

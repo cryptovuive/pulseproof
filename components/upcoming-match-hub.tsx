@@ -44,36 +44,41 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
 
   useEffect(() => {
     let active = true;
-    void fetch("/api/schedule", { cache: "no-store" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Upcoming fixture feed is unavailable");
-        return response.json() as Promise<{
-          entries: ScheduleEntry[];
-          source: "txline-fixtures" | "verified-schedule";
-          freshness: { verifiedAt: string | null; stale: boolean };
-        }>;
-      })
-      .then((body) => {
-        if (!active) return;
-        setEntries(body.entries);
-        setSource(body.source);
-        setStale(body.freshness.stale);
-        setVerifiedAt(body.freshness.verifiedAt);
-        const availableIds = new Set(body.entries.map((entry) => entry.fixture.fixtureId));
-        let stored: number[] = [];
-        try {
-          const parsed = JSON.parse(localStorage.getItem(REMINDER_KEY) ?? "[]") as unknown;
-          if (Array.isArray(parsed)) stored = parsed.filter((value): value is number => Number.isSafeInteger(value));
-        } catch { /* ignore malformed local preference */ }
-        const valid = stored.filter((fixtureId) => availableIds.has(fixtureId));
-        localStorage.setItem(REMINDER_KEY, JSON.stringify(valid));
-        setReminders(valid);
-      })
-      .catch(() => {
-        if (active) setEntries([]);
-      })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+    const refresh = () => void fetch("/api/schedule", { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Upcoming fixture feed is unavailable");
+          return response.json() as Promise<{
+            entries: ScheduleEntry[];
+            source: "txline-fixtures" | "verified-schedule";
+            freshness: { verifiedAt: string | null; stale: boolean };
+          }>;
+        })
+        .then((body) => {
+          if (!active) return;
+          setEntries(body.entries);
+          setSource(body.source);
+          setStale(body.freshness.stale);
+          setVerifiedAt(body.freshness.verifiedAt);
+          const availableIds = new Set(body.entries.map((entry) => entry.fixture.fixtureId));
+          let stored: number[] = [];
+          try {
+            const parsed = JSON.parse(localStorage.getItem(REMINDER_KEY) ?? "[]") as unknown;
+            if (Array.isArray(parsed)) stored = parsed.filter((value): value is number => Number.isSafeInteger(value));
+          } catch { /* ignore malformed local preference */ }
+          const valid = stored.filter((fixtureId) => availableIds.has(fixtureId));
+          localStorage.setItem(REMINDER_KEY, JSON.stringify(valid));
+          setReminders(valid);
+        })
+        .catch(() => {
+          // Keep the last verified schedule during a transient refresh failure.
+        })
+        .finally(() => { if (active) setLoading(false); });
+    refresh();
+    const refreshTimer = window.setInterval(refresh, 30_000);
+    return () => {
+      active = false;
+      window.clearInterval(refreshTimer);
+    };
   }, []);
 
   const shown = useMemo(
@@ -83,6 +88,13 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
         ? entries.filter((entry) => fixtureHasFollowedTeam(entry.fixture.homeTeam, entry.fixture.awayTeam, followedTeams))
         : entries,
     [entries, filter, followedTeams, reminders],
+  );
+  const confirmedPath = useMemo(
+    () => entries.map((entry) => {
+      const stage = entry.fixture.stage.split("·")[0]?.trim() || "Fixture";
+      return `${entry.fixture.homeTeam} vs ${entry.fixture.awayTeam} (${stage})`;
+    }).join("; "),
+    [entries],
   );
 
   const toggleReminder = (fixtureId: number) => {
@@ -156,7 +168,7 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
         })}
         {!loading && !shown.length && <div className="schedule-empty">{filter === "reminders" ? "No saved matches yet. Choose Remind me on a fixture." : filter === "following" ? "No upcoming fixture currently includes a followed team." : "No future covered fixtures are currently published."}</div>}
       </div>
-      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Confirmed qualifiers remain result-backed; unresolved slots are never inferred." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Spain is confirmed in the final and France in the third-place match; the England–Argentina winner and loser slots remain explicitly pending.`}</p>}
+      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Confirmed qualifiers remain result-backed; unresolved slots are never inferred." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Confirmed upcoming path: ${confirmedPath || "none"}. Tournament slots advance only from finalised results.`}</p>}
     </section>
   );
 }

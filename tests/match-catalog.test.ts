@@ -41,10 +41,10 @@ describe("match catalog", () => {
 
   it("removes TxLINE fixtures that cannot be proven to be World Cup 2026", async () => {
     const catalog = await listAvailableFixtures();
-    expect(catalog.source).toBe("demo-replay");
-    expect(catalog.matches.filter((match) => match.source === "txline-live")).toHaveLength(0);
+    expect(catalog.source).toBe("hybrid");
+    expect(catalog.matches.filter((match) => match.source === "txline-live")).toHaveLength(3);
     expect(catalog.matches.filter((match) => match.source === "demo-replay" && match.phase === "FT")).toHaveLength(4);
-    expect(catalog.matches.filter((match) => match.fixture.competition === "FIFA World Cup 2026")).toHaveLength(4);
+    expect(catalog.matches.filter((match) => match.fixture.competition === "FIFA World Cup 2026")).toHaveLength(7);
     expect(catalog.matches.some((match) => match.fixture.homeTeam === "Vietnam")).toBe(false);
   });
 });

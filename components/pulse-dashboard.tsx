@@ -224,7 +224,7 @@ export function PulseDashboard() {
       savedPreferences.lastFixtureId,
     );
     const streamFixtureIds = fixtureBody.matches
-      .filter((match) => match.source !== "demo-replay")
+      .filter((match) => match.source !== "demo-replay" && match.phase !== "FT")
       .map((match) => match.fixture.fixtureId);
     return { streamFixtureIds, matches: fixtureBody.matches, pulses: byId, selected, savedPreferences, capsuleRedemption };
   }, []);
@@ -568,13 +568,12 @@ export function PulseDashboard() {
   const openReplayFixture = async (fixtureId: number) => {
     selectMatch(fixtureId);
     try {
-      let full = pulsesRef.current[fixtureId];
-      if (!full) {
-        const response = await fetch(`/api/matches/${fixtureId}?mode=replay`, { cache: "no-store" });
-        if (!response.ok) throw new Error("The verified replay is temporarily unavailable");
-        full = (await response.json()) as MatchPulse;
-        setPulses((current) => ({ ...current, [fixtureId]: full }));
-      }
+      const existing = pulsesRef.current[fixtureId];
+      const query = existing && existing.source !== "demo-replay" ? "?historical=true" : "?mode=replay";
+      const response = await fetch(`/api/matches/${fixtureId}${query}`, { cache: "no-store" });
+      if (!response.ok) throw new Error("The verified replay is temporarily unavailable");
+      const full = (await response.json()) as MatchPulse;
+      setPulses((current) => ({ ...current, [fixtureId]: full }));
       activateCatchUp(full);
       window.setTimeout(() => document.getElementById("catch-up")?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
     } catch (error) {

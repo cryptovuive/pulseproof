@@ -2,29 +2,30 @@ import { describe, expect, it } from "vitest";
 import { buildFixtureCalendar, enrichFixtureFromVerifiedSchedule, formatKickoffCountdown, scheduleIntegrityIssues, scheduleParticipantLabel, verifiedSchedule, verifiedTournamentPath } from "@/lib/schedule";
 
 describe("upcoming match schedule", () => {
-  it("returns only future fixtures while carrying forward only result-backed participants", () => {
+  it("returns future fixtures with both semi-final advancement paths resolved", () => {
     const entries = verifiedSchedule(new Date("2026-07-14T20:00:00.000Z"));
     expect(entries).toHaveLength(3);
     expect(entries.every((entry) => entry.source === "verified-schedule")).toBe(true);
     expect(entries.map((entry) => entry.fixture.fixtureId)).toEqual([102, 103, 104]);
-    expect(entries.find((entry) => entry.fixture.fixtureId === 104)?.fixture).toMatchObject({ homeTeam: "Spain", awayTeam: "TBD" });
-    expect(entries.find((entry) => entry.fixture.fixtureId === 103)?.fixture).toMatchObject({ homeTeam: "France", awayTeam: "TBD" });
-    expect(scheduleParticipantLabel(entries.find((entry) => entry.fixture.fixtureId === 104)!, "away")).toBe("Winner ENG–ARG");
+    expect(entries.find((entry) => entry.fixture.fixtureId === 104)?.fixture).toMatchObject({ homeTeam: "Spain", awayTeam: "Argentina" });
+    expect(entries.find((entry) => entry.fixture.fixtureId === 103)?.fixture).toMatchObject({ homeTeam: "France", awayTeam: "England" });
+    expect(scheduleParticipantLabel(entries.find((entry) => entry.fixture.fixtureId === 104)!, "away")).toBe("Argentina");
     expect(scheduleIntegrityIssues(verifiedTournamentPath())).toEqual([]);
   });
 
-  it("keeps the finished semi-final and both advancement paths in the tournament graph", () => {
+  it("keeps both finished semi-finals and their replay IDs in the tournament graph", () => {
     const path = verifiedTournamentPath();
     expect(path.map((entry) => entry.fixture.fixtureId)).toEqual([101, 102, 103, 104]);
     expect(path[0].result).toEqual({ phase: "FT", score: [0, 2], winnerTeam: "Spain", loserTeam: "France", replayFixtureId: 101 });
+    expect(path[1].result).toEqual({ phase: "FT", score: [1, 2], winnerTeam: "Argentina", loserTeam: "England", replayFixtureId: 18241006 });
     expect(path[3].participantPaths?.home).toMatchObject({ kind: "winner", fixtureId: 101, label: "Spain" });
-    expect(path[3].participantPaths?.away).toMatchObject({ kind: "winner", fixtureId: 102, label: "Winner ENG–ARG" });
+    expect(path[3].participantPaths?.away).toMatchObject({ kind: "winner", fixtureId: 102, label: "Argentina" });
   });
 
-  it("rejects an eliminated team inside a supposedly confirmed future fixture", () => {
-    const confirmed = verifiedSchedule(new Date("2026-07-15T05:00:00.000Z")).find((entry) => entry.fixture.fixtureId === 102)!;
+  it("rejects an eliminated team inside a confirmed final fixture", () => {
+    const confirmed = verifiedSchedule(new Date("2026-07-16T05:00:00.000Z")).find((entry) => entry.fixture.fixtureId === 104)!;
     const corrupt = [{ ...confirmed, fixture: { ...confirmed.fixture, homeTeam: "Brazil" } }];
-    expect(scheduleIntegrityIssues(corrupt)).toContain("eliminated team Brazil appears in confirmed future fixture 102");
+    expect(scheduleIntegrityIssues(corrupt)).toContain("eliminated team Brazil appears in confirmed future fixture 104");
   });
 
   it("formats countdowns without exposing negative time", () => {
@@ -43,23 +44,23 @@ describe("upcoming match schedule", () => {
 
   it("enriches only an exact, current schedule match and preserves the TxLINE fixture ID", () => {
     const txlineFixture = {
-      fixtureId: 18237038,
+      fixtureId: 18257865,
       homeTeam: "France",
-      awayTeam: "Spain",
+      awayTeam: "England",
       startTime: "",
       competition: "Competition unavailable · TxLINE devnet",
       competitionSource: "unavailable" as const,
       stage: "Stage unavailable",
       gameState: -1,
     };
-    expect(enrichFixtureFromVerifiedSchedule(txlineFixture, new Date("2026-07-13T00:00:00.000Z"))).toMatchObject({
-      fixtureId: 18237038,
+    expect(enrichFixtureFromVerifiedSchedule(txlineFixture, new Date("2026-07-16T00:00:00.000Z"))).toMatchObject({
+      fixtureId: 18257865,
       competition: "FIFA World Cup 2026",
       competitionSource: "verified-schedule",
-      stage: "Semi-final · Match 101 · Dallas Stadium",
-      startTime: "2026-07-14T19:00:00.000Z",
+      stage: "Third place · Match 103 · Miami Stadium",
+      startTime: "2026-07-18T21:00:00.000Z",
     });
-    expect(enrichFixtureFromVerifiedSchedule({ ...txlineFixture, homeTeam: "Vietnam", awayTeam: "Myanmar" }, new Date("2026-07-13T00:00:00.000Z")))
+    expect(enrichFixtureFromVerifiedSchedule({ ...txlineFixture, homeTeam: "Vietnam", awayTeam: "Myanmar" }, new Date("2026-07-16T00:00:00.000Z")))
       .toMatchObject({ competitionSource: "unavailable", stage: "Stage unavailable" });
   });
 });
