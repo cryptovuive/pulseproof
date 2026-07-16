@@ -81,6 +81,25 @@ function createPassInstruction(owner: PublicKey, fixtureId: number, config: Publ
   };
 }
 
+function createProfileInstruction(owner: PublicKey) {
+  const [fanProfile] = PublicKey.findProgramAddressSync(
+    [Buffer.from("fan_profile"), owner.toBuffer()],
+    PROGRAM_ID,
+  );
+  return {
+    fanProfile,
+    instruction: new TransactionInstruction({
+      programId: PROGRAM_ID,
+      keys: [
+        { pubkey: fanProfile, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: true, isWritable: true },
+        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ],
+      data: discriminator("create_fan_profile"),
+    }),
+  };
+}
+
 type Claim = {
   fixtureId: number;
   momentHash: Buffer;
@@ -109,13 +128,15 @@ function claimInstructions(
   owner: PublicKey,
   config: PublicKey,
   fanPass: PublicKey,
+  fanProfile: PublicKey,
+  fanEpoch: PublicKey,
   attestor: nacl.SignKeyPair,
   signedClaim: Claim,
   submittedClaim: Claim = signedClaim,
 ) {
   const signature = nacl.sign.detached(claimMessage(owner, signedClaim), attestor.secretKey);
   const [receipt] = PublicKey.findProgramAddressSync(
-    [Buffer.from("receipt"), owner.toBuffer(), submittedClaim.momentHash],
+    [Buffer.from("receipt"), owner.toBuffer(), u64(0), submittedClaim.momentHash],
     PROGRAM_ID,
   );
   return {
@@ -130,6 +151,8 @@ function claimInstructions(
       keys: [
         { pubkey: config, isSigner: false, isWritable: false },
         { pubkey: fanPass, isSigner: false, isWritable: true },
+        { pubkey: fanProfile, isSigner: false, isWritable: true },
+        { pubkey: fanEpoch, isSigner: false, isWritable: true },
         { pubkey: receipt, isSigner: false, isWritable: true },
         { pubkey: owner, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -168,6 +191,13 @@ async function main() {
   assert(configData, "config account was not created");
   assert.deepEqual(configData.subarray(40, 72), Buffer.from(attestor.publicKey), "on-chain attestor mismatch");
 
+  const { fanProfile, instruction: createProfile } = createProfileInstruction(payer.publicKey);
+  await sendAndConfirmTransaction(connection, new Transaction().add(createProfile), [payer], { commitment: "confirmed" });
+  const [fanEpoch] = PublicKey.findProgramAddressSync(
+    [Buffer.from("fan_epoch"), payer.publicKey.toBuffer()],
+    PROGRAM_ID,
+  );
+
   const { fanPass, instruction: createPass } = createPassInstruction(payer.publicKey, fixtureId, config);
   await sendAndConfirmTransaction(connection, new Transaction().add(createPass), [payer], { commitment: "confirmed" });
 
@@ -180,7 +210,7 @@ async function main() {
     badge: 7,
     expiresAt: now + 300,
   };
-  const valid = claimInstructions(payer.publicKey, config, fanPass, attestor, validClaim);
+  const valid = claimInstructions(payer.publicKey, config, fanPass, fanProfile, fanEpoch, attestor, validClaim);
   const validSignature = await sendAndConfirmTransaction(
     connection,
     new Transaction().add(valid.ed25519, valid.claim),
@@ -210,6 +240,8 @@ async function main() {
     payer.publicKey,
     config,
     fanPass,
+    fanProfile,
+    fanEpoch,
     attestor,
     tamperedSigned,
     tamperedSubmitted,
@@ -231,6 +263,8 @@ async function main() {
     payer.publicKey,
     config,
     fanPass,
+    fanProfile,
+    fanEpoch,
     attestor,
     tamperedEvidenceSigned,
     tamperedEvidenceSubmitted,
@@ -248,6 +282,8 @@ async function main() {
     payer.publicKey,
     config,
     fanPass,
+    fanProfile,
+    fanEpoch,
     nacl.sign.keyPair(),
     wrongAttestorClaim,
   );
@@ -261,7 +297,7 @@ async function main() {
     evidenceHash: sha256("expired-evidence"),
     expiresAt: now - 1,
   };
-  const expired = claimInstructions(payer.publicKey, config, fanPass, attestor, expiredClaim);
+  const expired = claimInstructions(payer.publicKey, config, fanPass, fanProfile, fanEpoch, attestor, expiredClaim);
   await expectRejected("expired attestation", () =>
     sendAndConfirmTransaction(connection, new Transaction().add(expired.ed25519, expired.claim), [payer]),
   );
@@ -272,7 +308,7 @@ async function main() {
     evidenceHash: sha256("invalid-badge-evidence"),
     badge: 64,
   };
-  const invalidBadge = claimInstructions(payer.publicKey, config, fanPass, attestor, invalidBadgeClaim);
+  const invalidBadge = claimInstructions(payer.publicKey, config, fanPass, fanProfile, fanEpoch, attestor, invalidBadgeClaim);
   await expectRejected("badge outside bitmap", () =>
     sendAndConfirmTransaction(connection, new Transaction().add(invalidBadge.ed25519, invalidBadge.claim), [payer]),
   );
@@ -283,7 +319,7 @@ async function main() {
     evidenceHash: sha256("invalid-points-evidence"),
     points: 101,
   };
-  const invalidPoints = claimInstructions(payer.publicKey, config, fanPass, attestor, invalidPointsClaim);
+  const invalidPoints = claimInstructions(payer.publicKey, config, fanPass, fanProfile, fanEpoch, attestor, invalidPointsClaim);
   await expectRejected("points above cap", () =>
     sendAndConfirmTransaction(connection, new Transaction().add(invalidPoints.ed25519, invalidPoints.claim), [payer]),
   );
@@ -294,7 +330,7 @@ async function main() {
     evidenceHash: sha256("far-expiry-evidence"),
     expiresAt: now + 3_600,
   };
-  const farExpiry = claimInstructions(payer.publicKey, config, fanPass, attestor, farExpiryClaim);
+  const farExpiry = claimInstructions(payer.publicKey, config, fanPass, fanProfile, fanEpoch, attestor, farExpiryClaim);
   await expectRejected("expiry above ten-minute bound", () =>
     sendAndConfirmTransaction(connection, new Transaction().add(farExpiry.ed25519, farExpiry.claim), [payer]),
   );

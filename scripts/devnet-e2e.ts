@@ -63,6 +63,7 @@ async function main() {
   assert.deepEqual(configData.subarray(40, 72), Buffer.from(attestor.publicKey), "on-chain attestor mismatch");
 
   const [fanProfile] = PublicKey.findProgramAddressSync([Buffer.from("fan_profile"), payer.publicKey.toBuffer()], PROGRAM_ID);
+  const [fanEpoch] = PublicKey.findProgramAddressSync([Buffer.from("fan_epoch"), payer.publicKey.toBuffer()], PROGRAM_ID);
   let profileData = (await connection.getAccountInfo(fanProfile, "confirmed"))?.data;
   let createProfileSignature: string | undefined;
   if (!profileData) {
@@ -80,6 +81,8 @@ async function main() {
   }
   assert(profileData, "fan profile was not created");
   const before = parseProfile(profileData);
+  const fanEpochData = (await connection.getAccountInfo(fanEpoch, "confirmed"))?.data;
+  const epoch = fanEpochData ? fanEpochData.readBigUInt64LE(40) : 0n;
 
   const checkIn = new TransactionInstruction({
     programId: PROGRAM_ID,
@@ -125,7 +128,10 @@ async function main() {
     evidenceHash.toString("hex"), String(momentPoints), String(badge), String(momentExpiresAt),
   ].join("|"));
   const momentSignature = nacl.sign.detached(momentMessage, attestor.secretKey);
-  const [receipt] = PublicKey.findProgramAddressSync([Buffer.from("receipt"), payer.publicKey.toBuffer(), momentHash], PROGRAM_ID);
+  const [receipt] = PublicKey.findProgramAddressSync(
+    [Buffer.from("receipt"), payer.publicKey.toBuffer(), u64(epoch), momentHash],
+    PROGRAM_ID,
+  );
   const momentEd25519 = Ed25519Program.createInstructionWithPublicKey({ publicKey: attestor.publicKey, message: momentMessage, signature: momentSignature });
   const claimMoment = new TransactionInstruction({
     programId: PROGRAM_ID,
@@ -133,6 +139,7 @@ async function main() {
       { pubkey: config, isSigner: false, isWritable: false },
       { pubkey: fanPass, isSigner: false, isWritable: true },
       { pubkey: fanProfile, isSigner: false, isWritable: true },
+      { pubkey: fanEpoch, isSigner: false, isWritable: true },
       { pubkey: receipt, isSigner: false, isWritable: true },
       { pubkey: payer.publicKey, isSigner: true, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -152,13 +159,17 @@ async function main() {
     String(quizScore), String(quizPoints), String(quizExpiresAt),
   ].join("|"));
   const quizSignature = nacl.sign.detached(quizMessage, attestor.secretKey);
-  const [quizReceipt] = PublicKey.findProgramAddressSync([Buffer.from("quiz_receipt"), payer.publicKey.toBuffer(), quizHash], PROGRAM_ID);
+  const [quizReceipt] = PublicKey.findProgramAddressSync(
+    [Buffer.from("quiz_receipt"), payer.publicKey.toBuffer(), u64(epoch), quizHash],
+    PROGRAM_ID,
+  );
   const quizEd25519 = Ed25519Program.createInstructionWithPublicKey({ publicKey: attestor.publicKey, message: quizMessage, signature: quizSignature });
   const claimQuiz = new TransactionInstruction({
     programId: PROGRAM_ID,
     keys: [
       { pubkey: config, isSigner: false, isWritable: false },
       { pubkey: fanProfile, isSigner: false, isWritable: true },
+      { pubkey: fanEpoch, isSigner: false, isWritable: true },
       { pubkey: quizReceipt, isSigner: false, isWritable: true },
       { pubkey: payer.publicKey, isSigner: true, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -183,13 +194,17 @@ async function main() {
       String(REWARD.kindCode), String(REWARD.index), String(REWARD.cost), String(rewardExpiresAt),
     ].join("|"));
     const rewardSignature = nacl.sign.detached(rewardMessage, attestor.secretKey);
-    const [rewardReceipt] = PublicKey.findProgramAddressSync([Buffer.from("reward_receipt"), payer.publicKey.toBuffer(), rewardHash], PROGRAM_ID);
+    const [rewardReceipt] = PublicKey.findProgramAddressSync(
+      [Buffer.from("reward_receipt"), payer.publicKey.toBuffer(), u64(epoch), rewardHash],
+      PROGRAM_ID,
+    );
     const rewardEd25519 = Ed25519Program.createInstructionWithPublicKey({ publicKey: attestor.publicKey, message: rewardMessage, signature: rewardSignature });
     const redeem = new TransactionInstruction({
       programId: PROGRAM_ID,
       keys: [
         { pubkey: config, isSigner: false, isWritable: false },
         { pubkey: fanProfile, isSigner: false, isWritable: true },
+        { pubkey: fanEpoch, isSigner: false, isWritable: true },
         { pubkey: rewardReceipt, isSigner: false, isWritable: true },
         { pubkey: payer.publicKey, isSigner: true, isWritable: true },
         { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
@@ -238,6 +253,8 @@ async function main() {
     wallet: payer.publicKey.toBase58(),
     config: config.toBase58(),
     fanProfile: fanProfile.toBase58(),
+    fanEpoch: fanEpoch.toBase58(),
+    epoch: Number(epoch),
     fixtureId: FIXTURE_ID,
     fanPass: fanPass.toBase58(),
     receipt: receipt.toBase58(),
