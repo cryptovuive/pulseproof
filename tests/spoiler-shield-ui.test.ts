@@ -23,7 +23,7 @@ describe("Road to the final Spoiler Shield", () => {
 
   it("also masks result-derived participants and source links in upcoming fixtures", () => {
     expect(dashboard).toContain("spoilerFree={preferences.spoilerFree}");
-    expect(upcoming).toContain("spoilerFree && Boolean(entry.participantPaths)");
+    expect(upcoming).toContain("spoilerFree && (Boolean(entry.participantPaths) || /^(final|third place)\\b/i.test(entry.fixture.stage))");
     expect(upcoming).toContain('"Qualifier hidden"');
     expect(upcoming).toContain("Source available after reveal");
     expect(upcoming).toContain('"protected by Spoiler Shield"');
