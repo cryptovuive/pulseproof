@@ -855,14 +855,14 @@ export function PulseDashboard() {
         onReplayFixture={(fixtureId) => void openReplayFixture(fixtureId)}
       />
 
-      <UpcomingMatchHub followedTeams={preferences.followedTeams} />
+      <UpcomingMatchHub followedTeams={preferences.followedTeams} spoilerFree={preferences.spoilerFree} />
 
       <div className="dashboard-grid" id="top">
         <section className="main-column">
           <article className={`catchup-card panel ${catchUp ? "active" : ""}`} id="catch-up">
             <div className="catchup-intro">
               <span className="catchup-icon"><RotateCcw size={19} /></span>
-              <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay the sourced event sequence through the exact live scoreboard, momentum and timeline view—goals, cards, substitutions and VAR included.</p></div>
+              <div><span className="eyebrow">Missed the action?</span><h2>{catchUp ? "Catch-up is playing" : "Understand the match in 90 seconds"}</h2><p>Replay the sourced event sequence through the same scoreboard, momentum and timeline used during live coverage. Goals, cards, substitutions and VAR are included.</p></div>
               <div className="catchup-actions">
                 {!catchUp ? <button className="catchup-primary" disabled={!hasSignalMoments} onClick={() => void startCatchUp()}><CirclePlay size={16} /> {hasSignalMoments ? "Start catch-up" : "No match moments yet"}</button> : <button className="catchup-exit" onClick={() => { setCatchUp(null); setCatchUpPlaying(false); setRelayCapsule(null); setRelayUrl(""); }}><Radio size={14} /> {offlineMode ? "Return to saved recap" : "Return live"}</button>}
                 {catchUp && !offlineMode && <button className="capsule-share" disabled={capsuleCreating} onClick={() => void shareCatchUpCapsule()}><Share2 size={14} /> {capsuleCreating ? "Signing…" : "Share safe relay"}</button>}
@@ -923,7 +923,7 @@ export function PulseDashboard() {
               {spoilerProtected ? <div className="momentum-labels"><span>Spoiler Shield also hides the final momentum balance.</span></div> : hasSignalMoments ? <>
                 <div className="momentum-track"><span style={{ width: `${pulse.momentum}%` }} /></div>
                 <div className="momentum-labels"><span>{pulse.fixture.homeTeam} pressure</span><span>{pulse.fixture.awayTeam} pressure</span></div>
-              </> : <div className="momentum-labels"><span>Coverage metadata only — no pressure estimate yet.</span></div>}
+              </> : <div className="momentum-labels"><span>Coverage metadata only. No pressure estimate is available yet.</span></div>}
             </div>
           </article>
 
@@ -939,7 +939,7 @@ export function PulseDashboard() {
               ? <p>Start Catch-up to experience the match from kick-off, or reveal the full result when you are ready.</p>
               : <div className="brief-lines">{matchBrief.lines.map((line) => <p key={line}>{line}</p>)}</div>}
             <div className="explain-row">
-              <Sparkles size={15} /> {spoilerProtected ? "No score, scorer or card details are exposed until you choose." : `Built deterministically from ${signalMoments.length} on-pitch source event${signalMoments.length === 1 ? "" : "s"}; no unsupported stats are inferred.`}
+              <Sparkles size={15} /> {spoilerProtected ? "No score, scorer or card details are exposed until you choose." : `Based on ${signalMoments.length} verified on-pitch source event${signalMoments.length === 1 ? "" : "s"}. Unsupported statistics are never added.`}
             </div>
           </article>
 
@@ -1001,7 +1001,7 @@ export function PulseDashboard() {
           <article className="room-card panel">
             <div className="room-title"><Users size={17} /><span>Watch room</span><b>{roomTotal} fans</b></div>
             <h3>{hasSignalMoments ? "Who owns the next ten minutes?" : "Fan room preview"}</h3>
-            <p>This prototype vote stays local to your browser. No wagers, no entry fee—just a shared fan pulse.</p>
+            <p>This prototype vote stays local to your browser. There are no wagers or entry fees, just a shared fan pulse.</p>
             <div className="room-options">
               <button className={roomVote === "home" ? "active" : ""} aria-pressed={roomVote === "home"} onClick={() => voteInRoom("home")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={homeBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.homeTeam}<b>{roomPercent(roomCounts.home)}%</b></button>
               <button className={roomVote === "away" ? "active" : ""} aria-pressed={roomVote === "away"} onClick={() => voteInRoom("away")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={awayBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.awayTeam}<b>{roomPercent(roomCounts.away)}%</b></button>

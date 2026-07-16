@@ -348,6 +348,19 @@ export async function submitQuizClaim(wallet: BrowserWallet, attestation: QuizAt
   return signAndConfirm(wallet, transaction, rpc);
 }
 
+export async function hasQuizClaimReceipt(ownerInput: string | PublicKey, attestation: QuizAttestation) {
+  const owner = typeof ownerInput === "string" ? new PublicKey(ownerInput) : ownerInput;
+  const program = programId();
+  const rpc = connection();
+  const epoch = await fanEpochValue(rpc, fanEpochAddress(owner, program));
+  const quizHash = Uint8Array.from(Buffer.from(attestation.payload.quizHash, "hex"));
+  const [receipt] = PublicKey.findProgramAddressSync(
+    [textEncoder.encode("quiz_receipt"), owner.toBytes(), u64(epoch), quizHash],
+    program,
+  );
+  return Boolean(await rpc.getAccountInfo(receipt, "confirmed"));
+}
+
 export async function submitRewardRedemption(wallet: BrowserWallet, attestation: RewardAttestation) {
   if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
   const owner = wallet.publicKey;
@@ -386,6 +399,18 @@ export async function submitRewardRedemption(wallet: BrowserWallet, attestation:
         u16(attestation.payload.itemIndex),
         u64(attestation.payload.cost),
         i64(attestation.payload.expiresAt),
+      )),
+    }),
+    new TransactionInstruction({
+      programId: program,
+      keys: [
+        { pubkey: profile, isSigner: false, isWritable: true },
+        { pubkey: owner, isSigner: true, isWritable: false },
+      ],
+      data: Buffer.from(concat(
+        await discriminator("equip_reward"),
+        Uint8Array.of(attestation.payload.kind),
+        u16(attestation.payload.itemIndex),
       )),
     }),
   );

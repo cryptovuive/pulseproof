@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bell, BellOff, Check, Clock3, Flag, Route, ShieldCheck, Trash2 } from "lucide-react";
+import { Bell, BellOff, Check, Clock3, EyeOff, Flag, Route, ShieldCheck, Trash2 } from "lucide-react";
 import { TeamFlag } from "@/components/team-flag";
 import { ALERT_KINDS, type AlertKind, type MatchAlert, type MatchAlertPreferences } from "@/lib/matchday-alerts";
 import { formatKickoffCountdown, scheduleParticipantLabel } from "@/lib/schedule";
@@ -48,20 +48,34 @@ function kickoffLabel(startTime: string) {
   }).format(new Date(startTime));
 }
 
-function BracketMatch({ entry, label, onReplayFixture }: { entry: ScheduleEntry; label: string; onReplayFixture: (fixtureId: number) => void }) {
-  const home = getTeamBranding(entry.fixture.homeTeam);
-  const away = getTeamBranding(entry.fixture.awayTeam);
-  const homeLabel = scheduleParticipantLabel(entry, "home");
-  const awayLabel = scheduleParticipantLabel(entry, "away");
-  const homeWon = entry.result?.winnerTeam === entry.fixture.homeTeam;
-  const awayWon = entry.result?.winnerTeam === entry.fixture.awayTeam;
+function BracketMatch({
+  entry,
+  label,
+  spoilerFree,
+  hideParticipants = false,
+  onReplayFixture,
+}: {
+  entry: ScheduleEntry;
+  label: string;
+  spoilerFree: boolean;
+  hideParticipants?: boolean;
+  onReplayFixture: (fixtureId: number) => void;
+}) {
+  const protectResult = spoilerFree && Boolean(entry.result);
+  const protectParticipants = spoilerFree && hideParticipants;
+  const home = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.homeTeam);
+  const away = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.awayTeam);
+  const homeLabel = protectParticipants ? "Finalist hidden" : scheduleParticipantLabel(entry, "home");
+  const awayLabel = protectParticipants ? "Finalist hidden" : scheduleParticipantLabel(entry, "away");
+  const homeWon = !protectResult && entry.result?.winnerTeam === entry.fixture.homeTeam;
+  const awayWon = !protectResult && entry.result?.winnerTeam === entry.fixture.awayTeam;
   return (
-    <article className={`bracket-match ${entry.coverage === "participants-pending" ? "pending" : ""} ${entry.result ? "finished" : ""}`}>
-      <span>{label}<em>{entry.result ? "FT" : "Scheduled"}</em></span>
-      <div className={homeWon ? "winner" : ""}><i><TeamFlag flagKey={home.flagKey} /></i><strong>{home.code}</strong><b>{homeLabel}</b>{entry.result && <mark>{entry.result.score[0]}</mark>}</div>
-      <div className={awayWon ? "winner" : ""}><i><TeamFlag flagKey={away.flagKey} /></i><strong>{away.code}</strong><b>{awayLabel}</b>{entry.result && <mark>{entry.result.score[1]}</mark>}</div>
-      <small><Clock3 size={10} /> {entry.result ? `Full-time · ${kickoffLabel(entry.fixture.startTime)}` : kickoffLabel(entry.fixture.startTime)}</small>
-      {entry.result && <button className="bracket-replay" onClick={() => onReplayFixture(entry.result!.replayFixtureId)}><Route size={11} /> Replay same live view</button>}
+    <article className={`bracket-match ${entry.coverage === "participants-pending" ? "pending" : ""} ${entry.result ? "finished" : ""} ${protectResult || protectParticipants ? "protected" : ""}`}>
+      <span>{label}<em>{protectResult || protectParticipants ? "Spoiler protected" : entry.result ? "FT" : "Scheduled"}</em></span>
+      <div className={homeWon ? "winner" : ""}><i>{protectParticipants ? <EyeOff /> : <TeamFlag flagKey={home.flagKey} />}</i><strong>{protectParticipants ? "???" : home.code}</strong><b>{homeLabel}</b>{entry.result && <mark aria-label={protectResult ? "Score hidden" : undefined}>{protectResult ? <EyeOff size={12} /> : entry.result.score[0]}</mark>}</div>
+      <div className={awayWon ? "winner" : ""}><i>{protectParticipants ? <EyeOff /> : <TeamFlag flagKey={away.flagKey} />}</i><strong>{protectParticipants ? "???" : away.code}</strong><b>{awayLabel}</b>{entry.result && <mark aria-label={protectResult ? "Score hidden" : undefined}>{protectResult ? <EyeOff size={12} /> : entry.result.score[1]}</mark>}</div>
+      <small><Clock3 size={10} /> {entry.result ? `Match complete · ${kickoffLabel(entry.fixture.startTime)}` : kickoffLabel(entry.fixture.startTime)}</small>
+      {entry.result && <button className="bracket-replay" onClick={() => onReplayFixture(entry.result!.replayFixtureId)}><Route size={11} /> {protectResult ? "Start spoiler-free replay" : "Replay same live view"}</button>}
     </article>
   );
 }
@@ -112,6 +126,7 @@ export function MatchdayCommandCenter({
   }, []);
 
   const journey = useMemo(() => buildTournamentJourney(entries, followedTeams), [entries, followedTeams]);
+  const nextFixtureRevealsOutcome = spoilerFree && Boolean(journey.nextForFan && /final|third/i.test(journey.nextForFan.fixture.stage));
   const toggleKind = (kind: AlertKind) => {
     const kinds = alertPreferences.kinds.includes(kind)
       ? alertPreferences.kinds.filter((item) => item !== kind)
@@ -144,7 +159,7 @@ export function MatchdayCommandCenter({
         </article>
         <article className={journey.nextForFan && followedTeams.some((team) => [journey.nextForFan?.fixture.homeTeam, journey.nextForFan?.fixture.awayTeam].includes(team)) ? "personal" : ""}>
           <span>{followedTeams.length ? "Next for you" : "Next confirmed"}</span>
-          <strong>{journey.nextForFan ? matchLabel(journey.nextForFan) : "Awaiting schedule"}</strong>
+          <strong>{nextFixtureRevealsOutcome ? "Fixture hidden by Spoiler Shield" : journey.nextForFan ? matchLabel(journey.nextForFan) : "Awaiting schedule"}</strong>
           <small>{journey.nextForFan ? `${formatKickoffCountdown(journey.nextForFan.fixture.startTime, now)} · ${journey.nextForFan.fixture.stage}` : "No future fixture published"}</small>
           <a href="#upcoming">Open schedule</a>
         </article>
@@ -163,13 +178,13 @@ export function MatchdayCommandCenter({
             <div className="bracket-flow">
               <div className="bracket-round">
                 <span>Semi-finals</span>
-                {journey.semifinals.map((entry, index) => <BracketMatch key={entry.fixture.fixtureId} entry={entry} label={`SF${index + 1}`} onReplayFixture={onReplayFixture} />)}
+                {journey.semifinals.map((entry, index) => <BracketMatch key={entry.fixture.fixtureId} entry={entry} label={`SF${index + 1}`} spoilerFree={spoilerFree} onReplayFixture={onReplayFixture} />)}
               </div>
               <div className="bracket-connector"><span /><Route size={18} /><span /></div>
               <div className="bracket-round final-round">
                 <span>Final</span>
-                {journey.final ? <BracketMatch entry={journey.final} label="Final" onReplayFixture={onReplayFixture} /> : <div className="command-empty">Final fixture pending publication.</div>}
-                {journey.thirdPlace && <BracketMatch entry={journey.thirdPlace} label="Third place" onReplayFixture={onReplayFixture} />}
+                {journey.final ? <BracketMatch entry={journey.final} label="Final" spoilerFree={spoilerFree} hideParticipants onReplayFixture={onReplayFixture} /> : <div className="command-empty">Final fixture pending publication.</div>}
+                {journey.thirdPlace && <BracketMatch entry={journey.thirdPlace} label="Third place" spoilerFree={spoilerFree} hideParticipants onReplayFixture={onReplayFixture} />}
               </div>
             </div>
           ) : <div className="command-empty">Loading the source-linked tournament path…</div>}

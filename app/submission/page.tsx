@@ -64,7 +64,7 @@ function CaptureSlide({ slide }: { slide: number }) {
     <CaptureFrame slide={slide} eyebrow="Every match leaves a memory" title="The trusted second screen for every kind of football fan.">
       <div className={styles.heroGrid}>
         <div className={styles.heroCopy}>
-          <p>Scores tell you <em>what</em> happened. PulseProof explains <em>why it mattered</em>—then lets you keep a verifiable memory of the moment.</p>
+          <p>Scores tell you <em>what</em> happened. PulseProof explains <em>why it mattered</em>, then lets you keep a verifiable memory of the moment.</p>
           <div className={styles.heroTags}><span><Wifi /> Live context</span><span><EyeOff /> Spoiler-safe</span><span><Fingerprint /> Verifiable</span></div>
         </div>
         <div className={styles.pulseOrb}><span>90+1′</span><Goal size={82} /><strong>MERINO</strong><small>Spain take the lead</small></div>
@@ -107,8 +107,8 @@ function CaptureSlide({ slide }: { slide: number }) {
       <div className={styles.accuracyGrid}>
         <section>
           <div className={styles.signalHead}><Wifi /><span>PUBLIC TXLINE DEVNET</span><b>CONNECTED</b></div>
-          <article><span>COVERED</span><small>FIFA WORLD CUP 2026 · SEMI-FINAL</small><div><b>🇫🇷 FRA</b><em>—</em><b>🇪🇸 ESP</b></div><p>Competition cross-checked with published schedule</p></article>
-          <article><span>WAITING</span><small>COMPETITION UNAVAILABLE · TXLINE DEVNET</small><div><b>🇻🇳 VIE</b><em>—</em><b>🇲🇾 MYA</b></div><p>Competition not supplied by TxLINE</p></article>
+          <article><span>COVERED</span><small>FIFA WORLD CUP 2026 · SEMI-FINAL</small><div><b>🇫🇷 FRA</b><em>VS</em><b>🇪🇸 ESP</b></div><p>Competition cross-checked with published schedule</p></article>
+          <article><span>WAITING</span><small>COMPETITION UNAVAILABLE · TXLINE DEVNET</small><div><b>🇻🇳 VIE</b><em>VS</em><b>🇲🇾 MYA</b></div><p>Competition not supplied by TxLINE</p></article>
         </section>
         <pre><code>{`event: ready\ndata: { "mode": "txline-live" }\n\nevent: pulse\ndata: { "phase": "COVERED", "source": "txline-live" }\n\nevent: heartbeat\ndata: { "at": "2026-07-13T08:59:29Z" }`}</code></pre>
       </div>
@@ -130,7 +130,7 @@ function CaptureSlide({ slide }: { slide: number }) {
   );
 
   if (slide === 6) return (
-    <CaptureFrame slide={slide} eyebrow="Proof of Watch · public Solana devnet" title="A moment becomes a receipt—not a tradable reward.">
+    <CaptureFrame slide={slide} eyebrow="Proof of Watch · public Solana devnet" title="A moment becomes a receipt, not a tradable reward.">
       <div className={styles.proofFlow}>
         <div><Radio /><span>TxLINE event</span><small>fixture + sequence</small></div><i>→</i>
         <div><Fingerprint /><span>Attested moment</span><small>evidence digest + expiry</small></div><i>→</i>
@@ -199,7 +199,7 @@ function SubmissionPortal() {
         <p>Everything below is public, source-labelled and reproducible. No wagering, financial rewards or fabricated community activity.</p>
       </section>
       <section className={moat.signatureMoat}>
-        <div><span>NEW · DEFENSIBLE FAN UTILITY</span><h2>Send the moment, not the spoiler.</h2><p>A Verified Catch-up Capsule shares one Ed25519-signed event prefix. The recipient receives exactly that prefix—never a hidden future goal, card or VAR event—and the source is re-checked before playback.</p><Link href="/?fixture=18198205"><Link2 /> Try the safe relay flow <ExternalLink /></Link> <Link href="/fan-zone"><Sparkles /> Open Fan Zone <ExternalLink /></Link></div>
+        <div><span>NEW · DEFENSIBLE FAN UTILITY</span><h2>Send the moment, not the spoiler.</h2><p>A Verified Catch-up Capsule shares one Ed25519-signed event prefix. The recipient receives exactly that prefix without exposing a later goal, card or VAR event. The source is checked again before playback.</p><Link href="/?fixture=18198205"><Link2 /> Try the safe relay flow <ExternalLink /></Link> <Link href="/fan-zone"><Sparkles /> Open Fan Zone <ExternalLink /></Link></div>
         <ol><li><b>01</b><span>Choose the exact Catch-up position</span></li><li><b>02</b><span>Sign its source-bound prefix digest</span></li><li><b>03</b><span>Redeem fail-closed with zero future payload</span></li></ol>
       </section>
       <JudgeLiveLab />

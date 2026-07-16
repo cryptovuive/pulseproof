@@ -30,6 +30,21 @@ describe("fan progression economy", () => {
     expect(client).toContain("if (confirmation.value.err)");
   });
 
+  it("reconciles confirmed UI state in the background and equips a redeemed reward atomically", () => {
+    const client = readFileSync(join(process.cwd(), "lib", "solana-client.ts"), "utf8");
+    const fanZone = readFileSync(join(process.cwd(), "components", "fan-zone.tsx"), "utf8");
+    expect(client).toContain('await discriminator("redeem_reward")');
+    expect(client).toContain('await discriminator("equip_reward")');
+    expect(client).toContain("hasQuizClaimReceipt");
+    expect(fanZone).toContain("applyConfirmedCheckIn");
+    expect(fanZone).toContain("applyConfirmedQuizClaim");
+    expect(fanZone).toContain("applyConfirmedRewardRedemption");
+    expect(fanZone).toContain("PROFILE_RETRY_DELAYS");
+    expect(fanZone).toContain('"Checked in today"');
+    expect(fanZone).toContain('"Claimed today"');
+    expect(fanZone).toContain('"Owned · Active"');
+  });
+
   it("ships a unique 36-item non-financial cosmetic catalog", () => {
     expect(REWARD_CATALOG).toHaveLength(36);
     expect(new Set(REWARD_CATALOG.map((reward) => reward.id)).size).toBe(36);
@@ -54,7 +69,7 @@ describe("fan progression economy", () => {
     const styles = readFileSync(join(process.cwd(), "components", "fan-zone.module.css"), "utf8");
     expect(component).not.toMatch(/selectedShirt|shirtBack|shirt-vault|previewShirt/);
     expect(styles).not.toMatch(/shirtModal|shirtSprite|mannequin/);
-    expect(component).toContain("Mascot names remain a source-linked fact index above—not claimable");
+    expect(component).toContain("Mascot names stay in the factual archive above and are not offered as collectibles");
   });
 
   it("time-gates seasonal rewards without changing their catalog price", () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bell, BellRing, CalendarPlus, Clock3, Radio } from "lucide-react";
+import { Bell, BellRing, CalendarPlus, Clock3, EyeOff, Radio } from "lucide-react";
 import { TeamFlag } from "@/components/team-flag";
 import { buildFixtureCalendar, formatKickoffCountdown, scheduleParticipantLabel } from "@/lib/schedule";
 import { fixtureHasFollowedTeam } from "@/lib/fan-preferences";
@@ -19,7 +19,7 @@ function kickoffParts(startTime: string) {
   };
 }
 
-export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: string[] }) {
+export function UpcomingMatchHub({ followedTeams = [], spoilerFree = false }: { followedTeams?: string[]; spoilerFree?: boolean }) {
   const [entries, setEntries] = useState<ScheduleEntry[]>([]);
   const [source, setSource] = useState<"txline-fixtures" | "verified-schedule">("verified-schedule");
   const [stale, setStale] = useState(false);
@@ -105,8 +105,12 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
     });
   };
 
-  const downloadCalendar = (entry: ScheduleEntry) => {
-    const blob = new Blob([buildFixtureCalendar(entry)], { type: "text/calendar;charset=utf-8" });
+  const downloadCalendar = (entry: ScheduleEntry, protectParticipants: boolean) => {
+    const calendarEntry = protectParticipants ? {
+      ...entry,
+      fixture: { ...entry.fixture, homeTeam: "Qualifier 1", awayTeam: "Qualifier 2" },
+    } : entry;
+    const blob = new Blob([buildFixtureCalendar(calendarEntry)], { type: "text/calendar;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -136,10 +140,11 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
       <div className="upcoming-list">
         {loading && <div className="schedule-empty">Loading fixture snapshot…</div>}
         {!loading && shown.map((entry, index) => {
-          const home = getTeamBranding(entry.fixture.homeTeam);
-          const away = getTeamBranding(entry.fixture.awayTeam);
-          const homeLabel = scheduleParticipantLabel(entry, "home");
-          const awayLabel = scheduleParticipantLabel(entry, "away");
+          const protectParticipants = spoilerFree && Boolean(entry.participantPaths);
+          const home = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.homeTeam);
+          const away = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.awayTeam);
+          const homeLabel = protectParticipants ? "Qualifier hidden" : scheduleParticipantLabel(entry, "home");
+          const awayLabel = protectParticipants ? "Qualifier hidden" : scheduleParticipantLabel(entry, "away");
           const kickoff = kickoffParts(entry.fixture.startTime);
           const saved = reminders.includes(entry.fixture.fixtureId);
           return (
@@ -150,25 +155,25 @@ export function UpcomingMatchHub({ followedTeams = [] }: { followedTeams?: strin
                 <small>{kickoff.time} · source {kickoff.utc}</small>
               </div>
               <div className="upcoming-teams">
-                <span><span className="schedule-flag"><TeamFlag flagKey={home.flagKey} /></span><b>{home.code}</b><strong>{homeLabel}</strong></span>
+                <span><span className="schedule-flag">{protectParticipants ? <EyeOff /> : <TeamFlag flagKey={home.flagKey} />}</span><b>{protectParticipants ? "???" : home.code}</b><strong>{homeLabel}</strong></span>
                 <i>vs</i>
-                <span><span className="schedule-flag"><TeamFlag flagKey={away.flagKey} /></span><b>{away.code}</b><strong>{awayLabel}</strong></span>
+                <span><span className="schedule-flag">{protectParticipants ? <EyeOff /> : <TeamFlag flagKey={away.flagKey} />}</span><b>{protectParticipants ? "???" : away.code}</b><strong>{awayLabel}</strong></span>
               </div>
-              <div className="upcoming-countdown"><span>Kick-off in</span><strong>{now ? formatKickoffCountdown(entry.fixture.startTime, now) : "—"}</strong></div>
+              <div className="upcoming-countdown"><span>Kick-off in</span><strong>{now ? formatKickoffCountdown(entry.fixture.startTime, now) : "Loading"}</strong></div>
               <div className="fixture-provenance">
                 <span>{entry.coverage === "participants-pending" ? "Confirmed qualifier shown · other slot pending" : entry.coverage === "txline-confirmed" ? "TxLINE fixture" : "Participants confirmed"}</span>
-                {entry.provenance.sourceUrl ? <a href={entry.provenance.sourceUrl} target="_blank" rel="noreferrer">{entry.provenance.provider}</a> : <b>{entry.provenance.provider}</b>}
+                {protectParticipants ? <b>Source available after reveal</b> : entry.provenance.sourceUrl ? <a href={entry.provenance.sourceUrl} target="_blank" rel="noreferrer">{entry.provenance.provider}</a> : <b>{entry.provenance.provider}</b>}
               </div>
               <div className="upcoming-actions">
                 <button className={saved ? "saved" : ""} aria-pressed={saved} onClick={() => toggleReminder(entry.fixture.fixtureId)}>{saved ? <BellRing size={14} /> : <Bell size={14} />}{saved ? "Saved" : "Remind me"}</button>
-                <button onClick={() => downloadCalendar(entry)}><CalendarPlus size={14} /> Calendar</button>
+                <button onClick={() => downloadCalendar(entry, protectParticipants)}><CalendarPlus size={14} /> Calendar</button>
               </div>
             </article>
           );
         })}
         {!loading && !shown.length && <div className="schedule-empty">{filter === "reminders" ? "No saved matches yet. Choose Remind me on a fixture." : filter === "following" ? "No upcoming fixture currently includes a followed team." : "No future covered fixtures are currently published."}</div>}
       </div>
-      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Confirmed qualifiers remain result-backed; unresolved slots are never inferred." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Confirmed upcoming path: ${confirmedPath || "none"}. Tournament slots advance only from finalised results.`}</p>}
+      {source === "verified-schedule" && <p className={`schedule-disclaimer ${stale ? "stale" : ""}`}>{stale ? "This fallback snapshot is older than six hours. Confirmed qualifiers remain result-backed; unresolved slots are never inferred." : `Cross-checked ${verifiedAt ? new Date(verifiedAt).toLocaleString() : "recently"}. Confirmed upcoming path: ${spoilerFree ? "protected by Spoiler Shield" : confirmedPath || "none"}. Tournament slots advance only from finalised results.`}</p>}
     </section>
   );
 }

@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "PulseProof — Every Match Leaves a Memory",
+    name: "PulseProof | Every Match Leaves a Memory",
     short_name: "PulseProof",
     id: "/",
     lang: "en",

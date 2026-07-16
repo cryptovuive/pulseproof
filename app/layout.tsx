@@ -4,7 +4,7 @@ import { WalletSessionProvider } from "@/components/wallet-session-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PulseProof — every match leaves a memory",
+  title: "PulseProof | Every match leaves a memory",
   description: "A TxLINE-powered live second screen with verifiable Proof of Watch on Solana.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "PulseProof" },

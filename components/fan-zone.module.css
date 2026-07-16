@@ -5,6 +5,9 @@
 .avatarFrame{mix-blend-mode:screen}
 .notice{cursor:default}
 .notice>button{width:24px;height:24px;display:grid;place-items:center;flex:0 0 auto;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#aeb6af;cursor:pointer}
+.checkinFlow .dayToday{border-color:var(--acid);background:var(--acid);color:#111;box-shadow:0 0 0 3px rgba(217,255,67,.1)}
+.checkinFlow .dayToday strong{color:#111}
+.quizResult button:disabled{opacity:.48;cursor:default}
 .identityCard,.balanceCard,.statCard,.checkin,.quizCard,.chatCard,.store,.mascotArchive{border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(25,30,26,.96),rgba(14,17,15,.96))}
 .editAlias{width:29px;height:29px;display:inline-grid;place-items:center;margin-left:6px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.04);color:var(--acid);vertical-align:middle;cursor:pointer}.aliasEditor{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.aliasEditor input{min-width:180px;height:38px;border:1px solid rgba(217,255,67,.28);border-radius:8px;padding:0 10px;background:#0f1310;color:#fff;outline:none}.aliasEditor button{height:38px;border:1px solid var(--line);border-radius:8px;padding:0 10px;background:#202620;color:#cbd2cc;font-size:8px;font-weight:850;cursor:pointer}.aliasEditor button:first-of-type{border:0;background:var(--acid);color:#111}
 .chatMoved{display:grid;gap:13px;margin-top:22px;padding:18px;border:1px solid rgba(121,160,255,.24);border-radius:13px;background:linear-gradient(145deg,rgba(121,160,255,.1),rgba(121,160,255,.02))}.chatMoved strong{font-size:14px}.chatMoved span{color:#89948c;font-size:10px;line-height:1.65}.chatMoved a{width:fit-content;display:flex;align-items:center;gap:7px;border-radius:9px;padding:10px 12px;background:var(--acid);color:#111;text-decoration:none;font-size:9px;font-weight:900}.chatMoved a svg{transform:rotate(180deg)}

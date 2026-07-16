@@ -25,12 +25,19 @@ import {
 import {
   fetchFanProfile,
   fetchFanAlias,
+  hasQuizClaimReceipt,
   submitDailyCheckIn,
   submitEquipReward,
   submitFanAlias,
   submitQuizClaim,
   submitRewardRedemption,
 } from "@/lib/solana-client";
+import {
+  applyConfirmedCheckIn,
+  applyConfirmedEquipment,
+  applyConfirmedQuizClaim,
+  applyConfirmedRewardRedemption,
+} from "@/lib/fan-profile-state";
 import { REWARD_CATALOG, REWARD_KIND_CODE, rewardIsAvailable } from "@/lib/reward-catalog";
 import type {
   FanAlias,
@@ -56,6 +63,7 @@ type QuizSubmission = {
 const utcDay = () => Math.floor(Date.now() / 86_400_000);
 const shortKey = (value: string) => `${value.slice(0, 4)}…${value.slice(-4)}`;
 const formatUtcClose = (value: string) => `${value.slice(0, 16).replace("T", " · ")} UTC`;
+const PROFILE_RETRY_DELAYS = [0, 300, 750, 1_500, 3_000] as const;
 
 function RewardSprite({ reward, className = "" }: { reward?: RewardItem; className?: string }) {
   if (!reward) return <div className={`${styles.sprite} ${styles.spriteEmpty} ${className}`}><UserRound /></div>;
@@ -89,6 +97,42 @@ export function FanZone() {
     setProfile(nextProfile);
     setAlias(nextAlias);
     setAliasDraft(nextAlias?.displayName ?? "");
+  }, [walletKey]);
+
+  const reconcileProfile = useCallback(async (
+    predicate: (candidate: FanProfile) => boolean,
+    key = walletKey,
+  ) => {
+    if (!key) return;
+    for (const delay of PROFILE_RETRY_DELAYS) {
+      if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+      try {
+        const candidate = await fetchFanProfile(key);
+        if (candidate && predicate(candidate)) {
+          setProfile(candidate);
+          return;
+        }
+      } catch {
+        // Keep the confirmed optimistic state if a public RPC read is briefly delayed.
+      }
+    }
+  }, [walletKey]);
+
+  const reconcileAlias = useCallback(async (displayName: string, key = walletKey) => {
+    if (!key) return;
+    for (const delay of PROFILE_RETRY_DELAYS) {
+      if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+      try {
+        const candidate = await fetchFanAlias(key);
+        if (candidate?.displayName === displayName) {
+          setAlias(candidate);
+          setAliasDraft(candidate.displayName);
+          return;
+        }
+      } catch {
+        // The confirmed name stays visible while RPC replicas catch up.
+      }
+    }
   }, [walletKey]);
 
   useEffect(() => {
@@ -136,9 +180,12 @@ export function FanZone() {
     try {
       setBusy("checkin");
       const signature = await submitDailyCheckIn(wallet);
+      const day = utcDay();
+      const expectedCheckins = (profile?.checkins ?? 0) + 1;
       setLastSignature(signature);
-      await refreshProfile();
-      setNotice("Daily check-in finalized on Solana devnet. Points and streak now live in your profile PDA.");
+      setProfile((current) => applyConfirmedCheckIn(current, walletKey, day));
+      void reconcileProfile((candidate) => candidate.lastCheckinDay === day && candidate.checkins >= expectedCheckins);
+      setNotice("Checked in for today. Your points and streak are confirmed on Solana devnet.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Check-in transaction failed");
     } finally { setBusy(""); }
@@ -155,9 +202,16 @@ export function FanZone() {
       setBusy("alias");
       const signature = await submitFanAlias(wallet, displayName);
       setLastSignature(signature);
-      await refreshProfile();
+      setAlias((current) => ({
+        address: current?.address ?? "",
+        owner: walletKey,
+        displayName,
+        updatedAt: Math.floor(Date.now() / 1_000),
+      }));
+      setAliasDraft(displayName);
       setEditingAlias(false);
-      setNotice("Display name saved in your Fan Alias PDA. Match chat will verify it against this wallet.");
+      void reconcileAlias(displayName);
+      setNotice("Display name updated. Match chat now uses this verified fan name.");
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Display name transaction failed");
     } finally { setBusy(""); }
@@ -192,8 +246,13 @@ export function FanZone() {
       const body = await response.json() as QuizSubmission & { error?: string };
       if (!response.ok) throw new Error(body.error || "Quiz could not be graded");
       setQuizResult(body);
-      setQuizClaimed(false);
-      setNotice(body.points ? `Knowledge verified: ${body.score}/${quiz.questions.length}. Claim ${body.points} points on-chain when ready.` : `Practice complete: ${body.score}/${quiz.questions.length}. Review every sourced explanation or load another set.`);
+      const alreadyClaimed = Boolean(body.attestation && walletKey && await hasQuizClaimReceipt(walletKey, body.attestation).catch(() => false));
+      setQuizClaimed(alreadyClaimed);
+      setNotice(alreadyClaimed
+        ? "Today's quiz reward is already confirmed on-chain."
+        : body.points
+          ? `Score: ${body.score}/${quiz.questions.length}. You can now add ${body.points} points to your fan profile.`
+          : `Practice complete: ${body.score}/${quiz.questions.length}. Review the explanations or load another set.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Quiz could not be graded");
     } finally { setBusy(""); }
@@ -204,10 +263,12 @@ export function FanZone() {
     try {
       setBusy("quiz-claim");
       const signature = await submitQuizClaim(wallet, quizResult.attestation);
+      const expectedQuizClaims = (profile?.quizClaims ?? 0) + 1;
       setLastSignature(signature);
       setQuizClaimed(true);
-      await refreshProfile();
-      setNotice(`${quizResult.points} quiz points finalized on devnet. The daily round cannot be claimed twice.`);
+      setProfile((current) => applyConfirmedQuizClaim(current, walletKey, quizResult.points));
+      void reconcileProfile((candidate) => candidate.quizClaims >= expectedQuizClaims);
+      setNotice(`${quizResult.points} quiz points added. Today's claim is complete.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Quiz claim failed");
     } finally { setBusy(""); }
@@ -230,8 +291,12 @@ export function FanZone() {
       if (!response.ok) throw new Error(attestation.error || "Reward authorization failed");
       const signature = await submitRewardRedemption(wallet, attestation);
       setLastSignature(signature);
-      await refreshProfile();
-      setNotice(`${reward.name} now belongs to this non-transferable fan profile.`);
+      setProfile((current) => applyConfirmedRewardRedemption(current, walletKey, reward));
+      void reconcileProfile((candidate) => candidate.inventory.includes(reward.index)
+        && (reward.kind === "frame" ? candidate.equippedFrame === reward.index
+          : reward.kind === "character" ? candidate.equippedCharacter === reward.index
+            : candidate.equippedBadge === reward.index));
+      setNotice(`${reward.name} redeemed and equipped. It is now active on your fan profile.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Reward redemption failed");
     } finally { setBusy(""); }
@@ -243,8 +308,11 @@ export function FanZone() {
       setBusy(`equip-${reward.id}`);
       const signature = await submitEquipReward(wallet, REWARD_KIND_CODE[reward.kind], reward.index);
       setLastSignature(signature);
-      await refreshProfile();
-      setNotice(`${reward.name} equipped on-chain.`);
+      setProfile((current) => applyConfirmedEquipment(current, walletKey, reward));
+      void reconcileProfile((candidate) => reward.kind === "frame" ? candidate.equippedFrame === reward.index
+        : reward.kind === "character" ? candidate.equippedCharacter === reward.index
+          : candidate.equippedBadge === reward.index);
+      setNotice(`${reward.name} is now active on your profile.`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not equip reward");
     } finally { setBusy(""); }
@@ -271,7 +339,7 @@ export function FanZone() {
     </header>
 
     <section className={styles.hero}>
-      <div><span>FAN PROGRESSION · DEVNET</span><h1>Knowledge becomes identity—not money.</h1><p>Check in, master sourced World Cup trivia and unlock non-transferable cosmetics. Every point claim and redemption is wallet-approved on Solana devnet.</p></div>
+      <div><span>FAN PROGRESSION · DEVNET</span><h1>Know the game. Build your fan identity.</h1><p>Check in, test your World Cup knowledge and unlock profile cosmetics. Every point claim is approved by your wallet on Solana devnet.</p></div>
       <div className={styles.guardrail}><ShieldCheck /><div><strong>No betting. No cash value.</strong><span>Points cannot be bought, sold, transferred or converted. SOL is used only for devnet network fees and account rent.</span></div></div>
     </section>
 
@@ -294,17 +362,20 @@ export function FanZone() {
     </section>
 
     <section className={styles.checkin}>
-      <div className={styles.sectionHead}><div><span>01 · DAILY RITUAL</span><h2>Check in on-chain</h2><p>One claim per UTC day. Consecutive days increase the deterministic bonus up to day seven.</p></div><CalendarCheck2 /></div>
+      <div className={styles.sectionHead}><div><span>01 · DAILY CHECK-IN</span><h2>Check in on-chain</h2><p>Claim once per UTC day. Keep your streak going to earn a larger bonus for up to seven days.</p></div><CalendarCheck2 /></div>
       <div className={styles.checkinFlow}>
-        {[1,2,3,4,5,6,7].map((day) => <div key={day} className={profile && day <= Math.min(profile.currentStreak, 7) ? styles.dayActive : ""}><span>DAY {day}</span><strong>+{10 + (day - 1) * 2}</strong><small>PTS</small></div>)}
+        {[1,2,3,4,5,6,7].map((day) => {
+          const isToday = Boolean(checkedInToday && day === Math.min(profile?.currentStreak ?? 0, 7));
+          return <div key={day} aria-current={isToday ? "date" : undefined} className={`${profile && day <= Math.min(profile.currentStreak, 7) ? styles.dayActive : ""} ${isToday ? styles.dayToday : ""}`}><span>{isToday ? "TODAY" : `DAY ${day}`}</span><strong>+{10 + (day - 1) * 2}</strong><small>{isToday ? "DONE" : "PTS"}</small></div>;
+        })}
       </div>
-      <button className={styles.primary} onClick={checkIn} disabled={Boolean(busy) || checkedInToday}><CalendarCheck2 size={17} />{busy === "checkin" ? "Waiting for Phantom…" : checkedInToday ? "Checked in today" : "Check in · on-chain"}</button>
+      <button className={styles.primary} onClick={checkIn} disabled={Boolean(busy) || checkedInToday}><CalendarCheck2 size={17} />{busy === "checkin" ? "Confirm in Phantom…" : checkedInToday ? "Checked in today" : "Check in on-chain"}</button>
       <p className={styles.feeNote}><LockKeyhole size={13} /> Phantom shows the devnet network fee before approval; the first action also creates the profile account.</p>
     </section>
 
     <section className={styles.twoColumn}>
       <article className={styles.quizCard}>
-        <div className={styles.sectionHead}><div><span>02 · WORLD CUP QUIZ ENGINE</span><h2>{quiz?.mode === "practice" ? "Ten-question practice set" : "Five-question daily reward round"}</h2><p>10,000 deterministic variants from source-locked facts. Daily points stay single-use; practice is unlimited and reward-free.</p></div><BookOpenCheck /></div>
+        <div className={styles.sectionHead}><div><span>02 · WORLD CUP QUIZ</span><h2>{quiz?.mode === "practice" ? "Ten-question practice set" : "Five-question daily challenge"}</h2><p>Explore 10,000 question variations based on verified World Cup facts. The daily reward can be claimed once; practice rounds are unlimited.</p></div><BookOpenCheck /></div>
         {!quiz ? <div className={styles.loading}>Loading sourced questions…</div> : <>
           <div className={styles.quizMeta}><span>{quiz.edition}</span><b>{quiz.mode === "practice" ? `${quiz.catalogSize?.toLocaleString("en-US")} VARIANTS` : `UP TO ${quiz.maxPoints} PTS`}</b></div>
           <div className={styles.questions}>{quiz.questions.map((question, index) => {
@@ -320,7 +391,7 @@ export function FanZone() {
               {result && <p className={styles.explanation}>{result.explanation}</p>}
             </fieldset>;
           })}</div>
-          {!quizResult ? <button className={styles.primary} onClick={submitQuiz} disabled={Boolean(busy)}><Sparkles size={17} />{busy === "quiz-grade" ? "Checking sources…" : "Grade my round"}</button> : <div className={styles.quizResult}><div><strong>{quizResult.score}/{quiz.questions.length}</strong><span>{quiz.mode === "practice" ? "practice · no points" : `${quizResult.points} points authorized`}</span></div>{quizResult.attestation && <button onClick={claimQuiz} disabled={Boolean(busy) || quizClaimed}><BadgeCheck size={16} />{quizClaimed ? "Claimed on-chain" : busy === "quiz-claim" ? "Waiting for Phantom…" : "Claim points on-chain"}</button>}<button onClick={() => void loadPractice()} disabled={Boolean(busy)}><Rotate3D size={15} />New practice set</button></div>}
+          {!quizResult ? <button className={styles.primary} onClick={submitQuiz} disabled={Boolean(busy)}><Sparkles size={17} />{busy === "quiz-grade" ? "Checking answers…" : "Check my answers"}</button> : <div className={styles.quizResult}><div><strong>{quizResult.score}/{quiz.questions.length}</strong><span>{quiz.mode === "practice" ? "practice round · no points" : quizClaimed ? `${quizResult.points} points added to your profile` : `${quizResult.points} points ready to claim`}</span></div>{quizResult.attestation && <button onClick={claimQuiz} disabled={Boolean(busy) || quizClaimed}><BadgeCheck size={16} />{quizClaimed ? "Claimed today" : busy === "quiz-claim" ? "Confirm in Phantom…" : "Claim points on-chain"}</button>}<button onClick={() => void loadPractice()} disabled={Boolean(busy)}><Rotate3D size={15} />New practice set</button></div>}
         </>}
       </article>
 
@@ -331,7 +402,7 @@ export function FanZone() {
     </section>
 
     <section className={styles.mascotArchive}>
-      <div className={styles.sectionHead}><div><span>04 · SOURCE-LINKED MASCOT INDEX</span><h2>The real 2026 trio, plus every mascot era</h2><p>Factual names and roles link to the organiser&apos;s source. PulseProof deliberately uses neutral text seals—no copied official artwork, generated lookalikes or claim of affiliation.</p></div><Sparkles /></div>
+      <div className={styles.sectionHead}><div><span>04 · WORLD CUP MASCOT ARCHIVE</span><h2>The official 2026 trio and every mascot era</h2><p>Names, roles and descriptions are checked against the organiser&apos;s published sources. PulseProof uses neutral archive seals and does not copy official artwork or imply affiliation.</p></div><Sparkles /></div>
       <div className={styles.mascotHero}>
         <div className={styles.mascotHeroVisual} aria-label="Neutral World Cup 2026 mascot index"><span>2026</span><b>FACTUAL ARCHIVE</b><small>NO OFFICIAL ARTWORK STORED</small></div>
         <div className={styles.mascotHeroCopy}><span>2026 MASCOT FACT INDEX</span><h3>Clutch · Zayu · Maple</h3><p>The bald eagle, jaguar and moose announced for the United States, Mexico and Canada are identified here in text only.</p><div className={styles.mascotRoles}><b>CLUTCH <small>USA · MIDFIELDER</small></b><b>ZAYU <small>MEXICO · STRIKER</small></b><b>MAPLE <small>CANADA · GOALKEEPER</small></b></div><a href={MASCOT_2026_SOURCE} target="_blank" rel="noreferrer">Verify at the official source <ExternalLink size={12} /></a><small className={styles.rightsNote}>Names are used only for factual identification. No mascot image, FIFA logo or endorsement claim is included.</small></div>
@@ -340,7 +411,7 @@ export function FanZone() {
     </section>
 
     <section className={styles.store}>
-      <div className={styles.sectionHead}><div><span>05 · COSMETIC REWARD VAULT</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Badges, medals, avatar frames and original PulseProof characters only. Mascot names remain a source-linked fact index above—not claimable or falsely presented as owned collectibles.</p></div><Gift /></div>
+      <div className={styles.sectionHead}><div><span>05 · PROFILE REWARDS</span><h2>{REWARD_CATALOG.length} non-transferable rewards</h2><p>Choose from original PulseProof badges, medals, avatar frames and characters. Mascot names stay in the factual archive above and are not offered as collectibles.</p></div><Gift /></div>
       <div className={styles.filters}>{(["all","badge","medal","frame","character","limited"] as RewardFilter[]).map((item) => <button key={item} className={filter === item ? styles.filterActive : ""} onClick={() => setFilter(item)}>{item}</button>)}</div>
       <div className={styles.rewardGrid}>{filteredRewards.map((reward) => {
         const isOwned = owned.has(reward.index);
@@ -349,7 +420,7 @@ export function FanZone() {
         return <article key={reward.id} className={`${styles.rewardCard} ${styles[reward.rarity]}`}>
           <RewardSprite reward={reward} />
           <div className={styles.rewardCopy}><div><span>{reward.kind}</span><b>{reward.rarity}</b></div><h3>{reward.name}</h3><p>{reward.description}</p>{reward.availableUntil && <small>SEASON CLOSE · {formatUtcClose(reward.availableUntil)}</small>}</div>
-          <div className={styles.rewardAction}><strong>{reward.price} PTS</strong>{isOwned ? <button disabled={Boolean(busy) || isEquipped} onClick={() => equipReward(reward)}>{isEquipped ? "Equipped" : busy === `equip-${reward.id}` ? "Approving…" : "Equip on-chain"}</button> : <button disabled={Boolean(busy) || !isAvailable} onClick={() => redeemReward(reward)}>{!isAvailable ? "Closed" : busy === `reward-${reward.id}` ? "Approving…" : "Redeem"}</button>}</div>
+          <div className={styles.rewardAction}><strong>{reward.price} PTS</strong>{isOwned ? <button disabled={Boolean(busy) || isEquipped} onClick={() => equipReward(reward)}>{isEquipped ? "Owned · Active" : busy === `equip-${reward.id}` ? "Confirming…" : "Use this reward"}</button> : <button disabled={Boolean(busy) || !isAvailable} onClick={() => redeemReward(reward)}>{!isAvailable ? "Closed" : busy === `reward-${reward.id}` ? "Confirming…" : "Redeem & use"}</button>}</div>
         </article>;
       })}</div>
     </section>
