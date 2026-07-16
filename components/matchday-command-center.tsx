@@ -7,6 +7,7 @@ import { ALERT_KINDS, type AlertKind, type MatchAlert, type MatchAlertPreference
 import { formatKickoffCountdown, scheduleParticipantLabel } from "@/lib/schedule";
 import { getTeamBranding } from "@/lib/team-branding";
 import { buildTournamentJourney } from "@/lib/tournament-journey";
+import { stageParticipantsRevealKnockoutOutcome } from "@/lib/spoiler-protection";
 import type { MatchPulse, ScheduleEntry } from "@/types/pulse";
 
 type NotificationPermissionState = NotificationPermission | "unsupported";
@@ -126,6 +127,7 @@ export function MatchdayCommandCenter({
   }, []);
 
   const journey = useMemo(() => buildTournamentJourney(entries, followedTeams), [entries, followedTeams]);
+  const currentParticipantsProtected = spoilerFree && stageParticipantsRevealKnockoutOutcome(pulse.fixture.stage);
   const nextFixtureRevealsOutcome = spoilerFree && Boolean(journey.nextForFan && /final|third/i.test(journey.nextForFan.fixture.stage));
   const toggleKind = (kind: AlertKind) => {
     const kinds = alertPreferences.kinds.includes(kind)
@@ -153,7 +155,7 @@ export function MatchdayCommandCenter({
       <div className="command-quick-grid">
         <article>
           <span>Continue</span>
-          <strong>{pulse.fixture.homeTeam} vs {pulse.fixture.awayTeam}</strong>
+          <strong>{currentParticipantsProtected ? "Knockout qualifiers hidden" : `${pulse.fixture.homeTeam} vs ${pulse.fixture.awayTeam}`}</strong>
           <small>{offlineMode ? "Saved on this device" : pulse.phase} · Fixture #{pulse.fixture.fixtureId}</small>
           <a href="#top">Return to match</a>
         </article>

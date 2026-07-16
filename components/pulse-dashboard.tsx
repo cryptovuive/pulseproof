@@ -59,6 +59,7 @@ import {
   type MatchAlertPreferences,
 } from "@/lib/matchday-alerts";
 import { buildMatchBrief, freshnessLabel, sportingMoments } from "@/lib/match-experience";
+import { stageParticipantsRevealKnockoutOutcome } from "@/lib/spoiler-protection";
 import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
 import {
   buildSavedRecapPack,
@@ -737,14 +738,16 @@ export function PulseDashboard() {
   const signalMoments = sportingMoments(pulse.moments);
   const latest = signalMoments.at(-1);
   const displayMinute = latest?.minuteLabel ?? pulse.minute;
-  const homeBrand = getTeamBranding(pulse.fixture.homeTeam);
-  const awayBrand = getTeamBranding(pulse.fixture.awayTeam);
+  const participantsProtected = preferences.spoilerFree && stageParticipantsRevealKnockoutOutcome(pulse.fixture.stage);
+  const homeBrand = getTeamBranding(participantsProtected ? "TBD" : pulse.fixture.homeTeam);
+  const awayBrand = getTeamBranding(participantsProtected ? "TBD" : pulse.fixture.awayTeam);
   const txLineDevnet = !offlineMode && pulse.source !== "demo-replay" && pulse.provenance?.provider.includes("devnet");
   const competitionEvidenceUrl = pulse.provenance?.sourceUrl ?? pulse.fixture.competitionSourceUrl;
   const hasSignalMoments = signalMoments.length > 0;
   const scoreKnown = pulse.source === "demo-replay" || pulse.moments.some((moment) => Boolean(moment.score));
   const spoilerProtected = preferences.spoilerFree && livePulse?.phase === "FT" && !catchUp && !revealedScores.has(pulse.fixture.fixtureId);
-  const scoreVisible = scoreKnown && !spoilerProtected;
+  const detailsProtected = spoilerProtected || participantsProtected;
+  const scoreVisible = scoreKnown && !detailsProtected;
   const statusLabel = offlineMode ? "Offline library" : catchUp ? "Catch-up" : status === "live" ? (pulse.source === "demo-replay" ? "Demo replay" : "TxLINE connected") : status;
   const catchUpSummary = catchUp ? summarizeCatchUp(pulse.moments) : null;
   const matchBrief = buildMatchBrief(pulse);
@@ -753,8 +756,8 @@ export function PulseDashboard() {
   const freshness = offlineMode && currentSavedRecap
     ? `Saved offline · ${new Date(currentSavedRecap.savedAt).toLocaleString()}`
     : freshnessLabel(pulse, nowMs);
-  const homeFollowed = preferences.followedTeams.includes(pulse.fixture.homeTeam);
-  const awayFollowed = preferences.followedTeams.includes(pulse.fixture.awayTeam);
+  const homeFollowed = !participantsProtected && preferences.followedTeams.includes(pulse.fixture.homeTeam);
+  const awayFollowed = !participantsProtected && preferences.followedTeams.includes(pulse.fixture.awayTeam);
   const recapSaved = Boolean(currentSavedRecap);
 
   return (
@@ -817,8 +820,9 @@ export function PulseDashboard() {
         </div>
         <div className="match-strip">
           {visibleMatches.map((match) => {
-            const home = getTeamBranding(match.fixture.homeTeam);
-            const away = getTeamBranding(match.fixture.awayTeam);
+            const hideParticipants = preferences.spoilerFree && stageParticipantsRevealKnockoutOutcome(match.fixture.stage);
+            const home = getTeamBranding(hideParticipants ? "TBD" : match.fixture.homeTeam);
+            const away = getTeamBranding(hideParticipants ? "TBD" : match.fixture.awayTeam);
             const hideScore = preferences.spoilerFree && match.phase === "FT" && !revealedScores.has(match.fixture.fixtureId);
             return (
               <button
@@ -830,9 +834,9 @@ export function PulseDashboard() {
                 <span className="match-tile-top"><b>{match.phase}</b><small>{match.phase === "FT" ? "Full time" : match.minute ? `${match.minute}'` : match.phase === "COVERED" ? "Metadata only" : match.phase === "WAITING" ? "Awaiting events" : "Scheduled"}</small></span>
                 <span className={`match-competition ${match.fixture.competition === "FIFA World Cup 2026" ? "world-cup" : "unverified"}`}>{match.fixture.competition}</span>
                 <span className="match-stage"><span>{match.fixture.stage}</span><small>{competitionSourceLabel(match.fixture.competitionSource)}</small></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={home.flagKey} /></span><strong>{home.code}</strong><b>{hideScore ? "•" : match.scoreKnown ? match.score[0] : "–"}</b></span>
-                <span className="match-tile-team"><span className="match-flag"><TeamFlag flagKey={away.flagKey} /></span><strong>{away.code}</strong><b>{hideScore ? "•" : match.scoreKnown ? match.score[1] : "–"}</b></span>
-                <span className="match-tile-foot">{hideScore ? <EyeOff size={11} /> : <Radio size={11} />} {hideScore ? "Result hidden · open spoiler-free" : `${match.momentCount} ${match.source === "demo-replay" ? "report events · open recap" : "source records"}`}</span>
+                <span className="match-tile-team"><span className="match-flag">{hideParticipants ? <EyeOff /> : <TeamFlag flagKey={home.flagKey} />}</span><strong>{hideParticipants ? "???" : home.code}</strong><b>{hideParticipants || hideScore ? "•" : match.scoreKnown ? match.score[0] : "–"}</b></span>
+                <span className="match-tile-team"><span className="match-flag">{hideParticipants ? <EyeOff /> : <TeamFlag flagKey={away.flagKey} />}</span><strong>{hideParticipants ? "???" : away.code}</strong><b>{hideParticipants || hideScore ? "•" : match.scoreKnown ? match.score[1] : "–"}</b></span>
+                <span className="match-tile-foot">{hideParticipants || hideScore ? <EyeOff size={11} /> : <Radio size={11} />} {hideParticipants ? "Qualifiers hidden · open protected" : hideScore ? "Result hidden · open spoiler-free" : `${match.momentCount} ${match.source === "demo-replay" ? "report events · open recap" : "source records"}`}</span>
               </button>
             );
           })}
@@ -895,32 +899,32 @@ export function PulseDashboard() {
             <div className="freshness-row"><span><Wifi size={12} /> {freshness}</span><button onClick={() => void shareSelectedMatch()}><Share2 size={12} /> Copy match link</button></div>
             <div className="teams">
               <div className="team team-home">
-                <div className="team-orb" role="img" aria-label={`${homeBrand.canonicalName} flag, team code ${homeBrand.code}`}>
-                  <TeamFlag flagKey={homeBrand.flagKey} className="flag-svg" />
-                  <span className="team-code" aria-hidden="true">{homeBrand.code}</span>
+                <div className="team-orb" role="img" aria-label={participantsProtected ? "Home qualifier hidden" : `${homeBrand.canonicalName} flag, team code ${homeBrand.code}`}>
+                  {participantsProtected ? <EyeOff className="flag-svg" /> : <TeamFlag flagKey={homeBrand.flagKey} className="flag-svg" />}
+                  <span className="team-code" aria-hidden="true">{participantsProtected ? "???" : homeBrand.code}</span>
                 </div>
-                <h1>{pulse.fixture.homeTeam}</h1>
+                <h1>{participantsProtected ? "Qualifier hidden" : pulse.fixture.homeTeam}</h1>
                 <span>Home</span>
-                <button className={`team-follow ${homeFollowed ? "active" : ""}`} aria-pressed={homeFollowed} onClick={() => toggleTeam(pulse.fixture.homeTeam)}><Star size={12} fill={homeFollowed ? "currentColor" : "none"} /> {homeFollowed ? "Following" : "Follow"}</button>
+                <button disabled={participantsProtected} className={`team-follow ${homeFollowed ? "active" : ""}`} aria-pressed={homeFollowed} onClick={() => toggleTeam(pulse.fixture.homeTeam)}><Star size={12} fill={homeFollowed ? "currentColor" : "none"} /> {participantsProtected ? "Protected" : homeFollowed ? "Following" : "Follow"}</button>
               </div>
               <div className="score">
-                <strong>{scoreVisible ? pulse.score[0] : spoilerProtected ? "•" : "–"}</strong><i>:</i><strong>{scoreVisible ? pulse.score[1] : spoilerProtected ? "•" : "–"}</strong>
+                <strong>{scoreVisible ? pulse.score[0] : detailsProtected ? "•" : "–"}</strong><i>:</i><strong>{scoreVisible ? pulse.score[1] : detailsProtected ? "•" : "–"}</strong>
                 <small>Fixture #{pulse.fixture.fixtureId}</small>
                 {spoilerProtected && <button className="reveal-score" onClick={() => setRevealedScores((current) => new Set(current).add(pulse.fixture.fixtureId))}><Eye size={12} /> Reveal result</button>}
               </div>
               <div className="team team-away">
-                <div className="team-orb" role="img" aria-label={`${awayBrand.canonicalName} flag, team code ${awayBrand.code}`}>
-                  <TeamFlag flagKey={awayBrand.flagKey} className="flag-svg" />
-                  <span className="team-code" aria-hidden="true">{awayBrand.code}</span>
+                <div className="team-orb" role="img" aria-label={participantsProtected ? "Away qualifier hidden" : `${awayBrand.canonicalName} flag, team code ${awayBrand.code}`}>
+                  {participantsProtected ? <EyeOff className="flag-svg" /> : <TeamFlag flagKey={awayBrand.flagKey} className="flag-svg" />}
+                  <span className="team-code" aria-hidden="true">{participantsProtected ? "???" : awayBrand.code}</span>
                 </div>
-                <h1>{pulse.fixture.awayTeam}</h1>
+                <h1>{participantsProtected ? "Qualifier hidden" : pulse.fixture.awayTeam}</h1>
                 <span>Away</span>
-                <button className={`team-follow ${awayFollowed ? "active" : ""}`} aria-pressed={awayFollowed} onClick={() => toggleTeam(pulse.fixture.awayTeam)}><Star size={12} fill={awayFollowed ? "currentColor" : "none"} /> {awayFollowed ? "Following" : "Follow"}</button>
+                <button disabled={participantsProtected} className={`team-follow ${awayFollowed ? "active" : ""}`} aria-pressed={awayFollowed} onClick={() => toggleTeam(pulse.fixture.awayTeam)}><Star size={12} fill={awayFollowed ? "currentColor" : "none"} /> {participantsProtected ? "Protected" : awayFollowed ? "Following" : "Follow"}</button>
               </div>
             </div>
             <div className="momentum-block">
-              <div className="section-label"><span>Match pulse</span><span>{spoilerProtected ? "Protected" : hasSignalMoments ? `${pulse.momentum}% · ${100 - pulse.momentum}%` : "Awaiting sporting events"}</span></div>
-              {spoilerProtected ? <div className="momentum-labels"><span>Spoiler Shield also hides the final momentum balance.</span></div> : hasSignalMoments ? <>
+              <div className="section-label"><span>Match pulse</span><span>{detailsProtected ? "Protected" : hasSignalMoments ? `${pulse.momentum}% · ${100 - pulse.momentum}%` : "Awaiting sporting events"}</span></div>
+              {detailsProtected ? <div className="momentum-labels"><span>{participantsProtected ? "Spoiler Shield hides qualifiers decided by completed knockout matches." : "Spoiler Shield also hides the final momentum balance."}</span></div> : hasSignalMoments ? <>
                 <div className="momentum-track"><span style={{ width: `${pulse.momentum}%` }} /></div>
                 <div className="momentum-labels"><span>{pulse.fixture.homeTeam} pressure</span><span>{pulse.fixture.awayTeam} pressure</span></div>
               </> : <div className="momentum-labels"><span>Coverage metadata only. No pressure estimate is available yet.</span></div>}
@@ -930,27 +934,27 @@ export function PulseDashboard() {
           <article className="pulse-card panel">
             <div className="panel-heading">
               <div>
-                <span className="eyebrow">{spoilerProtected ? "Spoiler shield" : pulse.phase === "FT" ? "Match brief" : "Latest signal"}</span>
-                <h2>{spoilerProtected ? "The result is protected" : matchBrief.headline}</h2>
+                <span className="eyebrow">{detailsProtected ? "Spoiler shield" : pulse.phase === "FT" ? "Match brief" : "Latest signal"}</span>
+                <h2>{participantsProtected ? "The qualifiers are protected" : spoilerProtected ? "The result is protected" : matchBrief.headline}</h2>
               </div>
-              <div className="signal-icon">{spoilerProtected ? <EyeOff size={22} /> : <Zap size={22} />}</div>
+              <div className="signal-icon">{detailsProtected ? <EyeOff size={22} /> : <Zap size={22} />}</div>
             </div>
-            {spoilerProtected
-              ? <p>Start Catch-up to experience the match from kick-off, or reveal the full result when you are ready.</p>
+            {detailsProtected
+              ? <p>{participantsProtected ? "Turn off Spoiler Shield when you are ready to see which teams advanced to this fixture." : "Start Catch-up to experience the match from kick-off, or reveal the full result when you are ready."}</p>
               : <div className="brief-lines">{matchBrief.lines.map((line) => <p key={line}>{line}</p>)}</div>}
             <div className="explain-row">
-              <Sparkles size={15} /> {spoilerProtected ? "No score, scorer or card details are exposed until you choose." : `Based on ${signalMoments.length} verified on-pitch source event${signalMoments.length === 1 ? "" : "s"}. Unsupported statistics are never added.`}
+              <Sparkles size={15} /> {participantsProtected ? "Team names, flags and result-derived source labels stay hidden." : spoilerProtected ? "No score, scorer or card details are exposed until you choose." : `Based on ${signalMoments.length} verified on-pitch source event${signalMoments.length === 1 ? "" : "s"}. Unsupported statistics are never added.`}
             </div>
           </article>
 
           <article className="timeline panel" id="event-timeline">
             <div className="panel-heading compact">
-              <div><span className="eyebrow">On-pitch timeline</span><h2>{spoilerProtected ? "Timeline protected" : hasSignalMoments ? "Moments that moved the match" : "Waiting for sporting events"}</h2></div>
+              <div><span className="eyebrow">On-pitch timeline</span><h2>{detailsProtected ? "Timeline protected" : hasSignalMoments ? "Moments that moved the match" : "Waiting for sporting events"}</h2></div>
               <span className="event-count">{signalMoments.length} on-pitch</span>
             </div>
             <div className="timeline-list">
-              {spoilerProtected ? (
-                <div className="timeline-empty"><EyeOff size={20} /><strong>Spoiler shield is active</strong><span>Use Catch-up for a progressive replay, or reveal the result above.</span></div>
+              {detailsProtected ? (
+                <div className="timeline-empty"><EyeOff size={20} /><strong>Spoiler Shield is active</strong><span>{participantsProtected ? "Turn off the shield to reveal teams that advanced from completed matches." : "Use Catch-up for a progressive replay, or reveal the result above."}</span></div>
               ) : [...signalMoments].reverse().map((moment) => (
                 <div className={`timeline-item ${moment.type}`} key={moment.id}>
                   <div className="minute">{moment.minuteLabel ?? moment.minute}&apos;</div>
@@ -978,7 +982,7 @@ export function PulseDashboard() {
                   </button>
                 </div>
               ))}
-              {!spoilerProtected && !signalMoments.length && <div className="timeline-empty"><Radio size={20} /><strong>TxLINE is connected</strong><span>No goal, shot, card, VAR or phase event has arrived. {hiddenMetadataCount ? `${hiddenMetadataCount} technical metadata update${hiddenMetadataCount === 1 ? " is" : "s are"} hidden from this consumer timeline.` : ""}</span></div>}
+              {!detailsProtected && !signalMoments.length && <div className="timeline-empty"><Radio size={20} /><strong>TxLINE is connected</strong><span>No goal, shot, card, VAR or phase event has arrived. {hiddenMetadataCount ? `${hiddenMetadataCount} technical metadata update${hiddenMetadataCount === 1 ? " is" : "s are"} hidden from this consumer timeline.` : ""}</span></div>}
             </div>
           </article>
         </section>
@@ -1003,15 +1007,15 @@ export function PulseDashboard() {
             <h3>{hasSignalMoments ? "Who owns the next ten minutes?" : "Fan room preview"}</h3>
             <p>This prototype vote stays local to your browser. There are no wagers or entry fees, just a shared fan pulse.</p>
             <div className="room-options">
-              <button className={roomVote === "home" ? "active" : ""} aria-pressed={roomVote === "home"} onClick={() => voteInRoom("home")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={homeBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.homeTeam}<b>{roomPercent(roomCounts.home)}%</b></button>
-              <button className={roomVote === "away" ? "active" : ""} aria-pressed={roomVote === "away"} onClick={() => voteInRoom("away")}><span className="mini-orb flag-mini" aria-hidden="true"><TeamFlag flagKey={awayBrand.flagKey} className="mini-flag-svg" /></span>{pulse.fixture.awayTeam}<b>{roomPercent(roomCounts.away)}%</b></button>
+              <button disabled={participantsProtected} className={roomVote === "home" ? "active" : ""} aria-pressed={roomVote === "home"} onClick={() => voteInRoom("home")}><span className="mini-orb flag-mini" aria-hidden="true">{participantsProtected ? <EyeOff /> : <TeamFlag flagKey={homeBrand.flagKey} className="mini-flag-svg" />}</span>{participantsProtected ? "Qualifier hidden" : pulse.fixture.homeTeam}<b>{participantsProtected ? "–" : `${roomPercent(roomCounts.home)}%`}</b></button>
+              <button disabled={participantsProtected} className={roomVote === "away" ? "active" : ""} aria-pressed={roomVote === "away"} onClick={() => voteInRoom("away")}><span className="mini-orb flag-mini" aria-hidden="true">{participantsProtected ? <EyeOff /> : <TeamFlag flagKey={awayBrand.flagKey} className="mini-flag-svg" />}</span>{participantsProtected ? "Qualifier hidden" : pulse.fixture.awayTeam}<b>{participantsProtected ? "–" : `${roomPercent(roomCounts.away)}%`}</b></button>
               <button className={roomVote === "even" ? "active" : ""} aria-pressed={roomVote === "even"} onClick={() => voteInRoom("even")}><span className="mini-orb neutral">–</span>Even<b>{roomPercent(roomCounts.even)}%</b></button>
             </div>
           </article>
 
           <MatchChat
             fixtureId={pulse.fixture.fixtureId}
-            fixtureLabel={`${pulse.fixture.homeTeam} vs ${pulse.fixture.awayTeam}`}
+            fixtureLabel={participantsProtected ? "Protected knockout fixture" : `${pulse.fixture.homeTeam} vs ${pulse.fixture.awayTeam}`}
             wallet={wallet}
             walletKey={walletKey}
             onNotice={setNotice}

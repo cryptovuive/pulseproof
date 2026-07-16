@@ -6,6 +6,7 @@ import { TeamFlag } from "@/components/team-flag";
 import { buildFixtureCalendar, formatKickoffCountdown, scheduleParticipantLabel } from "@/lib/schedule";
 import { fixtureHasFollowedTeam } from "@/lib/fan-preferences";
 import { getTeamBranding } from "@/lib/team-branding";
+import { stageParticipantsRevealKnockoutOutcome } from "@/lib/spoiler-protection";
 import type { ScheduleEntry } from "@/types/pulse";
 
 const REMINDER_KEY = "pulseproof-fixture-reminders-v1";
@@ -140,7 +141,7 @@ export function UpcomingMatchHub({ followedTeams = [], spoilerFree = false }: { 
       <div className="upcoming-list">
         {loading && <div className="schedule-empty">Loading fixture snapshot…</div>}
         {!loading && shown.map((entry, index) => {
-          const protectParticipants = spoilerFree && (Boolean(entry.participantPaths) || /^(final|third place)\b/i.test(entry.fixture.stage));
+          const protectParticipants = spoilerFree && (Boolean(entry.participantPaths) || stageParticipantsRevealKnockoutOutcome(entry.fixture.stage));
           const home = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.homeTeam);
           const away = getTeamBranding(protectParticipants ? "TBD" : entry.fixture.awayTeam);
           const homeLabel = protectParticipants ? "Qualifier hidden" : scheduleParticipantLabel(entry, "home");
