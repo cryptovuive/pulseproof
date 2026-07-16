@@ -47,8 +47,15 @@ async function main() {
     maxRetries: 5,
     skipPreflight: true,
   });
-  const confirmation = await connection.confirmTransaction({ signature, ...latest }, "confirmed");
-  assert(confirmation.value.err, "retired reward transaction unexpectedly succeeded");
+  // Some Solana RPC providers return a confirmation value for failed transactions,
+  // while others reject the confirmation promise with the on-chain error. The
+  // transaction metadata below is the canonical assertion in both cases.
+  let confirmationThrew = false;
+  try {
+    await connection.confirmTransaction({ signature, ...latest }, "confirmed");
+  } catch {
+    confirmationThrew = true;
+  }
 
   let transactionDetails = await connection.getTransaction(signature, {
     commitment: "confirmed",
@@ -79,6 +86,7 @@ async function main() {
     fanProfile: fanProfile.toBase58(),
     retiredIndex: RETIRED_INDEX,
     customError: INVALID_REWARD_INDEX_ERROR,
+    confirmationThrew,
     signature,
     explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
   }, null, 2));
