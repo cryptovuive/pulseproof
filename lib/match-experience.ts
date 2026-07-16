@@ -56,6 +56,7 @@ export function buildMatchBrief(pulse: MatchPulse): MatchBrief {
 
 export function freshnessLabel(pulse: MatchPulse, nowMs = Date.now()): string {
   if (pulse.source === "demo-replay") return "Published report replay · source linked";
+  if (pulse.phase === "FT") return "TxLINE final snapshot · replay ready";
   if (!["LIVE", "HT", "ET", "PEN"].includes(pulse.phase)) return "Coverage connected · awaiting match action";
   const updatedAt = Date.parse(pulse.updatedAt);
   if (!Number.isFinite(updatedAt)) return "Update time unavailable";

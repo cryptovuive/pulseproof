@@ -27,6 +27,7 @@ describe("consumer match experience", () => {
     };
     expect(buildMatchBrief(metadataOnly)).toMatchObject({ headline: "Waiting for on-pitch action", goals: 0, cards: 0, reviews: 0 });
     expect(freshnessLabel(metadataOnly, Date.parse("2026-07-13T00:00:00Z"))).toBe("Coverage connected · awaiting match action");
+    expect(freshnessLabel({ ...metadataOnly, phase: "FT" }, Date.parse("2026-07-13T00:00:00Z"))).toBe("TxLINE final snapshot · replay ready");
   });
 
   it("reports live freshness without pretending a quiet feed is current", () => {
