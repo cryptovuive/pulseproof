@@ -9,10 +9,13 @@ export const runtime = "nodejs";
 const PULSEPROOF_PROGRAM = process.env.NEXT_PUBLIC_PULSEPROOF_PROGRAM_ID
   ?? "74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn";
 const REFERENCE_RECEIPT = process.env.NEXT_PUBLIC_REFERENCE_RECEIPT
-  ?? "vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR";
-const PROGRESSION_WALLET = "8qdg3U5FXJD8H5Y5Fv6hsWxJbPLwaUmyUUYyFYVLsAyV";
-const QUIZ_RECEIPT = "2dSD6oJMsZNAMSfCTYSkBXuMowc9hSC4dtp5rfwjJz8uYKGR7QJ6Wfy7jwFYYWewxsKA11XYqkX3t4pEPMqpAzxo";
-const REWARD_RECEIPT = "5y1ZXtGdmKRMfaSYpW321F9qBzaJQp3ttphfARVC2q9BXEM44dPBZHyUBpQbxN3n8dR9Xf28s8MbXPv2GnK5QpjA";
+  ?? "eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu";
+const PROGRESSION_WALLET = process.env.NEXT_PUBLIC_JUDGE_WALLET
+  ?? "8KmjwHgXda7vCSV64q6rXfQtComhzNPimNjUY3hfruDh";
+const QUIZ_RECEIPT = process.env.NEXT_PUBLIC_QUIZ_RECEIPT
+  ?? "5A4zNDmkftBeBCMPSCUQuz6nSh9om3eKtbhDjPCbgvkBm93AAumK8ZHNdKdeQdWqr8Gfvwom1RbdorTYG1TgDbvo";
+const REWARD_RECEIPT = process.env.NEXT_PUBLIC_REWARD_RECEIPT
+  ?? "eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu";
 
 const explorerAddress = (address: string) => `https://explorer.solana.com/address/${address}?cluster=devnet`;
 const explorerTransaction = (signature: string) => `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
@@ -85,6 +88,8 @@ export async function GET() {
         checkins: profileAccount.data.readUInt32LE(56),
         quizClaims: profileAccount.data.readUInt32LE(60),
         equippedBadge: profileAccount.data.readUInt16LE(108),
+        equippedFrame: profileAccount.data.readUInt16LE(110),
+        equippedCharacter: profileAccount.data.readUInt16LE(112),
         quizReceipt: {
           signature: QUIZ_RECEIPT,
           confirmationStatus: quizReceipt.value.confirmationStatus ?? null,

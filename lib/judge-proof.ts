@@ -32,6 +32,8 @@ export type JudgeProofResult = {
     checkins: number;
     quizClaims: number;
     equippedBadge: number;
+    equippedFrame: number;
+    equippedCharacter: number;
     quizReceipt: { signature: string; confirmationStatus: string | null; error: unknown; explorerUrl: string };
     rewardReceipt: { signature: string; confirmationStatus: string | null; error: unknown; explorerUrl: string };
   };
@@ -131,10 +133,15 @@ export function assertChainEvidence(value: unknown): asserts value is JudgeProof
   if (!body.progression || body.progression.pointsEarned < 1 || body.progression.pointsSpent < 1) {
     throw new Error("The on-chain fan progression profile is incomplete");
   }
-  if (body.progression.displayName !== "Cryptovuive" || body.progression.fanAlias.length < 32) {
+  if (body.progression.displayName.trim().length < 3 || body.progression.fanAlias.length < 32) {
     throw new Error("The on-chain fan alias proof is missing");
   }
-  if (body.progression.checkins < 1 || body.progression.quizClaims < 1 || body.progression.equippedBadge === 65_535) {
+  const hasEquippedReward = [
+    body.progression.equippedBadge,
+    body.progression.equippedFrame,
+    body.progression.equippedCharacter,
+  ].some((reward) => reward !== 65_535);
+  if (body.progression.checkins < 1 || body.progression.quizClaims < 1 || !hasEquippedReward) {
     throw new Error("The on-chain check-in, quiz or equipped reward proof is missing");
   }
   for (const progressionReceipt of [body.progression.quizReceipt, body.progression.rewardReceipt]) {

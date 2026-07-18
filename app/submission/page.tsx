@@ -31,7 +31,7 @@ const LIVE_APP = "https://pulseproof-production-06fa.up.railway.app";
 const REPOSITORY = "https://github.com/cryptovuive/pulseproof";
 const CI_RUN = "https://github.com/cryptovuive/pulseproof/actions";
 const PROGRAM = "74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn";
-const TRANSACTION = "vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR";
+const TRANSACTION = "eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu";
 const EXPLORER = `https://explorer.solana.com/tx/${TRANSACTION}?cluster=devnet`;
 
 const chapters = [

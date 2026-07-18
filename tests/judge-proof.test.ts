@@ -105,19 +105,25 @@ describe("judge live proof validators", () => {
         wallet: "wallet",
         fanProfile: "profile",
         fanAlias: "HA2NUKeaLDy9nxf7JvUWhQNDKySqheG68a2B8nj5o9QN",
-        displayName: "Cryptovuive",
+        displayName: "Cryptovuive26",
         explorerUrl: "https://example.com",
         pointsEarned: 85,
         pointsSpent: 60,
         checkins: 1,
         quizClaims: 1,
         equippedBadge: 13,
+        equippedFrame: 65_535,
+        equippedCharacter: 65_535,
         quizReceipt: { signature: "quiz", confirmationStatus: "finalized", error: null, explorerUrl: "https://example.com" },
         rewardReceipt: { signature: "reward", confirmationStatus: "finalized", error: null, explorerUrl: "https://example.com" },
       },
     };
     expect(() => assertChainEvidence(evidence)).not.toThrow();
     expect(() => assertChainEvidence({ ...evidence, receipt: { ...evidence.receipt, error: { custom: 1 } } })).toThrow(/receipt/i);
+    expect(() => assertChainEvidence({
+      ...evidence,
+      progression: { ...evidence.progression, equippedBadge: 65_535 },
+    })).toThrow(/equipped reward/i);
   });
 
   it("keeps APIs and SSE outside the offline cache", () => {
