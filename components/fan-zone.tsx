@@ -59,6 +59,11 @@ type QuizSubmission = {
   results: QuizAttestation["results"];
   attestation: QuizAttestation | null;
 };
+type TxReceipt = {
+  action: string;
+  detail: string;
+  signature: string;
+};
 
 const utcDay = () => Math.floor(Date.now() / 86_400_000);
 const shortKey = (value: string) => `${value.slice(0, 4)}…${value.slice(-4)}`;
@@ -84,7 +89,7 @@ export function FanZone() {
   const [editingAlias, setEditingAlias] = useState(false);
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
-  const [lastSignature, setLastSignature] = useState("");
+  const [txReceipt, setTxReceipt] = useState<TxReceipt | null>(null);
   const [quiz, setQuiz] = useState<QuizRound | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [quizResult, setQuizResult] = useState<QuizSubmission | null>(null);
@@ -154,6 +159,7 @@ export function FanZone() {
 
   const connectWallet = async () => {
     try {
+      setTxReceipt(null);
       if (wallet && walletKey) {
         await disconnect();
         setProfile(null); setAlias(null); setAliasDraft("");
@@ -169,6 +175,7 @@ export function FanZone() {
 
   const requireWallet = () => {
     if (!wallet || !walletKey) {
+      setTxReceipt(null);
       setNotice("Connect Phantom on devnet before this on-chain action.");
       return false;
     }
@@ -178,15 +185,17 @@ export function FanZone() {
   const checkIn = async () => {
     if (!requireWallet() || !wallet) return;
     try {
+      setTxReceipt(null); setNotice("");
       setBusy("checkin");
       const signature = await submitDailyCheckIn(wallet);
       const day = utcDay();
       const expectedCheckins = (profile?.checkins ?? 0) + 1;
-      setLastSignature(signature);
+      setTxReceipt({ action: "Daily check-in", detail: "Points and streak updated immediately.", signature });
       setProfile((current) => applyConfirmedCheckIn(current, walletKey, day));
       void reconcileProfile((candidate) => candidate.lastCheckinDay === day && candidate.checkins >= expectedCheckins);
-      setNotice("Checked in for today. Your points and streak are confirmed on Solana devnet.");
+      setNotice("");
     } catch (error) {
+      setTxReceipt(null);
       setNotice(error instanceof Error ? error.message : "Check-in transaction failed");
     } finally { setBusy(""); }
   };
@@ -199,9 +208,10 @@ export function FanZone() {
       return;
     }
     try {
+      setTxReceipt(null); setNotice("");
       setBusy("alias");
       const signature = await submitFanAlias(wallet, displayName);
-      setLastSignature(signature);
+      setTxReceipt({ action: "Display name saved", detail: "Match chat now uses this verified fan name.", signature });
       setAlias((current) => ({
         address: current?.address ?? "",
         owner: walletKey,
@@ -211,14 +221,16 @@ export function FanZone() {
       setAliasDraft(displayName);
       setEditingAlias(false);
       void reconcileAlias(displayName);
-      setNotice("Display name updated. Match chat now uses this verified fan name.");
+      setNotice("");
     } catch (error) {
+      setTxReceipt(null);
       setNotice(error instanceof Error ? error.message : "Display name transaction failed");
     } finally { setBusy(""); }
   };
 
   const loadPractice = async () => {
     try {
+      setTxReceipt(null);
       setBusy("practice");
       const response = await fetch(`/api/quiz?mode=practice&seed=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error("Practice set is unavailable");
@@ -237,6 +249,7 @@ export function FanZone() {
       return;
     }
     try {
+      setTxReceipt(null);
       setBusy("quiz-grade");
       const response = await fetch("/api/quiz", {
         method: "POST",
@@ -261,15 +274,17 @@ export function FanZone() {
   const claimQuiz = async () => {
     if (!quizResult?.attestation || !requireWallet() || !wallet) return;
     try {
+      setTxReceipt(null); setNotice("");
       setBusy("quiz-claim");
       const signature = await submitQuizClaim(wallet, quizResult.attestation);
       const expectedQuizClaims = (profile?.quizClaims ?? 0) + 1;
-      setLastSignature(signature);
+      setTxReceipt({ action: "Quiz points claimed", detail: `${quizResult.points} points added. Today's claim is complete.`, signature });
       setQuizClaimed(true);
       setProfile((current) => applyConfirmedQuizClaim(current, walletKey, quizResult.points));
       void reconcileProfile((candidate) => candidate.quizClaims >= expectedQuizClaims);
-      setNotice(`${quizResult.points} quiz points added. Today's claim is complete.`);
+      setNotice("");
     } catch (error) {
+      setTxReceipt(null);
       setNotice(error instanceof Error ? error.message : "Quiz claim failed");
     } finally { setBusy(""); }
   };
@@ -281,6 +296,7 @@ export function FanZone() {
       return;
     }
     try {
+      setTxReceipt(null); setNotice("");
       setBusy(`reward-${reward.id}`);
       const response = await fetch("/api/rewards/attest", {
         method: "POST",
@@ -290,14 +306,15 @@ export function FanZone() {
       const attestation = await response.json() as RewardAttestation & { error?: string };
       if (!response.ok) throw new Error(attestation.error || "Reward authorization failed");
       const signature = await submitRewardRedemption(wallet, attestation);
-      setLastSignature(signature);
+      setTxReceipt({ action: `${reward.name} redeemed & equipped`, detail: "The cosmetic is now active on your fan profile.", signature });
       setProfile((current) => applyConfirmedRewardRedemption(current, walletKey, reward));
       void reconcileProfile((candidate) => candidate.inventory.includes(reward.index)
         && (reward.kind === "frame" ? candidate.equippedFrame === reward.index
           : reward.kind === "character" ? candidate.equippedCharacter === reward.index
             : candidate.equippedBadge === reward.index));
-      setNotice(`${reward.name} redeemed and equipped. It is now active on your fan profile.`);
+      setNotice("");
     } catch (error) {
+      setTxReceipt(null);
       setNotice(error instanceof Error ? error.message : "Reward redemption failed");
     } finally { setBusy(""); }
   };
@@ -305,15 +322,17 @@ export function FanZone() {
   const equipReward = async (reward: RewardItem) => {
     if (!requireWallet() || !wallet) return;
     try {
+      setTxReceipt(null); setNotice("");
       setBusy(`equip-${reward.id}`);
       const signature = await submitEquipReward(wallet, REWARD_KIND_CODE[reward.kind], reward.index);
-      setLastSignature(signature);
+      setTxReceipt({ action: `${reward.name} equipped`, detail: "Your active fan profile updated immediately.", signature });
       setProfile((current) => applyConfirmedEquipment(current, walletKey, reward));
       void reconcileProfile((candidate) => reward.kind === "frame" ? candidate.equippedFrame === reward.index
         : reward.kind === "character" ? candidate.equippedCharacter === reward.index
           : candidate.equippedBadge === reward.index);
-      setNotice(`${reward.name} is now active on your profile.`);
+      setNotice("");
     } catch (error) {
+      setTxReceipt(null);
       setNotice(error instanceof Error ? error.message : "Could not equip reward");
     } finally { setBusy(""); }
   };
@@ -425,7 +444,7 @@ export function FanZone() {
       })}</div>
     </section>
 
-    {(notice || lastSignature) && <div className={styles.notice} role="status"><span>{notice || "Latest transaction finalized on Solana devnet."}</span>{lastSignature && <a href={`https://explorer.solana.com/tx/${lastSignature}?cluster=devnet`} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a>}<button type="button" aria-label="Dismiss notification" onClick={() => { setNotice(""); setLastSignature(""); }}><X size={13} /></button></div>}
+    {txReceipt ? <div className={`${styles.notice} ${styles.noticeSuccess}`} role="status"><BadgeCheck size={18} /><span><strong>{txReceipt.action}</strong><small>SOLANA DEVNET · CONFIRMED · {txReceipt.signature.slice(0, 8)}...{txReceipt.signature.slice(-8)}<br />{txReceipt.detail}</small></span><a href={`https://explorer.solana.com/tx/${txReceipt.signature}?cluster=devnet`} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a><button type="button" aria-label="Dismiss notification" onClick={() => setTxReceipt(null)}><X size={13} /></button></div> : notice && <div className={styles.notice} role="status"><span><strong>Action update</strong><small>{notice}</small></span><button type="button" aria-label="Dismiss notification" onClick={() => setNotice("")}><X size={13} /></button></div>}
     <footer><span>PULSEPROOF FAN ZONE · TXLINE CONSUMER EXPERIENCE</span><Link href="/compliance">RULES · AUTHORSHIP · PRIVACY</Link><span>NON-TRANSFERABLE · NO FINANCIAL REWARDS · DEVNET</span></footer>
   </main>;
 }

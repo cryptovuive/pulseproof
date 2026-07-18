@@ -23,10 +23,7 @@ export interface BrowserWallet {
   on?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
   off?(event: "connect" | "disconnect" | "accountChanged", listener: (publicKey?: PublicKey | null) => void): void;
   signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>;
-  signAndSendTransaction(
-    transaction: Transaction,
-    options?: { preflightCommitment?: "processed" | "confirmed" | "finalized"; maxRetries?: number },
-  ): Promise<{ signature: string }>;
+  signTransaction(transaction: Transaction): Promise<Transaction>;
 }
 
 declare global {
@@ -121,25 +118,45 @@ async function createProfileInstruction(owner: PublicKey, profile: PublicKey, pr
 
 async function signAndConfirm(wallet: BrowserWallet, transaction: Transaction, rpc = connection()) {
   if (!wallet.publicKey) throw new Error("Connect a Solana wallet first");
-  // Fetching a processed blockhash and running preflight at processed avoids
-  // waiting an extra confirmation round before Phantom can submit. We still
-  // resolve the action only after the network reports a confirmed result.
-  const latest = await rpc.getLatestBlockhash("processed");
+  // Phantom signs only. The same RPC supplies the blockhash, submits the
+  // signed bytes and confirms them, avoiding cross-RPC processed-blockhash
+  // races between the page and the wallet extension.
+  const latest = await rpc.getLatestBlockhash("confirmed");
   transaction.instructions.unshift(
     ComputeBudgetProgram.setComputeUnitLimit({ units: COMPUTE_UNIT_LIMIT }),
     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: PRIORITY_FEE_MICRO_LAMPORTS }),
   );
   transaction.feePayer = wallet.publicKey;
   transaction.recentBlockhash = latest.blockhash;
-  const result = await wallet.signAndSendTransaction(transaction, {
-    preflightCommitment: "processed",
+  const signed = await wallet.signTransaction(transaction);
+  const signature = await rpc.sendRawTransaction(signed.serialize(), {
+    skipPreflight: false,
+    preflightCommitment: "confirmed",
     maxRetries: 5,
   });
-  const confirmation = await rpc.confirmTransaction({ signature: result.signature, ...latest }, "confirmed");
+  let confirmation;
+  try {
+    confirmation = await rpc.confirmTransaction({ signature, ...latest }, "confirmed");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/block height exceeded|blockhash not found|transaction expired|blockhash.*expired/i.test(message)) {
+      // A late status can race the expiry response. Accept it only when this
+      // RPC can already prove the exact signature confirmed successfully.
+      const status = await rpc.getSignatureStatus(signature, { searchTransactionHistory: true }).catch(() => null);
+      if (status?.value && !status.value.err
+        && (status.value.confirmationStatus === "confirmed" || status.value.confirmationStatus === "finalized")) {
+        return signature;
+      }
+      // A fresh blockhash changes the signed message, so retrying requires a
+      // new, explicit Phantom approval. Never open a second prompt silently.
+      throw new Error("Phantom approval expired before the transaction reached devnet. Try the action again and approve the fresh request within one minute.");
+    }
+    throw error;
+  }
   if (confirmation.value.err) {
     throw new Error(`Solana transaction failed: ${JSON.stringify(confirmation.value.err)}`);
   }
-  return result.signature;
+  return signature;
 }
 
 function signedProofInstruction(attestation: Pick<MomentAttestation, "attestorPublicKey" | "messageBase64" | "signatureBase64">) {

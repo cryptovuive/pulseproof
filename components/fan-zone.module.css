@@ -5,6 +5,9 @@
 .avatarFrame{mix-blend-mode:screen}
 .notice{cursor:default}
 .notice>button{width:24px;height:24px;display:grid;place-items:center;flex:0 0 auto;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#aeb6af;cursor:pointer}
+.noticeSuccess{border-color:rgba(217,255,67,.7);background:linear-gradient(135deg,#27311f,#1c241b)}
+.noticeSuccess>svg{flex:0 0 auto;color:var(--acid)}
+.notice>span{display:grid;gap:3px}.notice>span strong{color:#f4f7f2;font-size:10px}.notice>span small{color:#aeb8b0;font-size:8px;line-height:1.4}
 .checkinFlow .dayToday{border-color:var(--acid);background:var(--acid);color:#111;box-shadow:0 0 0 3px rgba(217,255,67,.1)}
 .checkinFlow .dayToday strong{color:#111}
 .quizResult button:disabled{opacity:.48;cursor:default}

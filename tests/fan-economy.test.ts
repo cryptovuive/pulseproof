@@ -20,13 +20,18 @@ describe("fan progression economy", () => {
     expect(fanZone).not.toContain("useState<BrowserWallet");
   });
 
-  it("submits wallet actions with a fast preflight and a bounded priority fee", () => {
+  it("signs in Phantom and submits through the same confirmed RPC", () => {
     const client = readFileSync(join(process.cwd(), "lib", "solana-client.ts"), "utf8");
     expect(client).toContain("ComputeBudgetProgram.setComputeUnitLimit");
     expect(client).toContain("ComputeBudgetProgram.setComputeUnitPrice");
-    expect(client).toContain('getLatestBlockhash("processed")');
-    expect(client).toContain('preflightCommitment: "processed"');
-    expect(client).toContain('confirmTransaction({ signature: result.signature, ...latest }, "confirmed")');
+    expect(client).toContain('getLatestBlockhash("confirmed")');
+    expect(client).toContain("wallet.signTransaction(transaction)");
+    expect(client).toContain("rpc.sendRawTransaction(signed.serialize()");
+    expect(client).toContain('preflightCommitment: "confirmed"');
+    expect(client).toContain('confirmTransaction({ signature, ...latest }, "confirmed")');
+    expect(client).not.toContain("wallet.signAndSendTransaction");
+    expect(client).toContain("Never open a second prompt silently");
+    expect(client).toContain("getSignatureStatus(signature, { searchTransactionHistory: true })");
     expect(client).toContain("if (confirmation.value.err)");
   });
 
@@ -43,6 +48,10 @@ describe("fan progression economy", () => {
     expect(fanZone).toContain('"Checked in today"');
     expect(fanZone).toContain('"Claimed today"');
     expect(fanZone).toContain('"Owned · Active"');
+    expect(fanZone).toContain("SOLANA DEVNET · CONFIRMED");
+    expect(fanZone).toContain("setTxReceipt(null); setNotice(\"\")");
+    expect(fanZone).toContain("styles.noticeSuccess");
+    expect(fanZone).not.toContain("lastSignature");
   });
 
   it("ships a unique 36-item non-financial cosmetic catalog", () => {
