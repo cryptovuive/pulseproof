@@ -1,6 +1,7 @@
 param(
   [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path,
-  [string]$DestinationDirectory = 'C:\Users\ducth\Downloads\video'
+  [string]$DestinationDirectory = 'C:\Users\ducth\Downloads\video',
+  [int[]]$RenderScenes = @()
 )
 
 $ErrorActionPreference = 'Stop'
@@ -39,17 +40,23 @@ function Add-NarrationCaptions(
   [double]$AudioDuration,
   [string]$Text
 ) {
-  $sentences = @([regex]::Matches($Text, '[^.!?]+[.!?]?') | ForEach-Object { $_.Value.Trim() } | Where-Object { $_ })
-  if ($sentences.Count -eq 0) { return }
-  $weights = @($sentences | ForEach-Object { [Math]::Max(1, ($_.Split(' ', [StringSplitOptions]::RemoveEmptyEntries)).Count) })
+  $safeText = ($Text -replace '[-\u2010-\u2015]', ' ').Trim()
+  $words = @($safeText.Split(' ', [StringSplitOptions]::RemoveEmptyEntries))
+  if ($words.Count -eq 0) { return }
+  $chunks = New-Object System.Collections.Generic.List[string]
+  for ($offset = 0; $offset -lt $words.Count; $offset += 10) {
+    $length = [Math]::Min(10, $words.Count - $offset)
+    $chunks.Add(($words[$offset..($offset + $length - 1)] -join ' '))
+  }
+  $weights = @($chunks | ForEach-Object { [Math]::Max(1, ($_.Split(' ', [StringSplitOptions]::RemoveEmptyEntries)).Count) })
   $totalWeight = ($weights | Measure-Object -Sum).Sum
   $captionCursor = $SceneStart + 0.1
   $usable = [Math]::Max(0.8, $AudioDuration - 0.1)
-  for ($i = 0; $i -lt $sentences.Count; $i++) {
+  for ($i = 0; $i -lt $chunks.Count; $i++) {
     $share = $usable * ($weights[$i] / $totalWeight)
     $captionEnd = $captionCursor + $share
     $Lines.Add("$(Format-VttTime $captionCursor) --> $(Format-VttTime $captionEnd)")
-    $Lines.Add($sentences[$i])
+    $Lines.Add($chunks[$i])
     $Lines.Add('')
     $captionCursor = $captionEnd
   }
@@ -83,19 +90,26 @@ for ($index = 0; $index -lt $scenes.Count; $index++) {
   }
 
   $fadeOut = [Math]::Max(0.5, $duration - 0.35)
-  $layoutFilter = if ([string]$scene.layout -eq 'desktop') {
-    'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2'
-  } else {
-    'crop=1920:864:0:176,pad=1920:1080:0:108:black'
+  $shouldRender = $RenderScenes.Count -eq 0 -or $RenderScenes -contains ($index + 1)
+  if ($shouldRender) {
+    $arguments = @('-hide_banner', '-loglevel', 'error', '-y')
+    if ($sourceStart -gt 0) { $arguments += @('-ss', [string]$sourceStart) }
+    $arguments += @('-i', $source, '-i', $wav, '-t', [string]$duration)
+    if ([string]$scene.layout -eq 'desktop') {
+      $walletOverlaySeconds = [double]$scene.walletOverlaySeconds
+      $desktopFilter = "[0:v]split=2[page][wallet];[page]crop=1920:898:0:142,pad=1920:1080:0:91:black[base];[wallet]crop=345:1040:1575:0[walletcrop];[base][walletcrop]overlay=1575:20:enable='lt(t,$walletOverlaySeconds)',fade=t=in:st=0:d=0.18,fade=t=out:st=$fadeOut`:d=0.35,format=yuv420p[v]"
+      $arguments += @('-filter_complex', $desktopFilter, '-map', '[v]', '-map', '1:a:0')
+    } else {
+      $pageFilter = "crop=1920:864:0:176,pad=1920:1080:0:108:black,fade=t=in:st=0:d=0.18,fade=t=out:st=$fadeOut`:d=0.35,format=yuv420p"
+      $arguments += @('-vf', $pageFilter)
+    }
+    $arguments += @('-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-r', '30',
+      '-c:a', 'aac', '-b:a', '160k', '-af', "apad=whole_dur=$duration", '-movflags', '+faststart', $segment)
+    & $ffmpeg @arguments
+    if ($LASTEXITCODE -ne 0) { throw "FFmpeg failed for $stem" }
+  } elseif (-not (Test-Path $segment)) {
+    throw "Missing cached V5 segment: $segment"
   }
-  $filter = "$layoutFilter,fade=t=in:st=0:d=0.18,fade=t=out:st=$fadeOut`:d=0.35,format=yuv420p"
-  $arguments = @('-hide_banner', '-loglevel', 'error', '-y')
-  if ($sourceStart -gt 0) { $arguments += @('-ss', [string]$sourceStart) }
-  $arguments += @('-i', $source, '-i', $wav, '-t', [string]$duration, '-vf', $filter,
-    '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-r', '30',
-    '-c:a', 'aac', '-b:a', '160k', '-af', "apad=whole_dur=$duration", '-movflags', '+faststart', $segment)
-  & $ffmpeg @arguments
-  if ($LASTEXITCODE -ne 0) { throw "FFmpeg failed for $stem" }
 
   $concatLines.Add("file '$($segment.Replace("'", "''"))'")
   $startMs = [Math]::Round($cursor * 1000)

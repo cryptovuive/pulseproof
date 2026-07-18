@@ -1,17 +1,17 @@
 [
   {
     "source": "v5-raw/01-intro-full.mp4",
-    "duration": 16,
+    "duration": 18,
     "layout": "page",
     "title": "Introducing PulseProof",
-    "text": "PulseProof is a trusted second screen for World Cup fans. It turns verified live match data into spoiler-safe Catch-up, match communities, and non-transferable on-chain fan identity—before kickoff, during play, and after the final whistle."
+    "text": "PulseProof is a trusted second screen for World Cup fans. It turns verified live match data into spoiler safe Catch Up, match communities and a non transferable fan identity on chain. The journey starts before kickoff, continues during play and remains useful after the final whistle."
   },
   {
     "source": "v5-raw/04-live-center-spoiler-full.mp4",
-    "duration": 22,
+    "duration": 23,
     "layout": "page",
     "title": "TxLINE-powered Live Center",
-    "text": "TxLINE is the primary live signal. PulseProof normalizes activated devnet fixtures and events into a public Server-Sent Events stream. The Live Center keeps World Cup competition labels, official team abbreviations, flags, live state, finished results, upcoming fixtures, stadiums and kickoff times in one source-labelled view."
+    "text": "TxLINE is the primary live signal. PulseProof normalizes activated devnet fixtures and events into a public Server Sent Events stream. The Live Center keeps World Cup competition labels, official team abbreviations, flags, live status, finished results, upcoming fixtures, stadiums and kickoff times in one view with clear source labels."
   },
   {
     "source": "v5-raw/06-replay-england-argentina-full.mp4",
@@ -19,44 +19,46 @@
     "duration": 30,
     "layout": "page",
     "title": "Replay, Spoiler Shield and safe relay",
-    "text": "Finished matches remain fully replayable through the same interface used for live coverage. England versus Argentina shows the final two-one score, match pulse, scorer, cards, substitutions and source sequence numbers. Spoiler Shield hides results everywhere, including the road to the final. Catch-up reveals only the selected event prefix; signed relay and offline recap never expose future moments."
+    "text": "Finished matches remain fully replayable through the same interface used for live coverage. England versus Argentina shows a final score of two goals to one, plus the match pulse, scorer, cards, substitutions and source sequence numbers. Spoiler Shield hides results everywhere, including the road to the final. Catch Up reveals only the selected event prefix. Signed relay and offline recap never expose future moments."
   },
   {
     "source": "v5-raw/08-fan-zone-wallet-points-full.mp4",
     "duration": 12,
     "layout": "page",
     "title": "One wallet across the product",
-    "text": "Phantom stays connected while the user moves from Live Center to Fan Zone. The wallet-owned profile, display name, points, streak and inventory follow without a second connection."
+    "text": "Phantom stays connected while the user moves from Live Center to Fan Zone. The profile belongs to the wallet, so the display name, points, streak and inventory follow without a second connection."
   },
   {
     "source": "v5-raw/09-alias-ui-confirmed-flow.mp4",
-    "duration": 10,
+    "duration": 11,
     "layout": "page",
     "title": "Wallet-owned display name",
-    "text": "Profile editing creates a human-readable alias for match chat. The new name is prepared on the Fan Alias PDA, not stored as a browser-only preference."
+    "text": "Profile editing creates a readable alias for match chat. The new name is prepared on the Fan Alias account on chain. It is not stored as a temporary browser preference."
   },
   {
     "source": "v5-raw/09-alias-confirmed-receipt-phantom.mp4",
     "sourceStart": 12,
     "duration": 15,
     "layout": "desktop",
+    "walletOverlaySeconds": 2.5,
     "title": "Alias transaction and receipt",
-    "text": "Phantom shows the real devnet transaction. After approval, the page updates immediately to Cryptovuive twenty-six, displays a confirmed receipt and Explorer link, and keeps the new alias after reload."
+    "text": "Phantom shows the real devnet transaction. After approval, the page updates immediately to Cryptovuive twenty six. It displays a confirmed receipt and Explorer link, then keeps the new alias after reload."
   },
   {
     "source": "v5-raw/11-checkin-ui-confirmed-flow.mp4",
     "duration": 10,
     "layout": "page",
     "title": "Daily on-chain check-in",
-    "text": "Daily check-in uses Solana time. The interface previews seven streak days and disables duplicate claims within the same UTC day."
+    "text": "Daily check in uses Solana time. The interface previews seven streak days and disables duplicate claims within the same UTC day."
   },
   {
     "source": "v5-raw/11-checkin-confirmed-receipt-phantom.mp4",
     "sourceStart": 12,
     "duration": 13,
     "layout": "desktop",
+    "walletOverlaySeconds": 1.0,
     "title": "Immediate check-in state",
-    "text": "One Phantom approval creates the check-in proof. The page immediately marks today complete, raises the streak and points, and shows a confirmed devnet receipt without any reload."
+    "text": "One Phantom approval creates the check in proof. The page immediately marks today complete, raises the streak and points, and shows a confirmed devnet receipt without any reload."
   },
   {
     "source": "v5-raw/12-quiz-answers-and-score.mp4",
@@ -64,13 +66,14 @@
     "duration": 28,
     "layout": "page",
     "title": "Ten thousand World Cup quiz variants",
-    "text": "The daily quiz draws five questions from ten thousand deterministic World Cup variations built from sourced facts. Answer links stay hidden, explanations appear only after selection, and this run scores five out of five. Daily rewards are single-use; practice rounds remain unlimited and reward-free."
+    "text": "The daily quiz draws five questions from ten thousand deterministic World Cup variations built from sourced facts. Answer links stay hidden and explanations appear only after selection. This run scores five out of five. Daily rewards are single use, while practice rounds remain unlimited and provide no rewards."
   },
   {
     "source": "v5-raw/12-quiz-confirmed-receipt-phantom.mp4",
     "sourceStart": 0,
     "duration": 13,
     "layout": "desktop",
+    "walletOverlaySeconds": 5.5,
     "title": "Authorized quiz points",
     "text": "Phantom signs the authorized points claim. Seventy points arrive immediately, the button changes to Claimed today, and the transaction receipt remains independently verifiable on Explorer."
   },
@@ -80,13 +83,13 @@
     "duration": 28,
     "layout": "page",
     "title": "The complete reward catalog",
-    "text": "The reward catalog contains thirty-six original, non-transferable medals, badges, avatar frames and characters, including clearly dated limited editions. We scroll through every item before randomly selecting Bolt Keeper. Prices are fixed by the on-chain catalog, so the client cannot invent a cheaper redemption."
+    "text": "The reward catalog contains thirty six original and non transferable medals, badges, avatar frames and characters. Limited editions always show a clear closing date. We scroll through every item before randomly selecting Bolt Keeper. Prices are fixed by the catalog on chain, so the client cannot invent a cheaper redemption."
   },
   {
     "source": "v5-raw/13-reward-random-bolt-keeper-phantom.mp4",
     "sourceStart": 1,
     "duration": 10,
-    "layout": "desktop",
+    "layout": "page",
     "title": "Atomic redeem and equip",
     "text": "The transaction completes atomically: Bolt Keeper becomes owned and active, and the balance drops by one hundred sixty points."
   },
@@ -96,15 +99,16 @@
     "duration": 12,
     "layout": "page",
     "title": "Fixture-scoped match chat",
-    "text": "Chat belongs to each match, beside the live or replay timeline. The composer uses the on-chain alias and blocks links, betting, wallet secrets and anonymous impersonation."
+    "text": "Chat belongs to each match, beside the live or replay timeline. The composer uses the alias stored on chain and blocks links, betting, wallet secrets and anonymous impersonation."
   },
   {
     "source": "v5-raw/14-match-room-chat-phantom-signature.mp4",
     "sourceStart": 8,
     "duration": 18,
     "layout": "desktop",
+    "walletOverlaySeconds": 6.0,
     "title": "Wallet-signed community message",
-    "text": "Posting requires a fresh Phantom message signature, not a fee. After approval, the server verifies the wallet, alias, fixture and anti-replay nonce. The signed message appears instantly as Cryptovuive twenty-six in the England–Argentina room."
+    "text": "Posting requires a fresh Phantom message signature, not a fee. After approval, the server verifies the wallet, alias, fixture and replay protection value. The signed message appears instantly as Cryptovuive twenty six in the England and Argentina room."
   },
   {
     "source": "v5-raw/15-judge-room-live-proof-8of8.mp4",
@@ -112,7 +116,7 @@
     "duration": 32,
     "layout": "page",
     "title": "Eight fresh production checks",
-    "text": "Finally, Judge Room runs the product instead of trusting slides. Eight fresh checks validate production identity, the World Cup-only catalog, public SSE, spoiler isolation, a signed Catch-up Capsule, browser-side Ed25519 verification, the live Solana programs and the offline cache boundary. This run passes eight of eight and exposes current points, alias, finalized quiz and reward receipts, Explorer, CI and the public repository."
+    "text": "Finally, Judge Room runs the product instead of trusting slides. Eight fresh checks validate production identity, the World Cup catalog, public SSE, spoiler isolation, a signed Catch Up Capsule, Ed25519 verification inside the browser, the live Solana programs and the offline cache boundary. This run passes eight of eight and exposes current points, alias, finalized quiz and reward receipts, Explorer, CI and the public repository."
   },
   {
     "source": "v5-raw/01-intro-full.mp4",

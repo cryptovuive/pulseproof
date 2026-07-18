@@ -19,11 +19,11 @@ Copy-Item -LiteralPath $Video -Destination $clean -Force
 if (Test-Path $captioned) { Remove-Item -LiteralPath $captioned -Force }
 
 $escapedCaptions = $Captions.Replace('\', '/').Replace(':', '\:').Replace("'", "\'")
-$style = 'FontName=Arial,FontSize=18,PrimaryColour=&H00FFFFFF,BackColour=&H99000000,BorderStyle=3,Outline=0,Shadow=0,Alignment=2,MarginV=54'
+$style = 'FontName=Arial,FontSize=11,PrimaryColour=&H00FFFFFF,BackColour=&H88000000,BorderStyle=3,Outline=0,Shadow=0,Alignment=2,MarginV=38'
 $filter = "subtitles=filename='$escapedCaptions':force_style='$style'"
 $before = [double](& $ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $clean)
 & $ffmpeg -hide_banner -loglevel error -y -i $clean -map 0:v:0 -map 0:a:0 -map_metadata 0 -map_chapters 0 `
-  -vf $filter -c:v libx264 -preset medium -crf 18 -r 30 -pix_fmt yuv420p `
+  -vf $filter -c:v libx264 -preset fast -crf 18 -r 30 -pix_fmt yuv420p `
   -c:a copy -movflags +faststart $captioned
 if ($LASTEXITCODE -ne 0) { throw 'Unable to burn V5 English captions' }
 $after = [double](& $ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $captioned)

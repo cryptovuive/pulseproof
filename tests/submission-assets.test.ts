@@ -21,6 +21,9 @@ describe("judge submission assets", () => {
     const vtt = readFileSync(join(root, "public", "pulseproof-demo.vtt"), "utf8");
     const cues = [...vtt.matchAll(/(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})/g)];
     expect(cues.length).toBeGreaterThanOrEqual(16);
+    const captionLines = vtt.split(/\r?\n/).filter((line) => line && line !== "WEBVTT" && !line.includes("-->"));
+    expect(captionLines.every((line) => !/[-‐‑‒–—―]/.test(line))).toBe(true);
+    expect(captionLines.every((line) => line.split(/\s+/).length <= 10)).toBe(true);
     const final = cues.at(-1)!;
     const finalSeconds = Number(final[5]) * 3600 + Number(final[6]) * 60 + Number(final[7]) + Number(final[8]) / 1000;
     expect(finalSeconds).toBeLessThan(300);

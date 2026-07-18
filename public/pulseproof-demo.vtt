@@ -1,116 +1,200 @@
 WEBVTT
 
-00:00:00.100 --> 00:00:04.301
+00:00:00.100 --> 00:00:03.781
 PulseProof is a trusted second screen for World Cup fans.
 
-00:00:04.301 --> 00:00:14.384
-It turns verified live match data into spoiler-safe Catch-up, match communities, and non-transferable on-chain fan identity—before kickoff, during play, and after the final whistle.
+00:00:03.781 --> 00:00:07.461
+It turns verified live match data into spoiler safe Catch
 
-00:00:16.100 --> 00:00:18.933
-TxLINE is the primary live signal.
+00:00:07.461 --> 00:00:11.142
+Up, match communities and a non transferable fan identity on
 
-00:00:18.933 --> 00:00:25.070
-PulseProof normalizes activated devnet fixtures and events into a public Server-Sent Events stream.
+00:00:11.142 --> 00:00:14.823
+chain. The journey starts before kickoff, continues during play and
 
-00:00:25.070 --> 00:00:37.346
-The Live Center keeps World Cup competition labels, official team abbreviations, flags, live state, finished results, upcoming fixtures, stadiums and kickoff times in one source-labelled view.
+00:00:14.823 --> 00:00:17.031
+remains useful after the final whistle.
 
-00:00:38.100 --> 00:00:43.448
-Finished matches remain fully replayable through the same interface used for live coverage.
+00:00:18.100 --> 00:00:22.567
+TxLINE is the primary live signal. PulseProof normalizes activated devnet
 
-00:00:43.448 --> 00:00:50.442
-England versus Argentina shows the final two-one score, match pulse, scorer, cards, substitutions and source sequence numbers.
+00:00:22.567 --> 00:00:27.034
+fixtures and events into a public Server Sent Events stream.
 
-00:00:50.442 --> 00:00:54.967
-Spoiler Shield hides results everywhere, including the road to the final.
+00:00:27.034 --> 00:00:31.500
+The Live Center keeps World Cup competition labels, official team
 
-00:00:54.967 --> 00:01:01.550
-Catch-up reveals only the selected event prefix; signed relay and offline recap never expose future moments.
+00:00:31.500 --> 00:00:35.967
+abbreviations, flags, live status, finished results, upcoming fixtures, stadiums and
 
-00:01:08.100 --> 00:01:13.114
-Phantom stays connected while the user moves from Live Center to Fan Zone.
+00:00:35.967 --> 00:00:39.987
+kickoff times in one view with clear source labels.
 
-00:01:13.114 --> 00:01:18.514
-The wallet-owned profile, display name, points, streak and inventory follow without a second connection.
+00:00:41.100 --> 00:00:45.001
+Finished matches remain fully replayable through the same interface used
 
-00:01:20.100 --> 00:01:23.407
-Profile editing creates a human-readable alias for match chat.
+00:00:45.001 --> 00:00:48.902
+for live coverage. England versus Argentina shows a final score
 
-00:01:23.407 --> 00:01:29.285
-The new name is prepared on the Fan Alias PDA, not stored as a browser-only preference.
+00:00:48.902 --> 00:00:52.802
+of two goals to one, plus the match pulse, scorer,
 
-00:01:30.100 --> 00:01:32.631
-Phantom shows the real devnet transaction.
+00:00:52.802 --> 00:00:56.703
+cards, substitutions and source sequence numbers. Spoiler Shield hides results
 
-00:01:32.631 --> 00:01:42.334
-After approval, the page updates immediately to Cryptovuive twenty-six, displays a confirmed receipt and Explorer link, and keeps the new alias after reload.
+00:00:56.703 --> 00:01:00.604
+everywhere, including the road to the final. Catch Up reveals
 
-00:01:45.100 --> 00:01:47.042
-Daily check-in uses Solana time.
+00:01:00.604 --> 00:01:04.505
+only the selected event prefix. Signed relay and offline recap
 
-00:01:47.042 --> 00:01:52.868
-The interface previews seven streak days and disables duplicate claims within the same UTC day.
+00:01:04.505 --> 00:01:06.065
+never expose future moments.
 
-00:01:55.100 --> 00:01:57.757
-One Phantom approval creates the check-in proof.
+00:01:11.100 --> 00:01:14.661
+Phantom stays connected while the user moves from Live Center
 
-00:01:57.757 --> 00:02:05.348
-The page immediately marks today complete, raises the streak and points, and shows a confirmed devnet receipt without any reload.
+00:01:14.661 --> 00:01:18.221
+to Fan Zone. The profile belongs to the wallet, so
 
-00:02:08.100 --> 00:02:14.916
-The daily quiz draws five questions from ten thousand deterministic World Cup variations built from sourced facts.
+00:01:18.221 --> 00:01:21.782
+the display name, points, streak and inventory follow without a
 
-00:02:14.916 --> 00:02:21.732
-Answer links stay hidden, explanations appear only after selection, and this run scores five out of five.
+00:01:21.782 --> 00:01:22.494
+second connection.
 
-00:02:21.732 --> 00:02:25.741
-Daily rewards are single-use; practice rounds remain unlimited and reward-free.
+00:01:23.100 --> 00:01:26.501
+Profile editing creates a readable alias for match chat. The
 
-00:02:36.100 --> 00:02:38.714
-Phantom signs the authorized points claim.
+00:01:26.501 --> 00:01:29.902
+new name is prepared on the Fan Alias account on
 
-00:02:38.714 --> 00:02:46.992
-Seventy points arrive immediately, the button changes to Claimed today, and the transaction receipt remains independently verifiable on Explorer.
+00:01:29.902 --> 00:01:33.303
+chain. It is not stored as a temporary browser preference.
 
-00:02:49.100 --> 00:02:56.786
-The reward catalog contains thirty-six original, non-transferable medals, badges, avatar frames and characters, including clearly dated limited editions.
+00:01:34.100 --> 00:01:38.228
+Phantom shows the real devnet transaction. After approval, the page
 
-00:02:56.786 --> 00:03:01.056
-We scroll through every item before randomly selecting Bolt Keeper.
+00:01:38.228 --> 00:01:42.356
+updates immediately to Cryptovuive twenty six. It displays a confirmed
 
-00:03:01.056 --> 00:03:07.461
-Prices are fixed by the on-chain catalog, so the client cannot invent a cheaper redemption.
+00:01:42.356 --> 00:01:46.485
+receipt and Explorer link, then keeps the new alias after
 
-00:03:17.100 --> 00:03:24.558
-The transaction completes atomically: Bolt Keeper becomes owned and active, and the balance drops by one hundred sixty points.
+00:01:46.485 --> 00:01:46.897
+reload.
 
-00:03:27.100 --> 00:03:31.675
-Chat belongs to each match, beside the live or replay timeline.
+00:01:49.100 --> 00:01:52.797
+Daily check in uses Solana time. The interface previews seven
 
-00:03:31.675 --> 00:03:37.913
-The composer uses the on-chain alias and blocks links, betting, wallet secrets and anonymous impersonation.
+00:01:52.797 --> 00:01:56.493
+streak days and disables duplicate claims within the same UTC
 
-00:03:39.100 --> 00:03:43.788
+00:01:56.493 --> 00:01:56.863
+day.
+
+00:01:59.100 --> 00:02:02.762
+One Phantom approval creates the check in proof. The page
+
+00:02:02.762 --> 00:02:06.423
+immediately marks today complete, raises the streak and points, and
+
+00:02:06.423 --> 00:02:09.353
+shows a confirmed devnet receipt without any reload.
+
+00:02:12.100 --> 00:02:15.908
+The daily quiz draws five questions from ten thousand deterministic
+
+00:02:15.908 --> 00:02:19.716
+World Cup variations built from sourced facts. Answer links stay
+
+00:02:19.716 --> 00:02:23.525
+hidden and explanations appear only after selection. This run scores
+
+00:02:23.525 --> 00:02:27.333
+five out of five. Daily rewards are single use, while
+
+00:02:27.333 --> 00:02:30.379
+practice rounds remain unlimited and provide no rewards.
+
+00:02:40.100 --> 00:02:44.457
+Phantom signs the authorized points claim. Seventy points arrive immediately,
+
+00:02:44.457 --> 00:02:48.814
+the button changes to Claimed today, and the transaction receipt
+
+00:02:48.814 --> 00:02:50.992
+remains independently verifiable on Explorer.
+
+00:02:53.100 --> 00:02:56.922
+The reward catalog contains thirty six original and non transferable
+
+00:02:56.922 --> 00:03:00.744
+medals, badges, avatar frames and characters. Limited editions always show
+
+00:03:00.744 --> 00:03:04.566
+a clear closing date. We scroll through every item before
+
+00:03:04.566 --> 00:03:08.387
+randomly selecting Bolt Keeper. Prices are fixed by the catalog
+
+00:03:08.387 --> 00:03:12.209
+on chain, so the client cannot invent a cheaper redemption.
+
+00:03:21.100 --> 00:03:25.025
+The transaction completes atomically: Bolt Keeper becomes owned and active,
+
+00:03:25.025 --> 00:03:28.558
+and the balance drops by one hundred sixty points.
+
+00:03:31.100 --> 00:03:35.042
+Chat belongs to each match, beside the live or replay
+
+00:03:35.042 --> 00:03:38.984
+timeline. The composer uses the alias stored on chain and
+
+00:03:38.984 --> 00:03:42.137
+blocks links, betting, wallet secrets and anonymous impersonation.
+
+00:03:43.100 --> 00:03:47.277
 Posting requires a fresh Phantom message signature, not a fee.
 
-00:03:43.788 --> 00:03:49.414
-After approval, the server verifies the wallet, alias, fixture and anti-replay nonce.
+00:03:47.277 --> 00:03:51.455
+After approval, the server verifies the wallet, alias, fixture and
 
-00:03:49.414 --> 00:03:55.040
-The signed message appears instantly as Cryptovuive twenty-six in the England–Argentina room.
+00:03:51.455 --> 00:03:55.632
+replay protection value. The signed message appears instantly as Cryptovuive
 
-00:03:57.100 --> 00:04:01.709
+00:03:55.632 --> 00:03:58.974
+twenty six in the England and Argentina room.
+
+00:04:01.100 --> 00:04:05.488
 Finally, Judge Room runs the product instead of trusting slides.
 
-00:04:01.709 --> 00:04:15.536
-Eight fresh checks validate production identity, the World Cup-only catalog, public SSE, spoiler isolation, a signed Catch-up Capsule, browser-side Ed25519 verification, the live Solana programs and the offline cache boundary.
+00:04:05.488 --> 00:04:09.876
+Eight fresh checks validate production identity, the World Cup catalog,
 
-00:04:15.536 --> 00:04:25.676
-This run passes eight of eight and exposes current points, alias, finalized quiz and reward receipts, Explorer, CI and the public repository.
+00:04:09.876 --> 00:04:14.264
+public SSE, spoiler isolation, a signed Catch Up Capsule, Ed25519
 
-00:04:29.100 --> 00:04:33.426
+00:04:14.264 --> 00:04:18.651
+verification inside the browser, the live Solana programs and the
+
+00:04:18.651 --> 00:04:23.039
+offline cache boundary. This run passes eight of eight and
+
+00:04:23.039 --> 00:04:27.427
+exposes current points, alias, finalized quiz and reward receipts, Explorer,
+
+00:04:27.427 --> 00:04:29.621
+CI and the public repository.
+
+00:04:33.100 --> 00:04:37.426
 PulseProof turns live context into community identity and verifiable memory.
 
-00:04:33.426 --> 00:04:38.185
-Before, during and after the match, every match leaves a memory.
+00:04:37.426 --> 00:04:41.752
+Before, during and after the match, every match leaves a
+
+00:04:41.752 --> 00:04:42.185
+memory.
 
