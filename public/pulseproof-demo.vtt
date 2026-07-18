@@ -1,17 +1,116 @@
 WEBVTT
 
-00:00:00.000 --> 00:00:15.000
-PulseProof is a trusted second screen for fans who arrive late.
+00:00:00.100 --> 00:00:04.301
+PulseProof is a trusted second screen for World Cup fans.
 
-00:00:15.000 --> 00:01:19.000
-The public product protects the result, runs Catch-up, signs a safe relay, saves a recap and verifies a receipt.
+00:00:04.301 --> 00:00:14.384
+It turns verified live match data into spoiler-safe Catch-up, match communities, and non-transferable on-chain fan identity—before kickoff, during play, and after the final whistle.
 
-00:01:19.000 --> 00:01:45.000
-The Judge Room runs eight fresh production checks from SSE and signed relay to Solana.
+00:00:16.100 --> 00:00:18.933
+TxLINE is the primary live signal.
 
-00:01:45.000 --> 00:02:03.000
-The reference receipt and PulseProof program are independently visible on Solana Explorer.
+00:00:18.933 --> 00:00:25.070
+PulseProof normalizes activated devnet fixtures and events into a public Server-Sent Events stream.
 
-00:02:03.000 --> 00:02:24.000
-Live context, spoiler-safe replay, offline retention and non-transferable proof form one complete loop.
+00:00:25.070 --> 00:00:37.346
+The Live Center keeps World Cup competition labels, official team abbreviations, flags, live state, finished results, upcoming fixtures, stadiums and kickoff times in one source-labelled view.
+
+00:00:38.100 --> 00:00:43.448
+Finished matches remain fully replayable through the same interface used for live coverage.
+
+00:00:43.448 --> 00:00:50.442
+England versus Argentina shows the final two-one score, match pulse, scorer, cards, substitutions and source sequence numbers.
+
+00:00:50.442 --> 00:00:54.967
+Spoiler Shield hides results everywhere, including the road to the final.
+
+00:00:54.967 --> 00:01:01.550
+Catch-up reveals only the selected event prefix; signed relay and offline recap never expose future moments.
+
+00:01:08.100 --> 00:01:13.114
+Phantom stays connected while the user moves from Live Center to Fan Zone.
+
+00:01:13.114 --> 00:01:18.514
+The wallet-owned profile, display name, points, streak and inventory follow without a second connection.
+
+00:01:20.100 --> 00:01:23.407
+Profile editing creates a human-readable alias for match chat.
+
+00:01:23.407 --> 00:01:29.285
+The new name is prepared on the Fan Alias PDA, not stored as a browser-only preference.
+
+00:01:30.100 --> 00:01:32.631
+Phantom shows the real devnet transaction.
+
+00:01:32.631 --> 00:01:42.334
+After approval, the page updates immediately to Cryptovuive twenty-six, displays a confirmed receipt and Explorer link, and keeps the new alias after reload.
+
+00:01:45.100 --> 00:01:47.042
+Daily check-in uses Solana time.
+
+00:01:47.042 --> 00:01:52.868
+The interface previews seven streak days and disables duplicate claims within the same UTC day.
+
+00:01:55.100 --> 00:01:57.757
+One Phantom approval creates the check-in proof.
+
+00:01:57.757 --> 00:02:05.348
+The page immediately marks today complete, raises the streak and points, and shows a confirmed devnet receipt without any reload.
+
+00:02:08.100 --> 00:02:14.916
+The daily quiz draws five questions from ten thousand deterministic World Cup variations built from sourced facts.
+
+00:02:14.916 --> 00:02:21.732
+Answer links stay hidden, explanations appear only after selection, and this run scores five out of five.
+
+00:02:21.732 --> 00:02:25.741
+Daily rewards are single-use; practice rounds remain unlimited and reward-free.
+
+00:02:36.100 --> 00:02:38.714
+Phantom signs the authorized points claim.
+
+00:02:38.714 --> 00:02:46.992
+Seventy points arrive immediately, the button changes to Claimed today, and the transaction receipt remains independently verifiable on Explorer.
+
+00:02:49.100 --> 00:02:56.786
+The reward catalog contains thirty-six original, non-transferable medals, badges, avatar frames and characters, including clearly dated limited editions.
+
+00:02:56.786 --> 00:03:01.056
+We scroll through every item before randomly selecting Bolt Keeper.
+
+00:03:01.056 --> 00:03:07.461
+Prices are fixed by the on-chain catalog, so the client cannot invent a cheaper redemption.
+
+00:03:17.100 --> 00:03:24.558
+The transaction completes atomically: Bolt Keeper becomes owned and active, and the balance drops by one hundred sixty points.
+
+00:03:27.100 --> 00:03:31.675
+Chat belongs to each match, beside the live or replay timeline.
+
+00:03:31.675 --> 00:03:37.913
+The composer uses the on-chain alias and blocks links, betting, wallet secrets and anonymous impersonation.
+
+00:03:39.100 --> 00:03:43.788
+Posting requires a fresh Phantom message signature, not a fee.
+
+00:03:43.788 --> 00:03:49.414
+After approval, the server verifies the wallet, alias, fixture and anti-replay nonce.
+
+00:03:49.414 --> 00:03:55.040
+The signed message appears instantly as Cryptovuive twenty-six in the England–Argentina room.
+
+00:03:57.100 --> 00:04:01.709
+Finally, Judge Room runs the product instead of trusting slides.
+
+00:04:01.709 --> 00:04:15.536
+Eight fresh checks validate production identity, the World Cup-only catalog, public SSE, spoiler isolation, a signed Catch-up Capsule, browser-side Ed25519 verification, the live Solana programs and the offline cache boundary.
+
+00:04:15.536 --> 00:04:25.676
+This run passes eight of eight and exposes current points, alias, finalized quiz and reward receipts, Explorer, CI and the public repository.
+
+00:04:29.100 --> 00:04:33.426
+PulseProof turns live context into community identity and verifiable memory.
+
+00:04:33.426 --> 00:04:38.185
+Before, during and after the match, every match leaves a memory.
 

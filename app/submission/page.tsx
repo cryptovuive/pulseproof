@@ -35,11 +35,14 @@ const TRANSACTION = "eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX
 const EXPLORER = `https://explorer.solana.com/tx/${TRANSACTION}?cluster=devnet`;
 
 const chapters = [
-  ["00:00", "The late-fan problem"],
-  ["00:15", "Real deployed product walkthrough"],
-  ["01:19", "Eight fresh production checks"],
-  ["01:45", "Public Solana devnet evidence"],
-  ["02:03", "A defensible fan memory loop"],
+  ["00:00", "Problem and product vision"],
+  ["00:16", "TxLINE-powered Live Center"],
+  ["00:38", "Replay and Spoiler Shield"],
+  ["01:08", "Wallet identity and check-in"],
+  ["02:08", "Quiz and fan points"],
+  ["02:49", "Complete reward catalog"],
+  ["03:27", "Wallet-signed match chat"],
+  ["03:57", "Eight fresh production checks"],
 ];
 
 function Brand() {
@@ -204,7 +207,7 @@ function SubmissionPortal() {
       </section>
       <JudgeLiveLab />
       <section className={styles.videoSection}>
-        <video controls preload="metadata" poster="/pulseproof-demo-poster.svg"><source src="/pulseproof-demo.mp4" type="video/mp4" /><track default kind="captions" src="/pulseproof-demo.vtt" srcLang="en" label="English" /></video>
+        <video controls preload="metadata" poster="/pulseproof-demo-poster.svg"><source src="/pulseproof-demo.mp4" type="video/mp4" /><track kind="captions" src="/pulseproof-demo.vtt" srcLang="en" label="English" /></video>
         <aside><span>DEMO CHAPTERS · UNDER 5 MINUTES</span>{chapters.map(([time, title]) => <div key={time}><time>{time}</time><p>{title}</p></div>)}</aside>
       </section>
       <section className={styles.verifyGrid}>

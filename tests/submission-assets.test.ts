@@ -17,10 +17,10 @@ describe("judge submission assets", () => {
     expect(thumbnail.length).toBeGreaterThan(100_000);
   });
 
-  it("publishes five live-demo caption cues and ends before five minutes", () => {
+  it("publishes sentence-level live-demo captions and ends before five minutes", () => {
     const vtt = readFileSync(join(root, "public", "pulseproof-demo.vtt"), "utf8");
     const cues = [...vtt.matchAll(/(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})/g)];
-    expect(cues).toHaveLength(5);
+    expect(cues.length).toBeGreaterThanOrEqual(16);
     const final = cues.at(-1)!;
     const finalSeconds = Number(final[5]) * 3600 + Number(final[6]) * 60 + Number(final[7]) + Number(final[8]) / 1000;
     expect(finalSeconds).toBeLessThan(300);
