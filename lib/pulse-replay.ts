@@ -7,6 +7,25 @@ export interface CatchUpSummary {
   swings: PulseMoment[];
 }
 
+function hasReplayableMoments(pulse: MatchPulse | null | undefined): pulse is MatchPulse {
+  return Boolean(pulse?.moments.some((moment) => moment.type !== "moment"));
+}
+
+/**
+ * Prefer the dedicated historical log when TxLINE exposes it, but keep a
+ * finished match replayable from the final verified snapshot already loaded
+ * by the live view. The fixture guard prevents a response for another match
+ * from ever being substituted into the current replay.
+ */
+export function selectCatchUpSource(current: MatchPulse, historical?: MatchPulse | null): MatchPulse {
+  if (historical && historical.fixture.fixtureId !== current.fixture.fixtureId) {
+    throw new Error("The historical replay does not belong to this fixture");
+  }
+  if (hasReplayableMoments(historical)) return historical;
+  if (hasReplayableMoments(current)) return current;
+  throw new Error("No on-pitch moments are available for catch-up yet");
+}
+
 export function pulseAtMoment(base: MatchPulse, momentCount: number, phase = "CATCH-UP"): MatchPulse {
   const count = Math.max(1, Math.min(Math.trunc(momentCount), base.moments.length));
   const moments = base.moments.slice(0, count);

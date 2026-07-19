@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_MOMENTS, getDemoOverviews } from "@/lib/demo-data";
 import { buildDemoPulse } from "@/lib/pulse-service";
-import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
+import { pulseAtMoment, selectCatchUpSource, summarizeCatchUp } from "@/lib/pulse-replay";
 
 describe("multi-match demo and catch-up", () => {
   it("provides a distinct replay timeline for every listed fixture", () => {
@@ -102,5 +102,19 @@ describe("multi-match demo and catch-up", () => {
     expect(summarizeCatchUp(atKickoff.moments)).toMatchObject({ goals: 0, cards: 0, reviews: 0 });
     const afterWinner = pulseAtMoment(full, 4);
     expect(summarizeCatchUp(afterWinner.moments)).toMatchObject({ goals: 1, cards: 1, reviews: 0 });
+  });
+
+  it("falls back to the final verified snapshot when the historical endpoint is empty", () => {
+    const finalSnapshot = { ...buildDemoPulse(101), source: "txline-live" as const };
+    expect(selectCatchUpSource(finalSnapshot, null)).toBe(finalSnapshot);
+    expect(pulseAtMoment(selectCatchUpSource(finalSnapshot), 1)).toMatchObject({ replayCursor: 1 });
+  });
+
+  it("prefers a matching historical log and rejects another fixture", () => {
+    const current = { ...buildDemoPulse(101), source: "txline-live" as const };
+    const historical = { ...buildDemoPulse(101), source: "txline-historical" as const };
+    expect(selectCatchUpSource(current, historical)).toBe(historical);
+    expect(() => selectCatchUpSource(current, buildDemoPulse(ENGLAND_ARGENTINA_FIXTURE.fixtureId)))
+      .toThrow("does not belong to this fixture");
   });
 });

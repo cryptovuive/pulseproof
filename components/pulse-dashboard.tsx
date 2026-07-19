@@ -60,7 +60,7 @@ import {
 } from "@/lib/matchday-alerts";
 import { buildMatchBrief, freshnessLabel, sportingMoments } from "@/lib/match-experience";
 import { stageParticipantsRevealKnockoutOutcome } from "@/lib/spoiler-protection";
-import { pulseAtMoment, summarizeCatchUp } from "@/lib/pulse-replay";
+import { pulseAtMoment, selectCatchUpSource, summarizeCatchUp } from "@/lib/pulse-replay";
 import {
   buildSavedRecapPack,
   normalizeSavedRecaps,
@@ -554,13 +554,18 @@ export function PulseDashboard() {
     if (!livePulse) return;
     try {
       let full = livePulse;
+      let usedFinalSnapshotFallback = false;
       if (!offlineMode) {
         const query = livePulse.source === "demo-replay" ? "?mode=replay" : livePulse.phase === "FT" ? "?historical=true" : "";
         const response = await fetch(`/api/matches/${livePulse.fixture.fixtureId}${query}`, { cache: "no-store" });
-        if (!response.ok) throw new Error("Historical match log is not available yet");
-        full = (await response.json()) as MatchPulse;
+        const historical = response.ok ? (await response.json()) as MatchPulse : null;
+        full = selectCatchUpSource(livePulse, historical);
+        usedFinalSnapshotFallback = !historical;
       }
       activateCatchUp(full);
+      if (usedFinalSnapshotFallback) {
+        setNotice(`Catch-up loaded from ${sportingMoments(full.moments).length} verified moments in the final TxLINE snapshot. Playback uses the same scoreboard, momentum and timeline renderer as live coverage.`);
+      }
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not load catch-up");
     }
@@ -572,10 +577,14 @@ export function PulseDashboard() {
       const existing = pulsesRef.current[fixtureId];
       const query = existing && existing.source !== "demo-replay" ? "?historical=true" : "?mode=replay";
       const response = await fetch(`/api/matches/${fixtureId}${query}`, { cache: "no-store" });
-      if (!response.ok) throw new Error("The verified replay is temporarily unavailable");
-      const full = (await response.json()) as MatchPulse;
+      const historical = response.ok ? (await response.json()) as MatchPulse : null;
+      if (!existing && !historical) throw new Error("The verified replay is temporarily unavailable");
+      const full = existing ? selectCatchUpSource(existing, historical) : historical!;
       setPulses((current) => ({ ...current, [fixtureId]: full }));
       activateCatchUp(full);
+      if (!historical) {
+        setNotice(`Replay opened from ${sportingMoments(full.moments).length} verified moments in the final TxLINE snapshot.`);
+      }
       window.setTimeout(() => document.getElementById("catch-up")?.scrollIntoView({ behavior: "smooth", block: "center" }), 40);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Could not open this replay");
