@@ -1,147 +1,178 @@
 # PulseProof
 
-PulseProof is a live football second screen that turns TxLINE score events into simple fan context and a verifiable **Proof of Watch** on Solana. It is designed for the TxODDS **Consumer and Fan Experiences** track.
+> Every match leaves a memory.
 
-## Public release
+PulseProof is a TxLINE-powered second screen for World Cup fans. It turns live match signals into clear context, spoiler-safe Catch-up, fixture-scoped community chat, and non-transferable fan identity on Solana devnet.
 
-- Live app: [https://pulseproof-production-06fa.up.railway.app](https://pulseproof-production-06fa.up.railway.app)
-- Health: [https://pulseproof-production-06fa.up.railway.app/api/health](https://pulseproof-production-06fa.up.railway.app/api/health)
-- Public repository: [https://github.com/cryptovuive/pulseproof](https://github.com/cryptovuive/pulseproof)
-- CI: [GitHub Actions](https://github.com/cryptovuive/pulseproof/actions)
-- Judge room: [https://pulseproof-production-06fa.up.railway.app/submission](https://pulseproof-production-06fa.up.railway.app/submission)
-- Rules and authorship record: [https://pulseproof-production-06fa.up.railway.app/compliance](https://pulseproof-production-06fa.up.railway.app/compliance)
-- Fan Zone: [https://pulseproof-production-06fa.up.railway.app/fan-zone](https://pulseproof-production-06fa.up.railway.app/fan-zone)
-- 2:24 live product demo: [https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4)
+[![PulseProof final demo](public/pulseproof-demo-thumbnail.png)](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4)
 
-The public release uses an activated TxLINE devnet token and a Railway-hosted SSE bridge. TxLINE devnet can publish fixture IDs/participants without authoritative competition or kick-off fields. PulseProof enriches only an exact current team-pair match from the separately source-linked verified schedule and labels that provenance; unmatched fixtures stay explicitly unavailable instead of receiving an invented tournament.
+## Judge in 60 seconds
 
-## Verified devnet deployment
+| Resource | Public link |
+|---|---|
+| Live product | [Launch PulseProof](https://pulseproof-production-06fa.up.railway.app) |
+| Final demo | [Watch the 4:49 product test](https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4) |
+| Judge Room | [Run eight fresh production checks](https://pulseproof-production-06fa.up.railway.app/submission) |
+| Fan Zone | [Open the on-chain progression loop](https://pulseproof-production-06fa.up.railway.app/fan-zone) |
+| Runtime health | [Inspect network, credentials and data-licence state](https://pulseproof-production-06fa.up.railway.app/api/health) |
+| Devnet program | [Open Solana Explorer](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet) |
+| Final CI | [154 tests, lint, build and native contract tests](https://github.com/cryptovuive/pulseproof/actions) |
+| Submission copy | [Open the exact Superteam field pack](docs/SUBMISSION.md) |
 
-- PulseProof program: [`74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet)
-- TxLINE free-tier subscription: [`54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC`](https://explorer.solana.com/tx/54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC?cluster=devnet)
-- Program deployment: [`4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS`](https://explorer.solana.com/tx/4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS?cluster=devnet)
-- Fan progression upgrade: [`5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV`](https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet)
-- Thirty-six-item catalog parity upgrade: [`5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM`](https://explorer.solana.com/tx/5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM?cluster=devnet)
-- Recorded retired-index rejection (`InvalidRewardIndex`, custom error `6016`): [`3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi`](https://explorer.solana.com/tx/3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi?cluster=devnet)
-- Config initialization: [`3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB`](https://explorer.solana.com/tx/3PeE9suRvD3XUi5j7GNERqYVAd7dyGHmEjy9DWmkpBwJZnTwV1ozdUXKz45Y21f9qT6WbMFRJdqSQvvruPFgr2MB?cluster=devnet)
-- Verified claim: [`eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu`](https://explorer.solana.com/tx/eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu?cluster=devnet)
+No wallet, SOL, token purchase, paid account or private credential is required for judging. Phantom is needed only when a judge chooses to repeat a devnet write.
 
-The project deliberately avoids wagering: there are no deposits, entry fees, transferable rewards, prize pools, odds-based financial actions, or pay-to-win mechanics. Fan points and badges are non-financial product signals.
+## The problem
 
-## What is already implemented
+Fans already use a phone while watching football, but most second screens provide either raw statistics, noisy social feeds or betting flows. They do not solve the full matchday journey:
 
-- Polished, responsive match dashboard with score, phase, momentum, latest signal, timeline and watch room.
-- Server-only TxLINE adapter with network consistency checks and guest-JWT renewal.
-- TxLINE fixture snapshot, score snapshot, historical score and stat-validation integrations.
-- Multi-match center for up to eight covered fixtures with live/finished filters and standard team flags/codes.
-- Local-first `My Pulse` personalization with followed teams, `My Matches`, personalized upcoming fixtures, last-match resume and shareable fixture deep links.
-- Matchday Command Center with a followed-team next action, source-linked Road to the Final, explicit TBD finalists and a compact return-to-match path.
-- Opt-in Smart Alerts for kick-off, goal, red card, VAR and full time, with followed-team scope, 0–120 second broadcast delay, persistent in-app inbox and spoiler-protected copy.
-- Four-step Quick Product Tour that takes a first-time fan or judge through fixture provenance, personalization, Catch-up and Solana Proof of Watch.
-- Installable PWA with a consumer-safe Offline Recap Pack for finished matches; the service worker never caches API or SSE responses, and attestations/claims stay disabled offline.
-- Spoiler Shield that protects finished scores, match brief, timeline and final momentum while keeping Catch-up progressive.
-- Direct TxLINE `/scores/stream` SSE bridge exposed publicly at `/api/scores/stream` (plus `/scores/stream` compatibility alias), with fixture filtering, sequence de-duplication, heartbeat and reconnect.
-- Snapshot-to-now and historical Catch-up with timeline scrubbing and 1x/2x/4x playback.
-- Verified Catch-up Capsules: share an exact spoiler-safe event prefix as an Ed25519-signed link; redemption re-checks the source and returns zero future-event payloads.
-- Upcoming Match Hub prefers complete TxLINE fixture metadata and otherwise uses a source-linked, integrity-checked schedule, with local timezone, countdown, saved reminders and `.ics` calendar export.
-- Judge Verification Lab that proves an evidence-bound Ed25519 attestation without requiring Phantom, SOL or a transaction.
-- Four completed World Cup 2026 replays with source-linked scores, scorer/assist details, cards, substitutions, VAR and stoppage-time labels; local sequence IDs remain explicitly non-TxLINE.
-- Consumer timeline removes technical coverage records, exposes honest empty states and produces a deterministic Match Brief only from on-pitch source events.
-- Phantom wallet connection and raw Solana transaction builder.
-- Anchor program with config authority, per-wallet/per-fixture Fan Pass PDA, one receipt PDA per moment, badge bitmap and points.
-- On-chain Fan Profile PDA with deterministic daily check-in, UTC streak bonus, global earned/spent points, 256-slot non-transferable inventory and equipped badge/frame/character state.
-- Daily five-question reward quiz plus ten-question unlimited practice sets drawn from a deterministic 10,000-variant catalog. Every variant preserves a server-side answer, two/four choices and its supporting FIFA source; practice cannot mint points.
-- Cosmetic vault with 36 non-transferable rewards: badges, medals, avatar frames and original PulseProof profile characters.
-- Source-linked mascot fact index using neutral text seals only. Official mascot artwork, generated lookalikes, FIFA logos and claimable mascot rewards are excluded.
-- Fixture-scoped fan chat over SSE with real presence, no seeded/fake users and a bounded 50-message room window. Posting requires a fresh Phantom signature and reads the public display name from a wallet-owned Fan Alias PDA; spam, links, wagering terms, wallet secrets and signature replay are rejected.
-- Signed reward redemption with catalog-bound kind, index, cost and digest; the program rejects overspending, duplicate ownership, receipt replay and badge/frame/character kind confusion.
-- Ed25519 attestation verification through the Solana Ed25519 precompile; the claim instruction must immediately follow the signature-verification instruction.
-- Server-side moment attestations tied to wallet, fixture, TxLINE sequence-derived hash, evidence digest, points, badge and a five-minute expiry.
-- One hundred thirty-three automated unit/integration/contract/submission tests plus Phantom-compatible wallet, local-validator and public-devnet flows covering valid state transitions and adversarial/integrity assertions.
+- a late fan needs context without learning the ending;
+- a live fan needs clear, trustworthy moments rather than an opaque feed;
+- a community needs identity without fake seeded activity;
+- a returning fan needs a reason to come back before, during and after the match;
+- a claimed memory should not be duplicable or transferable like a speculative asset.
 
-## Quick start
+## The product
+
+PulseProof is one continuous consumer loop:
+
+1. **Before kick-off:** follow teams, view source-linked fixtures in local time, save reminders and export calendar events.
+2. **During play:** one public SSE connection updates covered fixtures, scores, momentum, match state and high-signal moments.
+3. **If late:** Spoiler Shield hides results while Catch-up advances through the exact visible event prefix at 1x, 2x or 4x.
+4. **With friends:** fixture-scoped chat requires a fresh wallet signature and a wallet-owned Fan Alias; it contains no fake users.
+5. **After full time:** finished matches keep the same scoreboard, momentum and complete event timeline for replay.
+6. **Between matches:** daily check-in, sourced World Cup quizzes and a 36-item cosmetic catalog build a non-financial, non-transferable fan profile.
+
+## Why it fits the Consumer and Fan Experiences track
+
+| Judging criterion | PulseProof evidence |
+|---|---|
+| Fan accessibility and UX | Quick Tour, local time, standard flags/codes, plain-language Match Brief, mobile layout, Spoiler Shield and no-wallet judge path |
+| Real-time responsiveness | TxLINE snapshot plus `/scores/stream`, server-side normalization, public multiplex SSE, de-duplication, heartbeat and reconnect |
+| Originality and value | Signed Catch-up Capsules reveal only the watched prefix; the same match journey continues into wallet-owned chat identity and anti-replay memories |
+| Commercial path | Free fan product; publishers, supporter clubs and sponsors pay for branded rooms, aggregate engagement analytics and permissioned loyalty campaigns |
+| Completeness and execution | Public app, final product-test video, devnet program, Explorer receipts, Judge Room, CI, threat model, deployment guide and reproducible tests |
+
+## TxLINE integration
+
+TxLINE is the primary live input. Credentials stay server-side and the configured API host, TxLINE program and Solana cluster must match.
+
+| TxLINE endpoint | Product use |
+|---|---|
+| `POST /auth/guest/start` | Renew the guest JWT used with the activated API token |
+| `GET /api/fixtures/snapshot` | Discover covered fixture IDs and participant metadata |
+| `GET /api/scores/snapshot/{fixtureId}` | Build current score, phase and normalized action state |
+| `GET /api/scores/historical/{fixtureId}` | Reconstruct completed-match Catch-up from source sequence values |
+| `GET /api/scores/stat-validation` | Bind a claim to a source proof digest without republishing the raw proof |
+| `GET /api/scores/stream` | Receive live score actions and expose the transformed public SSE bridge |
+
+The public bridge is available at `/api/scores/stream` and `/scores/stream`. It filters by fixture, parses chunked upstream frames, de-duplicates sequence values, multiplexes covered matches and emits `ready`, `pulse`, `moment` and `heartbeat` events.
+
+TxLINE devnet can omit competition or kick-off metadata. PulseProof enriches only an exact team-pair match from the separately source-linked schedule. Unmatched fixtures remain unavailable; eliminated teams and future winners are never inferred.
+
+## Solana design
+
+The Anchor program is deployed at [`74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn`](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet).
+
+```mermaid
+flowchart LR
+  T["TxLINE devnet"] --> N["Server normalizer"]
+  N --> S["Public SSE and snapshots"]
+  S --> U["Live Center and Catch-up"]
+  U --> A["Short-lived Ed25519 attestation"]
+  A --> P["PulseProof Anchor program"]
+  P --> R["Fan Profile, Fan Pass and receipt PDAs"]
+```
+
+On-chain controls include:
+
+- a config authority and pinned attestor public key;
+- wallet/fixture/moment/evidence/points/expiry binding;
+- Ed25519 precompile verification immediately before the claim instruction;
+- deterministic receipt PDAs that reject replay;
+- Solana-clock daily check-in and streak rules;
+- wallet-bound quiz receipts;
+- catalog-bound reward price, kind, index and digest;
+- a 256-slot non-transferable inventory and equipped identity;
+- a separate Fan Alias PDA for signed match chat.
+
+Key public evidence:
+
+- [TxLINE free-tier subscription](https://explorer.solana.com/tx/54TvjbxjP41cBP4BebWWyoJNWex6evuwapHcYb9hWziErFkvpfFPgTkU9bc2K9iGUnXojEWiNHS1wUTiktiMXgbC?cluster=devnet)
+- [Program deployment](https://explorer.solana.com/tx/4z4ihcYmRc6rTv9hFB7D4yAvxqgPBMLubVYB954MfVBoiYijZ4CUwB7vPSEfgaRLWAuyH6avZvP519gvT4ceNdS?cluster=devnet)
+- [Fan progression upgrade](https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet)
+- [36-item catalog parity upgrade](https://explorer.solana.com/tx/5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM?cluster=devnet)
+- [Verified claim receipt](https://explorer.solana.com/tx/eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu?cluster=devnet)
+- [Recorded retired-index rejection](https://explorer.solana.com/tx/3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi?cluster=devnet)
+
+## Source, safety and IP boundaries
+
+- Live, replay and published-report fallback lanes are visibly labelled and never merged.
+- Raw TxLINE data is not offered as a dataset; the product returns transformed fan context and proof digests.
+- Live TxLINE calls fail closed after `2026-07-19T23:59:59Z` unless written permission is explicitly recorded in deployment configuration.
+- The product contains no wagers, deposits, entry fees, prize pools, transferable rewards or pay-to-win mechanics.
+- Country flags identify national teams; official FIFA logos, tournament marks, trophy art, mascot art, team crests, player likenesses and kit art are not bundled.
+- Chat blocks links, wagering language, wallet secrets, spam and signature replay.
+- PulseProof is not affiliated with or endorsed by FIFA or any tournament organiser.
+
+See [Data Integrity](docs/DATA_INTEGRITY.md), [Threat Model](docs/THREAT_MODEL.md), [Hackathon Compliance](docs/HACKATHON_COMPLIANCE.md) and [Third-party Notices](THIRD_PARTY_NOTICES.md).
+
+## Run locally
+
+Requirements: Node.js 20.9 or later. The Solana/Anchor toolchain is needed only for contract builds and validator E2E.
 
 ```bash
-npm install
+git clone https://github.com/cryptovuive/pulseproof.git
+cd pulseproof
+npm ci
+cp .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`. The included `.env.local` enables only the labelled demo replay. It contains no API token or signing secret.
+Open `http://localhost:3000`. The example configuration enables only the clearly labelled replay and contains no token or signing secret.
 
-```bash
-npm run lint
-npm test
-npm run build
-npm run contract:e2e:windows
-npm run wallet:e2e:windows
-npm run txline:verify
-npm run contract:e2e:devnet
-npm run contract:retired:devnet
-```
-
-`wallet:create` generates a disposable Solana keypair that can be imported into Phantom for localnet/devnet testing. Its JSON and base58 import key stay under gitignored `.local-wallets/`, are never printed, and must never hold mainnet funds. Importing that private key into the Phantom extension remains a deliberate human action.
-
-## Live TxLINE mode
-
-Set these server-side variables in your deployment environment:
+Production variables:
 
 ```dotenv
 TXLINE_NETWORK=devnet
-TXLINE_API_TOKEN=<activated token from the matching network>
+TXLINE_API_TOKEN=<activated server-side token>
 ATTESTOR_SECRET_KEY=<base58 64-byte nacl secret key>
 DEMO_REPLAY_ENABLED=true
+TXLINE_WRITTEN_DATA_LICENSE_EXTENDED=false
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_PULSEPROOF_PROGRAM_ID=74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn
 ```
 
-`TXLINE_GUEST_JWT` is optional. If omitted, the server requests and caches a fresh guest JWT from the matching TxLINE host. Never put either credential in a `NEXT_PUBLIC_*` variable.
+Never expose the TxLINE token or attestor secret through a `NEXT_PUBLIC_*` variable.
 
-Network pairing is strict:
+## Verify
 
-| Network | TxLINE API origin | TxLINE program |
-|---|---|---|
-| Mainnet | `https://txline.txodds.com` | `9ExbZjAapQww1vfcisDmrngPinHTEfpjYRWMunJgcKaA` |
-| Devnet | `https://txline-dev.txodds.com` | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
+```bash
+npm test
+npm run lint
+npm run build
+npm audit --omit=dev
+```
 
-The configured API token remains authoritative for every TxLINE fixture ID and event it supplies, but a fixture is rendered only when its competition metadata or exact-pair schedule enrichment proves it belongs to the men's FIFA World Cup 2026. Unavailable, club and women's competition labels are excluded. When replay is enabled, the catalog also exposes non-colliding finished World Cup cards as explicitly labelled, source-linked replays; they are never merged into the TxLINE event stream.
+The final release passes **154/154 automated tests** across the web, API, replay, SSE, wallet, submission and contract-model surfaces. GitHub CI also runs native Rust invariants. Optional wallet and validator flows are documented in [Deployment](docs/DEPLOYMENT.md) and [Test Report](docs/TEST_REPORT.md).
 
-## Repository guide
+## Repository map
 
-- `app/api` — public application API; secrets remain here on the server.
-- `lib/txline.ts` — TxLINE authentication, endpoint calls and schema normalisation.
-- `lib/sse.ts` — chunk-safe upstream SSE parsing and score-envelope extraction.
-- `lib/pulse-replay.ts` — deterministic catch-up reconstruction and high-signal summary.
-- `lib/catch-up-capsule.ts` — canonical prefix commitment, bounded token format and Ed25519 issue/verification logic.
-- `lib/saved-recaps.ts` — bounded, validated and consumer-safe offline recap packs.
-- `lib/attestation.ts` — canonical message, moment hash and Ed25519 signing.
-- `lib/solana-client.ts` — browser transaction construction for match claims, Fan Profile/Fan Alias, check-in, quiz claim, redemption and equipping.
-- `lib/quiz-bank.ts` — source-backed facts, deterministic 10,000-variant catalog, daily/practice selection and grading.
-- `lib/reward-catalog.ts` — cosmetic catalog, stable on-chain indexes, prices and seasonal availability.
-- `lib/community-chat.ts` — bounded fixture rooms, moderation, presence, signature replay protection and SSE broadcast.
-- `programs/pulseproof/src/lib.rs` — Anchor smart contract.
-- `tests` — signature, integration-model and anti-replay tests.
-- `docs/VI_HACKATHON_PLAN.md` — detailed Vietnamese product and compliance plan.
-- `docs/ARCHITECTURE.md` — end-to-end data and trust architecture.
-- `docs/DEPLOYMENT.md` — TxLINE activation, program deployment and app deployment checklist.
-- `docs/DEMO_SCRIPT.md` — timed five-minute video script.
-- `docs/SUBMISSION.md` — submission-ready English copy.
-- `docs/THREAT_MODEL.md` — trust boundaries, attack paths and residual risks.
-- `docs/TEST_REPORT.md` — reproducible verification evidence.
-- `docs/LIVE_DATA_AND_REPLAY.md` — multi-match streaming, Catch-up and production operations.
-- `docs/JUDGE_SCORECARD.md` — honest score, remaining blockers and >90-point submission path.
-- `docs/DATA_INTEGRITY.md` — source priority, freshness, eliminated-team guards and no-fabrication rules.
-- `docs/PRODUCT_GROWTH_RESEARCH.md` — global product patterns, implemented retention loop, accuracy gates and ecosystem roadmap.
-- `docs/HACKATHON_COMPLIANCE.md` — clause-by-clause submission, data, IP, privacy and judge-access matrix.
-- `docs/HUMAN_AUTHORSHIP_EVIDENCE.md` — honest AI disclosure and the participant's required live-defence protocol.
-- `THIRD_PARTY_NOTICES.md` — direct runtime packages, licences and media boundaries.
+| Path | Purpose |
+|---|---|
+| `app/` | Next.js pages, public API routes, Judge Room and compliance surface |
+| `components/` | Live Center, Catch-up, Fan Zone, chat and wallet session UI |
+| `lib/txline.ts` | TxLINE authentication, endpoints and schema normalization |
+| `lib/sse.ts` | Chunk-safe SSE parsing and score-envelope extraction |
+| `lib/pulse-replay.ts` | Deterministic replay and high-signal summary |
+| `lib/attestation.ts` | Canonical Ed25519 messages, moment hashes and signing |
+| `lib/solana-client.ts` | Phantom-compatible transaction construction |
+| `programs/pulseproof/` | Anchor smart contract |
+| `tests/` | 154 automated integrity, product and contract-model checks |
+| `docs/` | Architecture, deployment, rules, test evidence and submission pack |
 
-## Important submission caveat
+Start with [Final Report](docs/FINAL_REPORT.md), [Architecture](docs/ARCHITECTURE.md), [Submission Pack](docs/SUBMISSION.md), [YouTube Pack](docs/YOUTUBE.md) and [Test Report](docs/TEST_REPORT.md).
 
-TxODDS promotional material says autonomous AI agents may participate, but the official TxODDS Terms say entries must be created, developed and submitted by natural persons and may disqualify work materially controlled by an autonomous agent. PulseProof discloses AI-assisted research, drafting, implementation and test support. The human participant must review, understand, test, materially direct and personally submit the final project. Do not claim that no AI was used or represent work you cannot explain. Obtain written clarification from the organiser before submission.
+## Licence status
 
-## Data and brand compliance
-
-- Raw TxLINE data is not persisted or republished as a dataset. Live responses are transformed into product UI and the proof endpoint stores/returns only a digest.
-- Cross-checked fallback results cite their source; locally assigned replay sequence IDs remain `verified=false` and are never represented as TxLINE data.
-- No FIFA/tournament logo, official trophy, mascot artwork, kit art, player likeness, trademarked crest or sponsorship claim is used.
-- Live TxLINE calls fail closed after 19 July 2026 23:59:59 UTC unless `TXLINE_WRITTEN_DATA_LICENSE_EXTENDED=true` is backed by written TxODDS permission. Labelled published-report replay remains available.
-
-This project is not affiliated with or endorsed by FIFA or any tournament organiser.
+The repository is public for hackathon review. No general open-source licence is granted for PulseProof application code unless one is added explicitly. Third-party packages and media boundaries are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The licence granted to TxODDS by the official Hackathon Terms remains unaffected.

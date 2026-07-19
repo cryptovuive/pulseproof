@@ -36,13 +36,14 @@ const EXPLORER = `https://explorer.solana.com/tx/${TRANSACTION}?cluster=devnet`;
 
 const chapters = [
   ["00:00", "Problem and product vision"],
-  ["00:16", "TxLINE-powered Live Center"],
-  ["00:38", "Replay and Spoiler Shield"],
-  ["01:08", "Wallet identity and check-in"],
-  ["02:08", "Quiz and fan points"],
-  ["02:49", "Complete reward catalog"],
-  ["03:27", "Wallet-signed match chat"],
-  ["03:57", "Eight fresh production checks"],
+  ["00:18", "TxLINE-powered Live Center"],
+  ["00:41", "Complete Catch-up replay"],
+  ["01:17", "Wallet identity and check-in"],
+  ["02:18", "Quiz and fan points"],
+  ["02:59", "Complete reward catalog"],
+  ["03:37", "Wallet-signed match chat"],
+  ["04:07", "Eight fresh production checks"],
+  ["04:39", "Every match leaves a memory"],
 ];
 
 function Brand() {
@@ -213,7 +214,7 @@ function SubmissionPortal() {
       <section className={styles.verifyGrid}>
         <a href={`${LIVE_APP}/api/health`} target="_blank" rel="noreferrer"><Wifi /><span>Production health</span><small>TxLINE devnet credentials configured</small></a>
         <a href={EXPLORER} target="_blank" rel="noreferrer"><BadgeCheck /><span>Explorer receipt</span><small>Confirmed public devnet transaction</small></a>
-        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>133 tests · lint · web build · native contract tests</small></a>
+        <a href={CI_RUN} target="_blank" rel="noreferrer"><CheckCircle2 /><span>Green CI</span><small>154 tests · lint · web build · native contract tests</small></a>
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Public repository</span><small>Architecture, threat model and test report</small></a>
       </section>
       <section className={styles.honesty}><ShieldCheck /><div><span>DEMO INTEGRITY</span><h2>Live is live. Replay is labelled replay.</h2><p>TxLINE coverage, public SSE and heartbeat evidence are live. Finished-match sequences in the consumer demo are externally cross-checked and explicitly not represented as TxLINE records.</p></div></section>

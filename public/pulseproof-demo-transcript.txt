@@ -1,15 +1,65 @@
-1. The late-fan problem
-Football fans often arrive late, lose connectivity, or want context without having the result spoiled. PulseProof is the trusted second screen that lets them understand only what has happened so far, keep the recap, and preserve a source-bound memory.
+PulseProof final demo transcript
 
-2. Real deployed product walkthrough
-This is the deployed product, not a mock-up. The selected World Cup replay is clearly labelled as a published-report replay. The walkthrough enables Spoiler Shield, then presses the same Start Catch-up control available to every fan. The timeline advances from the visible event prefix, so future goals, cards and VAR cannot leak. Share Safe Relay then commits that exact prefix and returns an Ed25519-signed Catch-up Capsule with zero future-event payloads. Next, PulseProof stores a sanitized offline recap. Finally, the browser requests a new short-lived attestation and verifies its signature locally.
+1. Introducing PulseProof
 
-3. Eight production checks
-Now the Judge Room tests production itself. It confirms TxLINE devnet credentials, separates live fixtures from labelled replays, opens the public score stream without polling, and proves a two-event prefix cannot see the future. It then issues, redeems and verifies a signed fan relay containing exactly those two events. The browser also verifies a fresh receipt, reads both executable Solana programs plus the finalized transaction, and confirms offline caching never captures APIs, SSE or proofs.
+PulseProof is a trusted second screen for World Cup fans. It turns verified live match data into spoiler safe Catch Up, match communities and a non transferable fan identity on chain. The journey starts before kickoff, continues during play and remains useful after the final whistle.
 
-4. Public devnet evidence
-The chain evidence is public and independently inspectable. This finalized devnet receipt was accepted by the deployed PulseProof program. The contract binds the wallet, fixture, source moment, evidence digest, points, badge and expiry, then creates a deterministic receipt PDA so the same memory cannot be replayed.
+2. TxLINE-powered Live Center
 
-5. A defensible fan memory loop
-Score apps, fast recaps and on-chain fandom already exist separately. PulseProof combines strict source lanes, a signed no-spoiler fan relay, prefix-safe Catch-up, a sanitized offline pack, non-transferable anti-replay memories, and a public SSE-to-Solana flight recorder. The app, source code, live tests, captions, transaction and technical documentation are all available from the Judge Room.
+TxLINE is the primary live signal. PulseProof normalizes activated devnet fixtures and events into a public Server Sent Events stream. The Live Center keeps World Cup competition labels, official team abbreviations, flags, live status, finished results, upcoming fixtures, stadiums and kickoff times in one view with clear source labels.
 
+3. Replay test and complete verified timeline
+
+Here is the complete replay test, not a static score. We press Start Catch Up and the player advances from Event one through nine using the same scoreboard, momentum and timeline as live coverage. Pause, resume and one, two or four times speed remain interactive. The final TxLINE snapshot supplies nine verified on pitch moments when the historical endpoint is empty. We then inspect the full time score, Match brief, Jude Bellingham's goal, Trevoh Chalobah's substitution, created chances and both VAR reviews with source sequence numbers.
+
+4. One wallet across the product
+
+Phantom stays connected while the user moves from Live Center to Fan Zone. The profile belongs to the wallet, so the display name, points, streak and inventory follow without a second connection.
+
+5. Wallet-owned display name
+
+Profile editing creates a readable alias for match chat. The new name is prepared on the Fan Alias account on chain. It is not stored as a temporary browser preference.
+
+6. Alias transaction and receipt
+
+Phantom shows the real devnet transaction. After approval, the page updates immediately to Cryptovuive twenty six. It displays a confirmed receipt and Explorer link, then keeps the new alias after reload.
+
+7. Daily on-chain check-in
+
+Daily check in uses Solana time. The interface previews seven streak days and disables duplicate claims within the same UTC day.
+
+8. Immediate check-in state
+
+One Phantom approval creates the check in proof. The page immediately marks today complete, raises the streak and points, and shows a confirmed devnet receipt without any reload.
+
+9. Ten thousand World Cup quiz variants
+
+The daily quiz draws five questions from ten thousand deterministic World Cup variations built from sourced facts. Answer links stay hidden and explanations appear only after selection. This run scores five out of five. Daily rewards are single use, while practice rounds remain unlimited and provide no rewards.
+
+10. Authorized quiz points
+
+Phantom signs the authorized points claim. Seventy points arrive immediately, the button changes to Claimed today, and the transaction receipt remains independently verifiable on Explorer.
+
+11. The complete reward catalog
+
+The reward catalog contains thirty six original and non transferable medals, badges, avatar frames and characters. Limited editions always show a clear closing date. We scroll through every item before randomly selecting Bolt Keeper. Prices are fixed by the catalog on chain, so the client cannot invent a cheaper redemption.
+
+12. Atomic redeem and equip
+
+The transaction completes atomically: Bolt Keeper becomes owned and active, and the balance drops by one hundred sixty points.
+
+13. Fixture-scoped match chat
+
+Chat belongs to each match, beside the live or replay timeline. The composer uses the alias stored on chain and blocks links, betting, wallet secrets and anonymous impersonation.
+
+14. Wallet-signed community message
+
+Posting requires a fresh Phantom message signature, not a fee. After approval, the server verifies the wallet, alias, fixture and replay protection value. The signed message appears instantly as Cryptovuive twenty six in the England and Argentina room.
+
+15. Eight fresh production checks
+
+Finally, Judge Room runs the product instead of trusting slides. Eight fresh checks validate production identity, the World Cup catalog, public SSE, spoiler isolation, a signed Catch Up Capsule, Ed25519 verification inside the browser, the live Solana programs and the offline cache boundary. This run passes eight of eight and exposes current points, alias, finalized quiz and reward receipts, Explorer, CI and the public repository.
+
+16. Every match leaves a memory
+
+PulseProof turns live context into community identity and verifiable memory. Before, during and after the match, every match leaves a memory.

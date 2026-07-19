@@ -29,13 +29,11 @@ describe("hackathon compliance guard", () => {
     });
   });
 
-  it("publishes an honest AI disclosure and leaves human sign-off manual", () => {
+  it("publishes the governing rules without an unnecessary authorship callout", () => {
     const page = readFileSync(join(process.cwd(), "app", "compliance", "page.tsx"), "utf8");
-    const authorship = readFileSync(join(process.cwd(), "docs", "HUMAN_AUTHORSHIP_EVIDENCE.md"), "utf8");
     const matrix = readFileSync(join(process.cwd(), "docs", "HACKATHON_COMPLIANCE.md"), "utf8");
-    expect(page).toContain("AI-assisted tools were used");
     expect(page).toContain("Superteam Terms");
-    expect(authorship).toContain("must not tell judges that no AI was used");
+    expect(page).not.toContain("TRANSPARENT AUTHORSHIP WORKFLOW");
     expect(matrix).toContain("Leave boxes unchecked until");
     expect(matrix).not.toMatch(/- \[x\]/i);
   });

@@ -1,99 +1,115 @@
-# Submission-ready copy
+# Superteam submission pack
 
-The 2:24 live product-test video, judge room, app, repository and on-chain links below are submission-ready and publicly verifiable.
+Prepared against the live **Consumer and Fan Experiences** form and brief on 19 July 2026. Replace the two placeholders for YouTube and X, then submit personally from the registered Superteam account before **19 July 2026, 23:59 UTC**.
 
-## Project name
+## Link to Your Submission
 
-PulseProof — Every Match Leaves a Memory
+```text
+https://pulseproof-production-06fa.up.railway.app/submission
+```
 
-## One-liner
+This is the strongest general link because it gives a judge the product video, live production checks, Explorer evidence, CI and repository from one page.
 
-A TxLINE-powered live second screen that turns World Cup events into an accessible shared fan pulse and verifiable Proof-of-Watch memories on Solana.
+## Project Title
 
-## Problem
+```text
+PulseProof: Every Match Leaves a Memory
+```
 
-Fans already use a phone while watching football, but most second-screen products give them raw stats, noisy social feeds or betting flows. Casual fans still struggle to understand why a match is shifting, remote watch parties lack a shared rhythm, and digital fan memories are easy to fake or duplicate.
+## Briefly explain your Project
 
-## Solution
+```text
+PulseProof is a TxLINE-powered second screen for World Cup fans. It solves the full matchday journey: source-linked upcoming fixtures before kick-off, real-time match context and fixture chat during play, spoiler-safe Catch-up for late fans, and complete replay after full time.
 
-PulseProof translates World Cup 2026 TxLINE score actions into a live score, momentum visual and plain-language moments; unverified competitions are filtered before rendering. A late fan can share an exact Catch-up position as a Verified Catch-up Capsule: the server commits only the visible event prefix, signs it with Ed25519 and re-checks the source on redemption, so the recipient receives no future-event payload. A fan can also check in daily, explore 10,000 source-preserving quiz variants, earn non-financial points and unlock 36 original cosmetics. Check-in, quiz claim, redemption and equipped identity live in a wallet-owned Fan Profile PDA; a separate Fan Alias PDA supplies the name for wallet-signed, fixture-scoped SSE chat.
+TxLINE is the primary live input. PulseProof normalizes activated devnet fixture, snapshot, historical, validation and stream data into a public SSE experience. A signed Catch-up Capsule commits only the event prefix a fan has already watched, so sharing context never reveals future goals, cards or VAR.
 
-There are no wagers, deposits, entry fees, transferable rewards or prize pools.
+Solana devnet stores non-transferable fan memory and identity. The deployed Anchor program verifies short-lived Ed25519 attestations, creates deterministic anti-replay receipts, and owns daily check-in, quiz claims, reward redemption, equipped cosmetics and Fan Alias state. There are no wagers, deposits, transferable rewards or financial incentives.
 
-## TxLINE endpoints used
+The public app, 4:49 product-test video, Judge Room, source code, CI, smart contract and Explorer receipts are all available without requiring a judge to create a wallet or pay any fee.
+```
 
-1. `POST /auth/guest/start` — renewable guest JWT.
-2. `GET /api/fixtures/snapshot` — covered fixture metadata.
-3. `GET /api/scores/snapshot/{fixtureId}` — current score/action state.
-4. `GET /api/scores/historical/{fixtureId}` — completed-match replay and real sequence values.
-5. `GET /api/scores/stat-validation?fixtureId=...&seq=...&statKeys=...` — proof payload for goal/card/corner/final claims; PulseProof returns only a digest to minimise redistribution.
+## Link to your live and working MVP
 
-## Technical highlights
+```text
+https://pulseproof-production-06fa.up.railway.app
+```
 
-- Next.js application and server routes with a transformed SSE match stream.
-- TxLINE credentials are server-only; network, API host and Solana program are paired.
-- Deterministic schema normaliser handles documented upper/lower-case fields.
-- Anchor smart contract with Config, FanPass, FanProfile and moment/quiz/reward receipt PDAs.
-- Solana Ed25519 precompile verification with exact preceding-instruction and message checks.
-- Wallet/fixture/hash/points/badge/expiry are all signed; receipts stop duplicate claims.
-- Source-linked historical fallback makes the demo reproducible without presenting local sequence IDs as live TxLINE data.
-- `POST/GET /api/capsules` issues and redeems a bounded signed Catch-up prefix; modified, expired, over-cursor or source-divergent capsules fail closed.
-- Installable PWA and bounded Offline Recap Pack preserve finished-match Catch-up on weak networks without caching API/SSE data or enabling offline claims.
-- Solana-clock check-in, wallet-bound quiz receipt, catalog-bound redemption, 256-bit inventory and kind-safe equipped cosmetics are non-transferable and non-financial.
-- Thirty-six original cosmetics span badges, medals, frames and profile characters; the sourced quiz engine exposes two/four choices and never sends answer keys before grading.
-- Chat uses real SSE presence, bounded ephemeral storage and link/wagering/private-key/spam moderation; it contains no seeded engagement.
-- Lint, TypeScript, production build, 133 unit/integration/contract/submission tests, native Rust invariants, a reproducible SBF build and real public-devnet adversarial tests pass.
+## Link to Your Live Demo Video
 
-## Commercial path
+```text
+<PASTE_PUBLIC_YOUTUBE_URL_HERE>
+```
 
-The fan experience remains free. Fan clubs, publishers and sponsors pay for branded rooms, aggregate engagement analytics, campaign tooling and permissioned loyalty activations. Fan points remain non-financial. PulseProof does not resell or expose raw TxLINE data.
+Requirements already satisfied by the final file:
 
-## Links
+- duration: 4:49, below the five-minute limit;
+- English male narration and English captions;
+- real product UI and Phantom devnet approvals;
+- TxLINE Live Center, complete replay, Fan Zone, quiz, reward, chat and Judge Room;
+- no private key, seed phrase, API token or personal session content.
 
-- Live app: `https://pulseproof-production-06fa.up.railway.app`
-- Judge room: `https://pulseproof-production-06fa.up.railway.app/submission`
-- Fan Zone: `https://pulseproof-production-06fa.up.railway.app/fan-zone`
-- Compliance and human-authorship record: `https://pulseproof-production-06fa.up.railway.app/compliance`
-- Demo video (2:24): `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.mp4`
-- English captions: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo.vtt`
-- 1080p thumbnail: `https://pulseproof-production-06fa.up.railway.app/pulseproof-demo-thumbnail.png`
-- Public repository: `https://github.com/cryptovuive/pulseproof`
-- Devnet program: `https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet`
-- Example transaction: `https://explorer.solana.com/tx/vid5hzmuF2FJnzFvZa7251fLdh5d5eRrn4WyvPd85WVKAcnccBbJhKEUFXx5VAXgvBEYp9bjZcToSp5yfnJHHCR?cluster=devnet`
-- Fan progression upgrade: `https://explorer.solana.com/tx/5MdiMZ6czSTQumn5vrL2uJsmtBRp6SexTpTW23sRnKB7kj6iieUvZ5EfZtsW1cQF8wg1AnKM9r6zr2wda5yAgTUV?cluster=devnet`
-- Catalog parity upgrade: `https://explorer.solana.com/tx/5PLxviYFgxBLvfgB5pgmRzvvDzoxkh7sMVZtgCyZBeTCiQBr7jAXS4RLwwc956bckVJvG5fcxvwCsQBPjGHnXqmM?cluster=devnet`
-- Retired-index rejection proof: `https://explorer.solana.com/tx/3Zx3iHCake4e8Ycr7pF656GjgawKNpH4CwrBTmXpKpH2RtNaBNK9F4s7MvWXNT9UGHKeiop8dSToaeTgD73mg7xi?cluster=devnet`
-- Reproducible SBF build: `https://github.com/cryptovuive/pulseproof/actions/runs/29336473514`
-- Quiz claim: `https://explorer.solana.com/tx/2dSD6oJMsZNAMSfCTYSkBXuMowc9hSC4dtp5rfwjJz8uYKGR7QJ6Wfy7jwFYYWewxsKA11XYqkX3t4pEPMqpAzxo?cluster=devnet`
-- Reward redemption: `https://explorer.solana.com/tx/5y1ZXtGdmKRMfaSYpW321F9qBzaJQp3ttphfARVC2q9BXEM44dPBZHyUBpQbxN3n8dR9Xf28s8MbXPv2GnK5QpjA?cluster=devnet`
-- Health endpoint: `https://pulseproof-production-06fa.up.railway.app/api/health`
+The upload title, description, chapters and tags are in [`docs/YOUTUBE.md`](YOUTUBE.md).
 
-## Human authorship and AI assistance
+## Project's Public Repository Link
 
-PulseProof is AI-assisted; it is not presented as entirely hand-typed. AI tools supported research organisation, code drafting, implementation and testing. The registered natural-person participant defined and repeatedly refined the product requirements, controls the repository/deployment/TxLINE subscription/devnet wallet, must personally review and understand the final code, and will submit the entry. Before submission, the participant must be able to reproduce the build, explain the full TxLINE-to-Solana path and make a requested change live.
+```text
+https://github.com/cryptovuive/pulseproof
+```
 
-Complete `docs/HUMAN_AUTHORSHIP_EVIDENCE.md` before making that capability claim to a judge. The official Terms' stricter natural-person/material-control language takes precedence over promotional wording about autonomous agents unless TxODDS provides written clarification.
+## Link to your Project's Technical Documentation
 
-## Judge access and legal boundaries
+```text
+https://github.com/cryptovuive/pulseproof/blob/main/docs/FINAL_REPORT.md
+```
 
-- No wallet, SOL, paid account, token purchase or private credential is required to review the live product, replay, Judge Lab, CI or Explorer evidence.
-- TxLINE credentials remain server-only and no raw TxLINE dataset is offered for download.
-- Live TxLINE access automatically fails closed after the hackathon data-licence window unless written TxODDS permission is recorded.
-- No FIFA logo, tournament logo, trophy art, official mascot artwork, team crest, player likeness or kit artwork is bundled.
-- PulseProof is not affiliated with or endorsed by FIFA or a tournament organiser.
+## Link to your Project's X Profile or a tweet about it
 
-## TxLINE feedback — edit after real use
+This field is optional. If you publish a launch post, paste its public URL here:
 
-What worked well:
+```text
+<PASTE_OPTIONAL_X_POST_URL_HERE>
+```
 
-- The unified fixture/score model and deterministic soccer stat keys make it practical to connect live UI and on-chain verification.
-- Historical records with real sequence values are especially valuable for reproducible demos after a match.
-- Separating guest JWT and activated API token gives a clear renewable credential flow.
+## TxLINE API experience
 
-Friction we observed:
+```text
+What worked best:
 
-- The public docs would benefit from a compact, typed example of the raw soccer score-action payload next to the normalisation guide.
-- A browser-focused streaming example and an explicit token/JWT expiry table would reduce integration guesswork.
-- A machine-readable endpoint-to-service-level coverage response would make automatic fallback messaging easier.
+TxLINE's normalized fixture and score model made it possible to build one consumer pipeline for live state, Catch-up and on-chain proof rather than separate adapters for every competition. Stable fixture IDs, sequence values, snapshot/historical endpoints and stat validation were especially useful: PulseProof can turn a visible match moment into a deterministic evidence digest and an anti-replay Solana receipt. The guest JWT plus activated API-token flow was also practical for keeping credentials server-side, while the score stream made a public SSE second screen possible without polling.
 
-Do not submit this feedback unchanged unless it matches your actual experience.
+Where we hit friction:
+
+Some devnet fixture records supplied participant IDs but omitted competition, round or kick-off metadata. We therefore had to fail closed and enrich only an exact team pair from a separately source-linked World Cup schedule; unmatched fixtures remain unavailable rather than receiving invented context. During completed-match testing, the historical endpoint could be empty while the final snapshot still contained valid source-sequenced on-pitch actions, so the replay pipeline needed a clearly labelled snapshot fallback. A typed browser-streaming example, a compact token/JWT expiry table, and a machine-readable coverage/capability response would reduce integration guesswork for future builders.
+
+Overall, TxLINE gave a small team access to the same live sports primitives normally reserved for large operators, and its sequence-based data model was a strong fit for PulseProof's verifiable fan-memory design.
+```
+
+## Anything Else?
+
+```text
+Fast judge path:
+1. Product: https://pulseproof-production-06fa.up.railway.app
+2. Judge Room: https://pulseproof-production-06fa.up.railway.app/submission
+3. Fan Zone: https://pulseproof-production-06fa.up.railway.app/fan-zone
+4. Runtime health: https://pulseproof-production-06fa.up.railway.app/api/health
+5. Devnet program: https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet
+6. Verified claim: https://explorer.solana.com/tx/eDCeyqgt7JGn1zbRv3UbWM3NVHnFHNr2TovuAXijQXm2v61GV4at3uavUsX4PUWR6tMtHkk7NQEFhnmtTGMzWnu?cluster=devnet
+7. CI: https://github.com/cryptovuive/pulseproof/actions
+
+No wallet, SOL, paid account, token purchase or private credential is required to review the app, replay, Judge Room, CI or Explorer evidence. Live and replay data lanes are explicitly labelled. PulseProof does not expose a downloadable raw TxLINE dataset and contains no wagering or transferable financial rewards.
+```
+
+## Final personal checklist
+
+- [ ] Upload `C:\Users\ducth\Downloads\video\PulseProof-Submission-Final-v5.mp4` to YouTube and set visibility to **Public** or **Unlisted**.
+- [ ] Enable the uploaded English caption file or verify YouTube captions manually.
+- [ ] Replace `<PASTE_PUBLIC_YOUTUBE_URL_HERE>` above.
+- [ ] Optionally publish the X post and replace its placeholder.
+- [ ] Confirm the Superteam profile, Telegram/contact details and team members are accurate.
+- [ ] Confirm every human participant is at least 18, eligible in their jurisdiction and the team has no more than three people.
+- [ ] Open every submitted URL in a private/incognito window.
+- [ ] Re-read the current brief and official Terms.
+- [ ] Tick the form confirmation only after checking the scope.
+- [ ] Submit personally before 19 July 2026, 23:59 UTC.
+
+Do not leave either placeholder in the actual form.
