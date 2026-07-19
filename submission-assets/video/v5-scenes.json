@@ -14,11 +14,11 @@
     "text": "TxLINE is the primary live signal. PulseProof normalizes activated devnet fixtures and events into a public Server Sent Events stream. The Live Center keeps World Cup competition labels, official team abbreviations, flags, live status, finished results, upcoming fixtures, stadiums and kickoff times in one view with clear source labels."
   },
   {
-    "source": "v5-raw/06-replay-france-england-complete.mp4",
-    "duration": 38,
+    "source": "v5-raw/06-replay-test-and-complete-timeline-final.mp4",
+    "duration": 36,
     "layout": "page",
-    "title": "Complete replay with Match brief and timeline",
-    "text": "Finished matches use the same interface as live coverage. France versus England begins with the final score of four to six, then moves into Match brief and the complete TxLINE event timeline. The replay shows Jude Bellingham's goal at ninety plus eight, Trevoh Chalobah's substitution, created chances, attacking pressure and two VAR reviews, each with its source sequence number. Spoiler Shield hides results everywhere. Catch Up reveals only the selected event prefix. Signed relay and offline recap never expose future moments."
+    "title": "Replay test and complete verified timeline",
+    "text": "Here is the complete replay test, not a static score. We press Start Catch Up and the player advances from Event one through nine using the same scoreboard, momentum and timeline as live coverage. Pause, resume and one, two or four times speed remain interactive. The final TxLINE snapshot supplies nine verified on pitch moments when the historical endpoint is empty. We then inspect the full time score, Match brief, Jude Bellingham's goal, Trevoh Chalobah's substitution, created chances and both VAR reviews with source sequence numbers."
   },
   {
     "source": "v5-raw/08-fan-zone-wallet-points-full.mp4",
