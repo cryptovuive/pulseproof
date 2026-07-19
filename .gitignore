@@ -17,6 +17,13 @@ submission-assets/video/live-audio/
 submission-assets/video/live-captures/
 submission-assets/video/live-segments/
 submission-assets/live-match/
+scripts/*v4*.ps1
+submission-assets/video/v[0-9]-audio-preflight/
+submission-assets/video/v[0-9]-audio/
+submission-assets/video/v[0-9]-raw/
+submission-assets/video/v[0-9]-segments/
+submission-assets/video/v[0-9]-*.pid
+submission-assets/video/v4-*.json
 submission-assets/video/*-mid*.png
 submission-assets/video/focus-test*
 submission-assets/video/hwnd-test*

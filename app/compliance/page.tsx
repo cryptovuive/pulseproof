@@ -8,7 +8,6 @@ import {
   Fingerprint,
   Scale,
   ShieldCheck,
-  UserRoundCheck,
   WalletCards,
 } from "lucide-react";
 import {
@@ -23,20 +22,12 @@ const REPOSITORY = "https://github.com/cryptovuive/pulseproof";
 const EXPLORER = "https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet";
 
 const requirements = [
-  ["Human participation", "Only the registered natural person may participate and submit. AI assistance is disclosed; it cannot register, submit or materially control the entry."],
+  ["Participant eligibility", "The registered natural person must meet the age, jurisdiction and exclusion rules, control the entry, and submit it personally through Superteam Earn."],
   ["Free evaluation", "The live product, labelled replay, Judge Lab, repository, CI and Explorer evidence are public. A judge does not need Phantom, SOL, a token purchase or a paid account."],
   ["Originality trail", "Product decisions, scoped pull requests, tests and public deployment history remain inspectable. Third-party packages are listed with their licences."],
   ["Data boundary", "TxLINE credentials remain server-only. The product transforms events into fan UI and proofs; it does not publish a downloadable raw TxLINE dataset."],
   ["Brand boundary", "PulseProof uses its own mark and original cosmetics. Official mascot artwork, FIFA logos, trophy art, team crests and sponsorship claims are excluded."],
   ["Consumer safety", "No wagers, deposits, entry fees, transferable rewards, prize pools or odds-based financial actions are implemented."],
-] as const;
-
-const humanProof = [
-  "Explain the problem, user journey and why each major product trade-off was selected.",
-  "Run the app and tests from a clean clone without an AI tool operating the demo.",
-  "Trace one TxLINE event through normalisation, SSE, attestation and the Solana receipt PDA.",
-  "Make and test a small requested change live if a judge asks for authorship verification.",
-  "Personally submit from the registered Superteam account and answer technical questions truthfully.",
 ] as const;
 
 export default function CompliancePage() {
@@ -49,13 +40,8 @@ export default function CompliancePage() {
       </header>
 
       <section className={styles.hero}>
-        <div><span>RULES · AUTHORSHIP · DATA · IP</span><h1>Built to be inspected, not merely claimed.</h1><p>This is PulseProof&apos;s public compliance record for the TxODDS World Cup Hackathon. It describes the controls in the product and the human verification still expected from the registered participant.</p></div>
-        <aside><Scale /><span>TERMS CHECKED</span><strong>15 JUL 2026</strong><small>Rules may change. Re-check before submission.</small></aside>
-      </section>
-
-      <section className={styles.notice}>
-        <UserRoundCheck />
-        <div><span>TRANSPARENT AI-ASSISTED WORKFLOW</span><h2>AI assistance is not hidden or presented as a human teammate.</h2><p>AI-assisted tools were used for research organisation, code drafting, implementation support and test assistance. The registered human participant must personally review, understand, operate, materially direct and submit the final entry. This page is not a substitute for that human involvement.</p></div>
+        <div><span>RULES · DATA · IP · JUDGE ACCESS</span><h1>Built to be inspected, not merely claimed.</h1><p>This is PulseProof&apos;s public compliance record for the TxODDS World Cup Hackathon. It maps the official requirements to concrete product controls and public evidence.</p></div>
+        <aside><Scale /><span>TERMS CHECKED</span><strong>19 JUL 2026</strong><small>Rules may change. Re-check before submission.</small></aside>
       </section>
 
       <section className={styles.grid}>
@@ -67,11 +53,6 @@ export default function CompliancePage() {
         <strong data-active={dataLicense.active}>{dataLicense.basis.replace("-", " ")}</strong>
       </section>
 
-      <section className={styles.defence}>
-        <div><span>HUMAN-CONTROL DEFENCE</span><h2>What the participant should demonstrate live</h2><p>A Git commit or an AI disclosure alone proves very little. A credible defence is an unassisted explanation plus reproducible operation and a live change.</p></div>
-        <ol>{humanProof.map((item, index) => <li key={item}><b>{index + 1}</b><span>{item}</span></li>)}</ol>
-      </section>
-
       <section className={styles.evidence}>
         <a href={REPOSITORY} target="_blank" rel="noreferrer"><Code2 /><span>Source and pull requests</span><ExternalLink /></a>
         <a href={`${REPOSITORY}/actions`} target="_blank" rel="noreferrer"><BadgeCheck /><span>Reproducible CI</span><ExternalLink /></a>
@@ -80,7 +61,7 @@ export default function CompliancePage() {
       </section>
 
       <section className={styles.sources}>
-        <BookOpenCheck /><div><h2>Primary rules</h2><p>Where a promotional page and the legal Terms appear inconsistent about autonomous agents, PulseProof follows the stricter legal Terms and asks the organiser for written clarification.</p></div>
+        <BookOpenCheck /><div><h2>Primary rules</h2><p>The official track brief, Hackathon Terms and Superteam platform terms are the governing sources. The registered participant must re-check them and submit the entry personally.</p></div>
         <a href={HACKATHON_TERMS_URL} target="_blank" rel="noreferrer">Official Terms <ExternalLink /></a>
         <a href={HACKATHON_BRIEF_URL} target="_blank" rel="noreferrer">Official brief <ExternalLink /></a>
         <a href={SUPERTEAM_TERMS_URL} target="_blank" rel="noreferrer">Superteam Terms <ExternalLink /></a>
