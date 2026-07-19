@@ -10,6 +10,14 @@ https://pulseproof-production-06fa.up.railway.app/submission
 
 This is the strongest general link because it gives a judge the product video, live production checks, Explorer evidence, CI and repository from one page.
 
+## Tweet Link
+
+This generic Superteam field is optional. Paste the same public X launch post used later in the track-specific X field, or leave both fields blank. If Superteam asks to verify ownership of the X handle, complete that verification before submitting.
+
+```text
+<PASTE_OPTIONAL_X_POST_URL_HERE_OR_LEAVE_BLANK>
+```
+
 ## Project Title
 
 ```text
@@ -67,7 +75,7 @@ https://github.com/cryptovuive/pulseproof/blob/main/docs/FINAL_REPORT.md
 This field is optional. If you publish a launch post, paste its public URL here:
 
 ```text
-<PASTE_OPTIONAL_X_POST_URL_HERE>
+<PASTE_OPTIONAL_X_POST_URL_HERE_OR_LEAVE_BLANK>
 ```
 
 ## TxLINE API experience
@@ -104,7 +112,7 @@ No wallet, SOL, paid account, token purchase or private credential is required t
 - [ ] Upload `C:\Users\ducth\Downloads\video\PulseProof-Submission-Final-v5.mp4` to YouTube and set visibility to **Public** or **Unlisted**.
 - [ ] Enable the uploaded English caption file or verify YouTube captions manually.
 - [ ] Replace `<PASTE_PUBLIC_YOUTUBE_URL_HERE>` above.
-- [ ] Optionally publish the X post and replace its placeholder.
+- [ ] Optionally publish an X post, verify its handle if Superteam requests it, and use the same URL in both optional X fields.
 - [ ] Confirm the Superteam profile, Telegram/contact details and team members are accurate.
 - [ ] Confirm every human participant is at least 18, eligible in their jurisdiction and the team has no more than three people.
 - [ ] Open every submitted URL in a private/incognito window.
