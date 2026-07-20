@@ -1,6 +1,6 @@
 # Final verification report
 
-**Verification date:** 19 July 2026
+**Verification date:** 20 July 2026
 
 **Primary environment:** Windows, Node.js 22, npm, Rust/Anchor CI
 
@@ -10,7 +10,7 @@
 
 | Gate | Result |
 |---|---|
-| Vitest | **154/154 passed** |
+| Vitest | **156/156 passed** |
 | ESLint | Passed |
 | Next.js production build and TypeScript | Passed |
 | Native Rust contract invariants | Passed in GitHub CI |
@@ -32,7 +32,7 @@ npm audit --omit=dev
 
 ## Automated coverage
 
-The 154 tests span these product and integrity surfaces:
+The 156 tests span these product and integrity surfaces:
 
 - TxLINE fixture, score and action-schema normalization;
 - uppercase/lowercase and sparse documented payload variants;
@@ -43,6 +43,7 @@ The 154 tests span these product and integrity surfaces:
 - chunk-safe SSE parsing, multiplexing, de-duplication and heartbeat;
 - multi-match catalog selection and replay isolation;
 - complete finished-match replay and sequence preservation;
+- final-weekend score, bracket-winner and replay regressions for Matches 103 and 104;
 - scorer, assist, yellow/red card, substitution, VAR and stoppage-time details;
 - progressive Catch-up and Spoiler Shield future-event isolation;
 - signed Catch-up Capsule bounds, expiry, tamper rejection and source re-check;

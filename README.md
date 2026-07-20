@@ -16,7 +16,7 @@ PulseProof is a TxLINE-powered second screen for World Cup fans. It turns live m
 | Fan Zone | [Open the on-chain progression loop](https://pulseproof-production-06fa.up.railway.app/fan-zone) |
 | Runtime health | [Inspect network, credentials and data-licence state](https://pulseproof-production-06fa.up.railway.app/api/health) |
 | Devnet program | [Open Solana Explorer](https://explorer.solana.com/address/74cvsTMZpcgrzVT7ufSjtjy8gqU2m1q3jy3n1UGxRMkn?cluster=devnet) |
-| Final CI | [154 tests, lint, build and native contract tests](https://github.com/cryptovuive/pulseproof/actions) |
+| Final CI | [156 tests, lint, build and native contract tests](https://github.com/cryptovuive/pulseproof/actions) |
 | Submission copy | [Open the exact Superteam field pack](docs/SUBMISSION.md) |
 
 No wallet, SOL, token purchase, paid account or private credential is required for judging. Phantom is needed only when a judge chooses to repeat a devnet write.
@@ -154,7 +154,7 @@ npm run build
 npm audit --omit=dev
 ```
 
-The final release passes **154/154 automated tests** across the web, API, replay, SSE, wallet, submission and contract-model surfaces. GitHub CI also runs native Rust invariants. Optional wallet and validator flows are documented in [Deployment](docs/DEPLOYMENT.md) and [Test Report](docs/TEST_REPORT.md).
+The final release passes **156/156 automated tests** across the web, API, replay, SSE, wallet, submission and contract-model surfaces. GitHub CI also runs native Rust invariants. Optional wallet and validator flows are documented in [Deployment](docs/DEPLOYMENT.md) and [Test Report](docs/TEST_REPORT.md).
 
 ## Repository map
 
@@ -168,7 +168,7 @@ The final release passes **154/154 automated tests** across the web, API, replay
 | `lib/attestation.ts` | Canonical Ed25519 messages, moment hashes and signing |
 | `lib/solana-client.ts` | Phantom-compatible transaction construction |
 | `programs/pulseproof/` | Anchor smart contract |
-| `tests/` | 154 automated integrity, product and contract-model checks |
+| `tests/` | 156 automated integrity, product and contract-model checks |
 | `docs/` | Architecture, deployment, rules, test evidence and submission pack |
 
 Start with [Final Report](docs/FINAL_REPORT.md), [Architecture](docs/ARCHITECTURE.md), [Submission Pack](docs/SUBMISSION.md), [YouTube Pack](docs/YOUTUBE.md) and [Test Report](docs/TEST_REPORT.md).

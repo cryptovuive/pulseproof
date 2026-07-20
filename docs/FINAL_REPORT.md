@@ -1,7 +1,7 @@
 # PulseProof final technical and product report
 
 **Track:** TxODDS Consumer and Fan Experiences  
-**Release date:** 19 July 2026  
+**Release date:** 20 July 2026  
 **Live app:** https://pulseproof-production-06fa.up.railway.app  
 **Judge Room:** https://pulseproof-production-06fa.up.railway.app/submission  
 **Repository:** https://github.com/cryptovuive/pulseproof  
@@ -20,7 +20,7 @@ The core differentiator is a continuous fan-memory loop:
 - join a fixture room with a wallet-owned display name and fresh message signature;
 - preserve non-transferable check-in, quiz, reward and match-memory state on Solana.
 
-The final submission is a functional public product, not a mock-up. It includes a 4:49 end-to-end product test, a deployed Anchor program, public Explorer evidence, a Judge Room that runs eight fresh production checks, 154 automated tests, CI, deployment instructions and integrity documentation.
+The final submission is a functional public product, not a mock-up. It includes a 4:49 end-to-end product test, a deployed Anchor program, public Explorer evidence, a Judge Room that runs eight fresh production checks, 156 automated tests, CI, deployment instructions and integrity documentation.
 
 ## 2. User problem
 
@@ -173,7 +173,7 @@ Full package notices are in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
 Final automated verification:
 
-- **154/154 tests passed**;
+- **156/156 tests passed**;
 - ESLint passed;
 - Next.js production build and TypeScript passed;
 - native Rust contract invariants passed in CI;

@@ -12,7 +12,7 @@ This is an evidence-based internal assessment, not a ranking guarantee.
 | Real-Time Responsiveness | 18/20 | Activated TxLINE devnet, fixture/snapshot/history/validation/stream integration, public multiplex SSE, heartbeat/reconnect and complete source-sequenced replay; the five-minute demo cannot guarantee a live goal occurs while recording |
 | Originality and Value Creation | 20/20 | Signed exact-prefix Catch-up Capsules, spoiler-safe sharing, offline recap boundaries, wallet-owned match identity and anti-replay memory form a distinct product rather than a repackaged score feed |
 | Commercial and Monetization Path | 18/20 | Clear free-fan/B2B2C model for publishers, clubs and sponsors without betting or data resale; customer validation and production contracts remain future work |
-| Completeness and Execution | 19/20 | Public app, final 4:49 product test, Phantom transactions, Anchor program, Explorer evidence, Judge Room, 154 tests, CI and full documentation; managed chat/pub-sub and Web Push are post-hackathon scale work |
+| Completeness and Execution | 19/20 | Public app, final 4:49 product test, Phantom transactions, Anchor program, Explorer evidence, Judge Room, 156 tests, CI and full documentation; managed chat/pub-sub and Web Push are post-hackathon scale work |
 | **Total** | **94/100** | Strong submission with explicit boundaries and no critical missing track artifact |
 
 ## Strongest judge path

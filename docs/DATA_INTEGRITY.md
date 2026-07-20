@@ -13,14 +13,14 @@ PulseProof treats an incorrect fixture as a product failure, even when the UI is
 
 ## Current verified bracket state
 
-Checked at `2026-07-13T10:30:00Z`:
+Checked at `2026-07-19T23:25:00Z`:
 
 - Brazil were eliminated 1–2 by Norway in the round of 16.
 - Norway were then eliminated 1–2 by England in the quarter-finals.
 - Morocco, Portugal, Switzerland and Belgium are also eliminated.
-- Semi-final 101: France vs Spain, 14 July at 19:00 UTC, Dallas Stadium.
-- Semi-final 102: England vs Argentina, 15 July at 19:00 UTC, Atlanta Stadium.
-- Match 103 and Match 104 keep both participants as `TBD` until the semi-finals finish.
+- Spain beat France 2–0 in semi-final 101; Argentina beat England 2–1 in semi-final 102.
+- England beat France 6–4 in the third-place match and finished third.
+- Spain beat Argentina 1–0 after extra time in the final and became world champions.
 
 ## Runtime integrity checks
 
@@ -41,6 +41,10 @@ The local replay is no longer a fictional result simulation. It reflects these e
 - Brazil 1–2 Norway (World Cup 2026, round of 16, Match 91): Haaland 79', 90'; Neymar penalty 90+10'; Neymar yellow card 90+6'.
 - Portugal 0–1 Spain (World Cup 2026, round of 16, Match 93): Merino 90+1'; yellow cards for Bernardo Silva 89', Renato Veiga 90+3' and Ferran Torres 90+8'.
 - France 2–0 Morocco (World Cup 2026, quarter-final, Match 97): Mbappé 60', Dembélé 66'.
+- France 0–2 Spain (World Cup 2026, semi-final, Match 101): Oyarzabal 15' penalty, Yamal 74'.
+- England 1–2 Argentina (World Cup 2026, semi-final, Match 102): Alvarez 69', Bellingham 90+8', Almada 90+12'.
+- France 4–6 England (World Cup 2026, third-place match, Match 103): a complete ten-goal, half-time and full-time replay sourced from the published full-time report.
+- Spain 1–0 Argentina after extra time (World Cup 2026 final, Match 104): Torres 106', with sourced cards, substitutions, disallowed goals and final whistle.
 
 The source URLs are displayed in the application. Exact scorer, assist, card and stoppage-time fields are taken from the linked FIFA full-time report or published match report. Locally assigned sequence IDs remain explicitly non-TxLINE and `verified: false`; only events received from the authenticated TxLINE adapter may be labelled TxLINE-verified.
 
