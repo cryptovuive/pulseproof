@@ -1,9 +1,10 @@
 import type { Fixture, ScheduleEntry } from "@/types/pulse";
 
 const AP_ENGLAND_URL = "https://apnews.com/article/world-cup-england-argentina-score-2ae6a218ae88248db6565ffd13f60d38";
-const AP_FINAL_URL = "https://apnews.com/article/argentina-messi-spain-yamal-world-cup-final-55077ce5c4728c4207a39cc4aa8a41a1";
 const FRANCE_SPAIN_REPORT_URL = "https://www.skysports.com/football/france-vs-spain/549866";
-const VERIFIED_AT = "2026-07-16T00:25:00.000Z";
+const THIRD_PLACE_REPORT_URL = "https://www.skysports.com/football/france-vs-england/report/549868";
+const FINAL_REPORT_URL = "https://www.skysports.com/football/spain-vs-argentina/report/549869";
+const VERIFIED_AT = "2026-07-19T23:25:00.000Z";
 
 export const ELIMINATED_TEAMS_AS_OF_VERIFICATION = new Set([
   "Brazil", "Norway", "Switzerland", "Morocco", "Portugal", "Belgium", "France", "England",
@@ -42,22 +43,24 @@ const VERIFIED_TOURNAMENT_FIXTURES: Array<{
     result: { phase: "FT", score: [1, 2], winnerTeam: "Argentina", loserTeam: "England", replayFixtureId: 18241006 },
   },
   {
-    fixture: { fixtureId: 103, homeTeam: "France", awayTeam: "England", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_FINAL_URL, stage: "Third place · Match 103 · Miami Stadium", gameState: 0 },
+    fixture: { fixtureId: 103, homeTeam: "France", awayTeam: "England", startTime: "2026-07-18T21:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "published-report", competitionSourceUrl: THIRD_PLACE_REPORT_URL, stage: "Third place · Match 103 · Miami Stadium", gameState: 1 },
     coverage: "externally-confirmed",
-    provider: "FIFA schedule + both published semi-final results",
-    sourceUrl: AP_FINAL_URL,
+    provider: "Sky Sports full-time match report",
+    sourceUrl: THIRD_PLACE_REPORT_URL,
     txlineFixtureId: 18257865,
+    result: { phase: "FT", score: [4, 6], winnerTeam: "England", loserTeam: "France", replayFixtureId: 18257865 },
     participantPaths: {
       home: { kind: "loser", fixtureId: 101, label: "France" },
       away: { kind: "loser", fixtureId: 102, label: "England" },
     },
   },
   {
-    fixture: { fixtureId: 104, homeTeam: "Spain", awayTeam: "Argentina", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "verified-schedule", competitionSourceUrl: AP_FINAL_URL, stage: "Final · Match 104 · New York New Jersey Stadium", gameState: 0 },
+    fixture: { fixtureId: 104, homeTeam: "Spain", awayTeam: "Argentina", startTime: "2026-07-19T19:00:00.000Z", competition: "FIFA World Cup 2026", competitionSource: "published-report", competitionSourceUrl: FINAL_REPORT_URL, stage: "Final · Match 104 · New York New Jersey Stadium", gameState: 1 },
     coverage: "externally-confirmed",
-    provider: "FIFA schedule + both published semi-final results",
-    sourceUrl: AP_FINAL_URL,
+    provider: "Sky Sports full-time report + AP live match report",
+    sourceUrl: FINAL_REPORT_URL,
     txlineFixtureId: 18257739,
+    result: { phase: "FT", score: [1, 0], winnerTeam: "Spain", loserTeam: "Argentina", replayFixtureId: 18257739 },
     participantPaths: {
       home: { kind: "winner", fixtureId: 101, label: "Spain" },
       away: { kind: "winner", fixtureId: 102, label: "Argentina" },
@@ -166,8 +169,11 @@ export function scheduleIntegrityIssues(entries: ScheduleEntry[]): string[] {
 }
 
 export function formatKickoffCountdown(startTime: string, nowMs: number): string {
-  const remaining = Math.max(0, Date.parse(startTime) - nowMs);
-  if (!remaining) return "Kick-off now";
+  const start = Date.parse(startTime);
+  if (!Number.isFinite(start)) return "Schedule unavailable";
+  const remaining = start - nowMs;
+  if (remaining <= -60_000) return "Match started";
+  if (remaining <= 0) return "Kick-off now";
   const totalMinutes = Math.floor(remaining / 60_000);
   const days = Math.floor(totalMinutes / 1_440);
   const hours = Math.floor((totalMinutes % 1_440) / 60);
