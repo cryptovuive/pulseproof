@@ -60,7 +60,41 @@ export const ENGLAND_ARGENTINA_FIXTURE: Fixture = {
   gameState: 1,
 };
 
+export const FRANCE_ENGLAND_FIXTURE: Fixture = {
+  fixtureId: 18257865,
+  homeTeam: "France",
+  awayTeam: "England",
+  startTime: "2026-07-18T21:00:00.000Z",
+  competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://www.skysports.com/football/france-vs-england/report/549868",
+  stage: "Third place · Match 103 · Miami Stadium",
+  gameState: 1,
+};
+
+export const SPAIN_ARGENTINA_FIXTURE: Fixture = {
+  fixtureId: 18257739,
+  homeTeam: "Spain",
+  awayTeam: "Argentina",
+  startTime: "2026-07-19T19:00:00.000Z",
+  competition: "FIFA World Cup 2026",
+  competitionSource: "published-report",
+  competitionSourceUrl: "https://www.skysports.com/football/spain-vs-argentina/report/549869",
+  stage: "Final · Match 104 · New York New Jersey Stadium",
+  gameState: 1,
+};
+
 export const DEMO_DATA_SOURCES: Record<number, { provider: string; url: string; checkedAt: string }> = {
+  [SPAIN_ARGENTINA_FIXTURE.fixtureId]: {
+    provider: "Sky Sports full-time report + AP live match report",
+    url: "https://www.skysports.com/football/spain-vs-argentina/report/549869",
+    checkedAt: "2026-07-19T23:25:00.000Z",
+  },
+  [FRANCE_ENGLAND_FIXTURE.fixtureId]: {
+    provider: "Sky Sports full-time match report",
+    url: "https://www.skysports.com/football/france-vs-england/report/549868",
+    checkedAt: "2026-07-19T07:46:00.000Z",
+  },
   [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: {
     provider: "TxLINE final snapshot + AP match report",
     url: "https://apnews.com/article/world-cup-england-argentina-score-2ae6a218ae88248db6565ffd13f60d38",
@@ -154,9 +188,45 @@ export const ENGLAND_ARGENTINA_MOMENTS = createMoments(ENGLAND_ARGENTINA_FIXTURE
   { id: "eng-arg-final", seq: 962, minute: 92, minuteLabel: "90+2", type: "final", team: "neutral", title: "Argentina reach the World Cup final", description: "Full-time: England 1–2 Argentina. Argentina advance to face Spain; England move to the third-place match against France.", points: 20, badge: 7, score: [1, 2], txlineAction: "game_finalised" },
 ]);
 
-export const DEMO_FIXTURES = [ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_FIXTURE, DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
+export const FRANCE_ENGLAND_MOMENTS = createMoments(FRANCE_ENGLAND_FIXTURE, [
+  { id: "fra-eng-kickoff", seq: 1, minute: 0, type: "kickoff", team: "neutral", title: "Bronze-final underway", description: "France and England begin the World Cup third-place match in Miami.", points: 5, badge: 0, score: [0, 0], txlineAction: "game_started" },
+  { id: "fra-eng-rice-3", seq: 18, minute: 3, type: "goal", team: "away", title: "Rice gives England a rapid lead", description: "Declan Rice opens the scoring for England in the third minute.", participant: "Declan Rice", points: 12, badge: 2, score: [0, 1], txlineAction: "goal" },
+  { id: "fra-eng-konsa-18", seq: 74, minute: 18, type: "goal", team: "away", title: "Konsa doubles the advantage", description: "Ezri Konsa heads in Declan Rice's corner to make it 2–0.", participant: "Ezri Konsa", assist: "Declan Rice", points: 12, badge: 2, score: [0, 2], txlineAction: "goal" },
+  { id: "fra-eng-saka-37", seq: 148, minute: 37, type: "goal", team: "away", title: "Saka adds England's third", description: "Bukayo Saka scores from Marcus Rashford's assist in the 37th minute.", participant: "Bukayo Saka", assist: "Marcus Rashford", points: 12, badge: 2, score: [0, 3], txlineAction: "goal" },
+  { id: "fra-eng-saka-46", seq: 183, minute: 46, minuteLabel: "45+1", type: "goal", team: "away", title: "Saka makes it four before the break", description: "Bukayo Saka scores his second from Eberechi Eze's assist in first-half stoppage time.", participant: "Bukayo Saka", assist: "Eberechi Eze", points: 15, badge: 6, score: [0, 4], txlineAction: "goal" },
+  { id: "fra-eng-halftime", seq: 184, minute: 46, minuteLabel: "45+1", type: "halftime", team: "neutral", title: "England lead by four at half-time", description: "England reach the interval 4–0 ahead in the bronze-final.", points: 8, badge: 4, score: [0, 4], txlineAction: "halftime_finalised" },
+  { id: "fra-eng-mbappe-48", seq: 192, minute: 48, type: "goal", team: "home", title: "Mbappé begins the response", description: "Kylian Mbappé scores from Michael Olise's assist three minutes after the restart.", participant: "Kylian Mbappé", assist: "Michael Olise", points: 12, badge: 2, score: [1, 4], txlineAction: "goal" },
+  { id: "fra-eng-barcola-54", seq: 216, minute: 54, type: "goal", team: "home", title: "Barcola cuts the deficit", description: "Bradley Barcola scores from Kylian Mbappé's assist as France continue their comeback.", participant: "Bradley Barcola", assist: "Kylian Mbappé", points: 12, badge: 2, score: [2, 4], txlineAction: "goal" },
+  { id: "fra-eng-mbappe-66", seq: 264, minute: 66, type: "goal", team: "home", title: "Mbappé brings France within one", description: "Kylian Mbappé scores his second from another Michael Olise assist.", participant: "Kylian Mbappé", assist: "Michael Olise", points: 15, badge: 6, score: [3, 4], txlineAction: "goal" },
+  { id: "fra-eng-saka-87", seq: 348, minute: 87, type: "goal", team: "away", title: "Saka completes his hat-trick", description: "Bukayo Saka converts the penalty won by Djed Spence to restore England's two-goal lead.", participant: "Bukayo Saka", points: 15, badge: 6, score: [3, 5], txlineAction: "penalty_goal" },
+  { id: "fra-eng-dembele-96", seq: 382, minute: 96, minuteLabel: "90+6", type: "goal", team: "home", title: "Dembélé keeps France alive", description: "Ousmane Dembélé scores from Dayot Upamecano's assist deep into stoppage time.", participant: "Ousmane Dembélé", assist: "Dayot Upamecano", points: 12, badge: 2, score: [4, 5], txlineAction: "goal" },
+  { id: "fra-eng-bellingham-98", seq: 390, minute: 98, minuteLabel: "90+8", type: "goal", team: "away", title: "Bellingham settles the thriller", description: "Jude Bellingham scores the tenth and final goal of the bronze-final.", participant: "Jude Bellingham", points: 15, badge: 6, score: [4, 6], txlineAction: "goal" },
+  { id: "fra-eng-final", seq: 391, minute: 98, minuteLabel: "90+8", type: "final", team: "neutral", title: "England win World Cup bronze", description: "Full-time: France 4–6 England. England finish third after a ten-goal match in Miami.", points: 20, badge: 7, score: [4, 6], txlineAction: "game_finalised" },
+]);
+
+export const SPAIN_ARGENTINA_MOMENTS = createMoments(SPAIN_ARGENTINA_FIXTURE, [
+  { id: "esp-arg-kickoff", seq: 1, minute: 0, type: "kickoff", team: "neutral", title: "World Cup final underway", description: "Spain and Argentina begin the 2026 World Cup final in New York New Jersey.", points: 5, badge: 0, score: [0, 0], txlineAction: "game_started" },
+  { id: "esp-arg-yamal-shot-5", seq: 20, minute: 5, type: "shot", team: "home", title: "Yamal tests Martínez", description: "Lamine Yamal records the first shot on target of the final.", participant: "Lamine Yamal", points: 4, badge: 1, score: [0, 0], txlineAction: "shot_on_target" },
+  { id: "esp-arg-oyarzabal-shot-39", seq: 156, minute: 39, type: "shot", team: "home", title: "Oyarzabal shoots at goal", description: "Mikel Oyarzabal's attempt goes straight at Emiliano Martínez.", participant: "Mikel Oyarzabal", points: 4, badge: 1, score: [0, 0], txlineAction: "shot_on_target" },
+  { id: "esp-arg-halftime", seq: 180, minute: 45, type: "halftime", team: "neutral", title: "The final remains goalless", description: "Spain and Argentina reach half-time at 0–0.", points: 8, badge: 4, score: [0, 0], txlineAction: "halftime_finalised" },
+  { id: "esp-arg-paredes-yellow-52", seq: 208, minute: 52, type: "card", team: "away", title: "Paredes is booked", description: "Leandro Paredes receives a yellow card after a confrontation with Dani Olmo.", participant: "Leandro Paredes", cardColor: "yellow", points: 5, badge: 3, score: [0, 0], txlineAction: "yellow_card" },
+  { id: "esp-arg-torres-on-62", seq: 248, minute: 62, type: "substitution", team: "home", title: "Spain introduce Ferran Torres", description: "Ferran Torres replaces Mikel Oyarzabal as Spain search for the breakthrough.", participant: "Ferran Torres", points: 3, badge: 1, score: [0, 0], txlineAction: "substitution" },
+  { id: "esp-arg-double-chance-77", seq: 308, minute: 77, type: "shot", team: "home", title: "Martínez keeps Spain out", description: "Pedro Porro and Pau Cubarsí both draw saves from Emiliano Martínez.", participant: "Pedro Porro · Pau Cubarsí", points: 4, badge: 1, score: [0, 0], txlineAction: "shot_on_target" },
+  { id: "esp-arg-fernandez-red-93", seq: 372, minute: 93, minuteLabel: "90+3", type: "card", team: "away", title: "Argentina are reduced to ten", description: "Enzo Fernández receives a second yellow card after a reckless challenge on Pau Cubarsí.", participant: "Enzo Fernández", cardColor: "red", points: 8, badge: 5, score: [0, 0], txlineAction: "second_yellow_card" },
+  { id: "esp-arg-yamal-save-99", seq: 396, minute: 99, minuteLabel: "90+9", type: "shot", team: "home", title: "Martínez denies Yamal", description: "Emiliano Martínez makes a strong save from Lamine Yamal's whipped effort.", participant: "Lamine Yamal", points: 4, badge: 1, score: [0, 0], txlineAction: "shot_saved" },
+  { id: "esp-arg-williams-no-goal-96", seq: 408, minute: 100, minuteLabel: "96", type: "var", team: "home", title: "Williams goal does not stand", description: "Nico Williams puts the ball in the net, but a foul by Mikel Merino on Nicolás Otamendi is called in the build-up.", participant: "Nico Williams", varOutcome: "Goal disallowed · foul in build-up", points: 8, badge: 5, score: [0, 0], txlineAction: "var_goal_disallowed" },
+  { id: "esp-arg-torres-goal-106", seq: 460, minute: 106, type: "goal", team: "home", title: "Torres fires Spain ahead", description: "Ferran Torres finishes Nico Williams' headed pass to break the deadlock in extra time.", participant: "Ferran Torres", assist: "Nico Williams", points: 15, badge: 6, score: [1, 0], txlineAction: "goal" },
+  { id: "esp-arg-torres-offside-114", seq: 492, minute: 114, type: "var", team: "home", title: "Second Torres finish ruled out", description: "Ferran Torres finds the net again but is flagged offside.", participant: "Ferran Torres", varOutcome: "Goal disallowed · offside", points: 6, badge: 1, score: [1, 0], txlineAction: "goal_disallowed_offside" },
+  { id: "esp-arg-simeone-over-122", seq: 524, minute: 122, minuteLabel: "120+2", type: "shot", team: "away", title: "Simeone misses Argentina's late chance", description: "Giuliano Simeone sends Argentina's late opportunity over the goal.", participant: "Giuliano Simeone", points: 4, badge: 1, score: [1, 0], txlineAction: "shot_off_target" },
+  { id: "esp-arg-paredes-red-126", seq: 540, minute: 126, minuteLabel: "120+6", type: "card", team: "away", title: "Paredes is dismissed after full-time", description: "Leandro Paredes receives a red card in the confrontation after the final whistle.", participant: "Leandro Paredes", cardColor: "red", points: 0, badge: 0, score: [1, 0], txlineAction: "red_card" },
+  { id: "esp-arg-final", seq: 541, minute: 126, minuteLabel: "120+6", type: "final", team: "neutral", title: "Spain are world champions", description: "After extra time: Spain 1–0 Argentina. Spain win their second men's World Cup title.", points: 20, badge: 7, score: [1, 0], txlineAction: "game_finalised" },
+]);
+
+export const DEMO_FIXTURES = [SPAIN_ARGENTINA_FIXTURE, FRANCE_ENGLAND_FIXTURE, ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_FIXTURE, DEMO_FIXTURE, PORTUGAL_SPAIN_FIXTURE, BRAZIL_NORWAY_FIXTURE];
 
 export const DEMO_MOMENTS_BY_FIXTURE: Record<number, PulseMoment[]> = {
+  [SPAIN_ARGENTINA_FIXTURE.fixtureId]: SPAIN_ARGENTINA_MOMENTS,
+  [FRANCE_ENGLAND_FIXTURE.fixtureId]: FRANCE_ENGLAND_MOMENTS,
   [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: ENGLAND_ARGENTINA_MOMENTS,
   [FRANCE_SPAIN_FIXTURE.fixtureId]: FRANCE_SPAIN_MOMENTS,
   [DEMO_FIXTURE.fixtureId]: DEMO_MOMENTS,
@@ -165,6 +235,8 @@ export const DEMO_MOMENTS_BY_FIXTURE: Record<number, PulseMoment[]> = {
 };
 
 export const DEMO_DEFAULT_PHASE: Record<number, string> = {
+  [SPAIN_ARGENTINA_FIXTURE.fixtureId]: "FT",
+  [FRANCE_ENGLAND_FIXTURE.fixtureId]: "FT",
   [ENGLAND_ARGENTINA_FIXTURE.fixtureId]: "FT",
   [FRANCE_SPAIN_FIXTURE.fixtureId]: "FT",
   [BRAZIL_NORWAY_FIXTURE.fixtureId]: "FT",

@@ -1,11 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { DEMO_FIXTURES, DEMO_MOMENTS_BY_FIXTURE, ENGLAND_ARGENTINA_FIXTURE, FRANCE_SPAIN_MOMENTS, getDemoOverviews } from "@/lib/demo-data";
+import {
+  DEMO_FIXTURES,
+  DEMO_MOMENTS_BY_FIXTURE,
+  ENGLAND_ARGENTINA_FIXTURE,
+  FRANCE_ENGLAND_FIXTURE,
+  FRANCE_SPAIN_MOMENTS,
+  SPAIN_ARGENTINA_FIXTURE,
+  getDemoOverviews,
+} from "@/lib/demo-data";
 import { buildDemoPulse } from "@/lib/pulse-service";
 import { pulseAtMoment, selectCatchUpSource, summarizeCatchUp } from "@/lib/pulse-replay";
 
 describe("multi-match demo and catch-up", () => {
   it("provides a distinct replay timeline for every listed fixture", () => {
-    expect(DEMO_FIXTURES).toHaveLength(5);
+    expect(DEMO_FIXTURES).toHaveLength(7);
     for (const fixture of DEMO_FIXTURES) {
       expect(fixture.competition).toBe("FIFA World Cup 2026");
       const pulse = buildDemoPulse(fixture.fixtureId);
@@ -27,6 +35,8 @@ describe("multi-match demo and catch-up", () => {
       18198205: [0, 1],
       18209181: [2, 0],
       18241006: [1, 2],
+      18257865: [4, 6],
+      18257739: [1, 0],
     });
   });
 
@@ -65,6 +75,45 @@ describe("multi-match demo and catch-up", () => {
       ["90+2", "Lautaro Martínez", [1, 2]],
     ]);
     expect(full.moments.at(-1)).toMatchObject({ type: "final", score: [1, 2] });
+  });
+
+  it("replays all ten sourced goals from the World Cup bronze-final", () => {
+    const full = buildDemoPulse(FRANCE_ENGLAND_FIXTURE.fixtureId);
+    expect(full).toMatchObject({ phase: "FT", score: [4, 6] });
+    expect(full.moments.filter((moment) => moment.type === "goal").map((moment) => [
+      moment.minuteLabel ?? moment.minute,
+      moment.participant,
+      moment.score,
+    ])).toEqual([
+      [3, "Declan Rice", [0, 1]],
+      [18, "Ezri Konsa", [0, 2]],
+      [37, "Bukayo Saka", [0, 3]],
+      ["45+1", "Bukayo Saka", [0, 4]],
+      [48, "Kylian Mbappé", [1, 4]],
+      [54, "Bradley Barcola", [2, 4]],
+      [66, "Kylian Mbappé", [3, 4]],
+      [87, "Bukayo Saka", [3, 5]],
+      ["90+6", "Ousmane Dembélé", [4, 5]],
+      ["90+8", "Jude Bellingham", [4, 6]],
+    ]);
+    expect(summarizeCatchUp(full.moments)).toMatchObject({ goals: 10, cards: 0, reviews: 0 });
+    expect(full.moments.at(-1)).toMatchObject({ type: "final", score: [4, 6] });
+  });
+
+  it("replays Spain's extra-time winner, dismissals and disallowed goals", () => {
+    const full = buildDemoPulse(SPAIN_ARGENTINA_FIXTURE.fixtureId);
+    expect(full).toMatchObject({ phase: "FT", score: [1, 0] });
+    expect(full.provenance).toMatchObject({ provider: "Sky Sports full-time report + AP live match report" });
+    expect(full.moments.find((moment) => moment.id === "esp-arg-fernandez-red-93"))
+      .toMatchObject({ minuteLabel: "90+3", participant: "Enzo Fernández", cardColor: "red", score: [0, 0] });
+    expect(full.moments.find((moment) => moment.id === "esp-arg-torres-goal-106"))
+      .toMatchObject({ minute: 106, participant: "Ferran Torres", assist: "Nico Williams", score: [1, 0] });
+    expect(full.moments.filter((moment) => moment.type === "var").map((moment) => moment.varOutcome)).toEqual([
+      "Goal disallowed · foul in build-up",
+      "Goal disallowed · offside",
+    ]);
+    expect(summarizeCatchUp(full.moments)).toMatchObject({ goals: 1, cards: 3, reviews: 2 });
+    expect(full.moments.at(-1)).toMatchObject({ type: "final", score: [1, 0] });
   });
 
   it("reconstructs score, minute and momentum at an exact catch-up position", () => {

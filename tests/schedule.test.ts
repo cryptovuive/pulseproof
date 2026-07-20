@@ -13,24 +13,27 @@ describe("upcoming match schedule", () => {
     expect(scheduleIntegrityIssues(verifiedTournamentPath())).toEqual([]);
   });
 
-  it("keeps both finished semi-finals and their replay IDs in the tournament graph", () => {
+  it("keeps every finished knockout result and replay ID in the tournament graph", () => {
     const path = verifiedTournamentPath();
     expect(path.map((entry) => entry.fixture.fixtureId)).toEqual([101, 102, 103, 104]);
     expect(path[0].result).toEqual({ phase: "FT", score: [0, 2], winnerTeam: "Spain", loserTeam: "France", replayFixtureId: 101 });
     expect(path[1].result).toEqual({ phase: "FT", score: [1, 2], winnerTeam: "Argentina", loserTeam: "England", replayFixtureId: 18241006 });
+    expect(path[2].result).toEqual({ phase: "FT", score: [4, 6], winnerTeam: "England", loserTeam: "France", replayFixtureId: 18257865 });
+    expect(path[3].result).toEqual({ phase: "FT", score: [1, 0], winnerTeam: "Spain", loserTeam: "Argentina", replayFixtureId: 18257739 });
     expect(path[3].participantPaths?.home).toMatchObject({ kind: "winner", fixtureId: 101, label: "Spain" });
     expect(path[3].participantPaths?.away).toMatchObject({ kind: "winner", fixtureId: 102, label: "Argentina" });
   });
 
   it("rejects an eliminated team inside a confirmed final fixture", () => {
     const confirmed = verifiedSchedule(new Date("2026-07-16T05:00:00.000Z")).find((entry) => entry.fixture.fixtureId === 104)!;
-    const corrupt = [{ ...confirmed, fixture: { ...confirmed.fixture, homeTeam: "Brazil" } }];
+    const corrupt = [{ ...confirmed, result: undefined, fixture: { ...confirmed.fixture, homeTeam: "Brazil" } }];
     expect(scheduleIntegrityIssues(corrupt)).toContain("eliminated team Brazil appears in confirmed future fixture 104");
   });
 
   it("formats countdowns without exposing negative time", () => {
     expect(formatKickoffCountdown("2026-07-14T19:00:00.000Z", Date.parse("2026-07-12T17:30:00.000Z"))).toBe("2d 1h 30m");
-    expect(formatKickoffCountdown("2026-07-14T19:00:00.000Z", Date.parse("2026-07-14T20:00:00.000Z"))).toBe("Kick-off now");
+    expect(formatKickoffCountdown("2026-07-14T19:00:00.000Z", Date.parse("2026-07-14T19:00:00.000Z"))).toBe("Kick-off now");
+    expect(formatKickoffCountdown("2026-07-14T19:00:00.000Z", Date.parse("2026-07-14T20:00:00.000Z"))).toBe("Match started");
   });
 
   it("creates a UTC calendar event with a ten-minute alarm and stable fixture UID", () => {

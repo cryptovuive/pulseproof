@@ -34,28 +34,33 @@ function pulse(fixture: Fixture, score: [number, number], shootoutScore?: [numbe
 }
 
 describe("automatic tournament reconciliation", () => {
-  it("settles remaining fixtures, including a penalty winner, from TxLINE final snapshots", async () => {
+  it("settles both final weekend fixtures from final snapshots without inventing scores", async () => {
+    const unsettled = verifiedTournamentPath().map((entry) => [103, 104].includes(entry.fixture.fixtureId)
+      ? { ...entry, result: undefined }
+      : entry);
     const result = await reconcileTournamentPath(
-      verifiedTournamentPath(),
+      unsettled,
       async (fixture) => {
         if (fixture.fixtureId === 18241006) return pulse(fixture, [1, 2]);
-        if (fixture.fixtureId === 18257865) return pulse(fixture, [2, 1]);
-        if (fixture.fixtureId === 18257739) return pulse(fixture, [1, 1], [4, 5]);
+        if (fixture.fixtureId === 18257865) return pulse(fixture, [4, 6]);
+        if (fixture.fixtureId === 18257739) return pulse(fixture, [1, 0]);
         throw new Error("not covered");
       },
       new Date("2026-07-20T23:00:00.000Z"),
     );
     expect(result.find((entry) => entry.fixture.fixtureId === 103)?.result).toMatchObject({
-      score: [2, 1], winnerTeam: "France", loserTeam: "England", replayFixtureId: 18257865,
+      score: [4, 6], winnerTeam: "England", loserTeam: "France", replayFixtureId: 18257865,
     });
     expect(result.find((entry) => entry.fixture.fixtureId === 104)?.result).toMatchObject({
-      score: [1, 1], shootoutScore: [4, 5], winnerTeam: "Argentina", loserTeam: "Spain", replayFixtureId: 18257739,
+      score: [1, 0], winnerTeam: "Spain", loserTeam: "Argentina", replayFixtureId: 18257739,
     });
     expect(scheduleIntegrityIssues(result)).toEqual([]);
   });
 
   it("never invents a winner before TxLINE emits the final marker", async () => {
-    const entries = verifiedTournamentPath();
+    const entries = verifiedTournamentPath().map((entry) => [103, 104].includes(entry.fixture.fixtureId)
+      ? { ...entry, result: undefined }
+      : entry);
     const result = await reconcileTournamentPath(entries, async (fixture) => ({ ...pulse(fixture, [1, 0]), phase: "LIVE" }), new Date("2026-07-20T23:00:00.000Z"));
     expect(result.find((entry) => entry.fixture.fixtureId === 103)?.result).toBeUndefined();
     expect(result.find((entry) => entry.fixture.fixtureId === 104)?.result).toBeUndefined();
